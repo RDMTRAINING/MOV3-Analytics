@@ -1,0 +1,25 @@
+# Secrets and credentials
+.streamlit/secrets.toml
+.env
+*.env
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache & compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Office temporary files
+~$*
