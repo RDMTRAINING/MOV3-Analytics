@@ -745,16 +745,28 @@ def render_statistiche_match(t):
             
             c_srv1, c_srv2 = st.columns([1.1, 1.1])
             with c_srv1:
-                # Scatter Ace vs Metri per Punto
+                # Scatter Ace vs Metri per Punto (trendline calcolata con NumPy, senza dipendenza statsmodels)
                 fig_ace = px.scatter(
                     df_corr,
                     x='aces',
                     y='m_per_point',
                     color='result',
-                    trendline="ols",
                     color_discrete_map={'Vittoria': '#16a34a', 'Sconfitta': '#dc2626'},
                     labels={'aces': tr('Numero di Ace Disputati', 'Number of Aces'), 'm_per_point': tr('Metri per Punto (m/pt)', 'Meters per Point (m/pt)')}
                 )
+                valid_ace = df_corr.dropna(subset=['aces', 'm_per_point'])
+                if len(valid_ace) > 2 and valid_ace['aces'].nunique() > 1:
+                    m_slope, b_intercept = np.polyfit(valid_ace['aces'].astype(float), valid_ace['m_per_point'].astype(float), 1)
+                    x_vals = np.linspace(valid_ace['aces'].min(), valid_ace['aces'].max(), 50)
+                    y_vals = m_slope * x_vals + b_intercept
+                    fig_ace.add_trace(go.Scatter(
+                        x=x_vals,
+                        y=y_vals,
+                        mode='lines',
+                        name=tr('Tendenza Lineare', 'Linear Trend'),
+                        line=dict(color='#64748b', dash='dash', width=2),
+                        hoverinfo='skip'
+                    ))
                 fig_ace.update_layout(
                     title=dict(text=f"<b>{tr('Impatto degli Ace sul Volume Fisico (Metri/Punto)', 'Aces Impact on Physical Volume (Meters/Pt)')}</b>", font=dict(size=13, family="Inter")),
                     plot_bgcolor="#ffffff",
