@@ -583,6 +583,10 @@ def clear_database_cache():
         _load_database_cached.clear()
     except Exception:
         pass
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
 
 
 def load_local_database():

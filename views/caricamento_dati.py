@@ -285,7 +285,12 @@ def render_caricamento_dati(t):
                 master_df = pd.concat(dataframes, ignore_index=True)
                 db_attuale = load_local_database()
                 db_aggiornato = pd.concat([db_attuale, master_df], ignore_index=True) if not db_attuale.empty else master_df
-                db_aggiornato.drop_duplicates(subset=['Date', 'Session', 'Players'], keep='last', inplace=True)
+                # Deduplicazione sicura: sovrascrive solo se coincidono Data, Sessione, Giocatore E Nome File
+                # per evitare che file o split diversi nella stessa data si cancellino a vicenda
+                dedup_cols = ['Date', 'Session', 'Players']
+                if 'File_Name' in db_aggiornato.columns:
+                    dedup_cols.append('File_Name')
+                db_aggiornato.drop_duplicates(subset=dedup_cols, keep='last', inplace=True)
                 save_local_database(db_aggiornato)
                 st.success(
                     tr(

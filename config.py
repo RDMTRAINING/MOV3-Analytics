@@ -4,8 +4,9 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.io as pio
 
-DB_PATH = "database_storico.csv"
-DB_PARQUET_PATH = "database_storico.parquet"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "database_storico.csv")
+DB_PARQUET_PATH = os.path.join(BASE_DIR, "database_storico.parquet")
 LEGENDA_ACWR = "Verde: 80-125% della media  |  Blu: sotto 80%  |  Rosso: sopra 125%"
 SUPPORT_EMAIL = "mov3project26@gmail.com"
 
