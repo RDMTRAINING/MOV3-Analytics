@@ -162,6 +162,7 @@ In [`pdf_generator.py`](file:///Users/riccardodimaio/webapp_tennis_gps/pdf_gener
 | `views/test_fisici.py` | [`views/test_fisici.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/test_fisici.py) | **Operativo** | Test neuromuscolari, radar PB, readiness SWC e asimmetrie direzionali. |
 | `views/calendario_medico.py` | [`views/calendario_medico.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/calendario_medico.py) | **Operativo** | Master Calendar, registro fisio, alert overload >70% TL e matrice preventiva. |
 | `views/atleta_mobile.py` | [`views/atleta_mobile.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/atleta_mobile.py) | **Operativo** | Interfaccia mobile-first smartphone per inserimento sRPE e questionario wellness. |
+| `views/gestione_file.py` | [`views/gestione_file.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/gestione_file.py) | **Operativo** | Gestione sessioni e database: filtri a cascata Atleta ↔ Tipologia Sessione, modifica anagrafica e toggle stato Reale (Sensore GPS) / Simulato (Senza GPS). |
 
 ---
 
