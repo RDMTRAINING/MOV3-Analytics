@@ -15,6 +15,7 @@ from config import (
     render_page_header,
     card_kpi,
     slugify_name,
+    render_tab_navigation,
 )
 from utils import (
     supabase,
@@ -362,17 +363,20 @@ def render_move_tennis_test(t):
         f"Superficie: {test_attivo.get('superficie', 'Hard') if test_attivo else 'Hard'}"
     ])
 
-    # TABS DI NAVIGAZIONE INTERNA
-    tab_dash, tab_input, tab_compare = st.tabs([
-        tr("📊 Dashboard & Profilazione Clinica", "📊 Dashboard & Clinical Profiling"),
-        tr("✍️ Inserimento & Modifica Dati (Manuale / Excel)", "✍️ Data Entry & Edit (Manual / Excel)"),
-        tr("📈 Confronto Storico Longitudinale", "📈 Longitudinal Historical Comparison")
-    ])
+    # TABS DI NAVIGAZIONE INTERNA CON PERSISTENZA
+    lbl_tab_dash = tr("📊 Dashboard & Profilazione Clinica", "📊 Dashboard & Clinical Profiling")
+    lbl_tab_input = tr("✍️ Inserimento & Modifica Dati (Manuale / Excel)", "✍️ Data Entry & Edit (Manual / Excel)")
+    lbl_tab_compare = tr("📈 Confronto Storico Longitudinale", "📈 Longitudinal Historical Comparison")
+    active_m0v3_tab = render_tab_navigation(
+        [lbl_tab_dash, lbl_tab_input, lbl_tab_compare],
+        key="nav_sub_m0v3_test",
+        default=lbl_tab_dash
+    )
 
     # =========================================================================
     # TAB 1: DASHBOARD & PROFILAZIONE CLINICA
     # =========================================================================
-    with tab_dash:
+    if active_m0v3_tab == lbl_tab_dash:
         if not test_attivo:
             st.warning(tr("Seleziona una sessione di test salvata oppure inseriscine una nuova dal tab 'Inserimento Dati'.",
                           "Select a saved test session or enter a new one from the 'Data Entry' tab."))
@@ -739,18 +743,21 @@ def render_move_tennis_test(t):
     # =========================================================================
     # TAB 2: INSERIMENTO & MODIFICA DATI (MANUALE / EXCEL)
     # =========================================================================
-    with tab_input:
+    elif active_m0v3_tab == lbl_tab_input:
         st.markdown(f"### {tr('Inserimento o Modifica Sessione M0V3 Tennis Test', 'Enter or Edit M0V3 Tennis Test Session')}")
         st.caption(tr("Compila i valori dei 6 round del test oppure carica un file Excel/CSV precompilato. Tutti gli indici ($EDI$, $TPS$, $CMJ$, $GRS$, $PCI$) vengono calcolati all'istante.",
                       "Fill in test round values or upload pre-filled Excel/CSV. All indices are computed instantly."))
 
-        # Sottotab: Manuale vs Upload File
-        sub_tab_man, sub_tab_file = st.tabs([
-            tr("📝 Form Tabellare Guidato (6 Round)", "📝 Guided Table Form (6 Rounds)"),
-            tr("📤 Caricamento File Excel / CSV", "📤 Upload Excel / CSV File")
-        ])
+        # Sottotab: Manuale vs Upload File con persistenza
+        lbl_sub_man = tr("📝 Form Tabellare Guidato (6 Round)", "📝 Guided Table Form (6 Rounds)")
+        lbl_sub_file = tr("📤 Caricamento File Excel / CSV", "📤 Upload Excel / CSV File")
+        active_sub_input = render_tab_navigation(
+            [lbl_sub_man, lbl_sub_file],
+            key="nav_sub_m0v3_input_mode",
+            default=lbl_sub_man
+        )
 
-        with sub_tab_man:
+        if active_sub_input == lbl_sub_man:
             with st.form("form_m0v3_tennis_test"):
                 c_h1, c_h2, c_h3, c_h4 = st.columns(4)
                 with c_h1:
@@ -864,7 +871,7 @@ def render_move_tennis_test(t):
                                   f"Test for {nuovo_atleta} on {nuova_data.strftime('%d/%m/%Y')} saved successfully!"))
                     st.rerun()
 
-        with sub_tab_file:
+        else:
             st.markdown(f"#### {tr('Caricamento da Foglio Excel / CSV', 'Upload from Excel / CSV Sheet')}")
             st.write(tr("Trascina qui il file compilato secondo il modello M0V3. Il sistema leggerà automaticamente i 6 round e aggiornerà il database.",
                         "Drop your M0V3-formatted file here. The system will read the 6 rounds and update the database."))
@@ -882,7 +889,7 @@ def render_move_tennis_test(t):
     # =========================================================================
     # TAB 3: CONFRONTO STORICO LONGITUDINALE
     # =========================================================================
-    with tab_compare:
+    elif active_m0v3_tab == lbl_tab_compare:
         st.markdown(f"### {tr('Confronto Longitudinale dei Test M0V3 nel Tempo', 'Longitudinal Comparison of M0V3 Tests Over Time')}")
         st.caption(tr("Traccia l'evoluzione della Resilienza Globale (GRS), del Disaccoppiamento (PCI) e dell'Esplosività (EDI) nei diversi periodi della stagione.",
                       "Track GRS, PCI, and EDI trends across different stages of the season."))

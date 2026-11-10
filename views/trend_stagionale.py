@@ -11,6 +11,7 @@ from config import (
     render_page_header,
     render_action_bar,
     render_tab_navigation,
+    render_scientific_methodology_box,
     tr,
 )
 from utils import (
@@ -1769,6 +1770,9 @@ def render_trend_stagionale(t):
                     })
                 st.dataframe(pd.DataFrame(tab_rows), use_container_width=True, hide_index=True)
 
+            st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box("acwr")
+
     # -------------------------------------------------------------------------
     # TAB 5: ACWR ULTIME 8 SETTIMANE (PROGRESSIONE GIORNALIERA)
     # -------------------------------------------------------------------------
@@ -1932,6 +1936,9 @@ def render_trend_stagionale(t):
                         tr("Sessioni", "Sessions"): p['num_sessions']
                     })
                 st.dataframe(pd.DataFrame(tab_daily_rows), use_container_width=True, hide_index=True)
+
+            st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box("acwr")
 
     # -------------------------------------------------------------------------
     # TAB 6: DISTRIBUZIONE LAVORO (METADATA: SUPERFICI, TIPOLOGIE, SPARRING, MATCH)
@@ -2811,6 +2818,8 @@ def render_trend_stagionale(t):
                 f"</div>"
             )
             st.html(box_foster_html)
+            st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box("monotonia_strain")
 
     # -------------------------------------------------------------------------
     # TAB 8: STRAIN STAGIONALE (INDICE DI TENSIONE/STRESS — FOSTER)
@@ -3374,3 +3383,5 @@ def render_trend_stagionale(t):
                 f"</div>"
             )
             st.html(box_strain_html)
+            st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box("monotonia_strain")

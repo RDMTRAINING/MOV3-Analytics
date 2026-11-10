@@ -44,11 +44,17 @@ def init_admin_connection():
     service_key = st.secrets.get("SUPABASE_SERVICE_KEY", key)
     return create_client(url, service_key)
 
+supabase = None
+supabase_admin = None
 try:
     supabase = _SupabasePerSession()
     supabase_admin = init_admin_connection()
 except Exception as e:
-    st.error(f"Errore DB: {e}"); st.stop()
+    try:
+        st.error(f"Errore DB: {e}")
+        st.stop()
+    except Exception:
+        pass
 # =========================================================================
 # AUTO-REFRESH DEL JWT EXPIRED PER POSTGREST
 # =========================================================================
@@ -57,17 +63,17 @@ _orig_postgrest_query_execute = SyncQueryRequestBuilder.execute
 def _auto_refresh_postgrest_execute(self, *args, **kwargs):
     try:
         return _orig_postgrest_query_execute(self, *args, **kwargs)
-    except postgrest.exceptions.APIError as e:
+    except Exception as e:
         code = str(getattr(e, 'code', '') or '')
         msg = str(getattr(e, 'message', '') or str(e)).lower()
-        if code == 'PGRST303' or 'jwt expired' in msg:
+        if code == 'PGRST303' or 'jwt expired' in msg or 'jwt' in msg:
             # Token scaduto durante una query: tenta il refresh automatico trasparente
             try:
                 rt = st.session_state.get('refresh_token')
                 if not rt and hasattr(st, 'context') and hasattr(st.context, 'cookies'):
                     rt = st.context.cookies.get('m0v3_rt')
 
-                res = supabase.auth.refresh_session(rt) if rt else supabase.auth.refresh_session()
+                res = supabase.auth.refresh_session(rt) if rt else None
                 if res and hasattr(res, 'session') and res.session:
                     new_token = res.session.access_token
                     st.session_state['refresh_token'] = res.session.refresh_token
@@ -79,20 +85,27 @@ def _auto_refresh_postgrest_execute(self, *args, **kwargs):
                         st.session_state['sb_client'].postgrest.auth(new_token)
 
                     # Aggiorna gli header della richiesta corrente prima di rieseguire
-                    if hasattr(self, 'request') and hasattr(self.request, 'headers'):
-                        self.request.headers['Authorization'] = f"Bearer {new_token}"
-                        self.request.headers['authorization'] = f"Bearer {new_token}"
+                    if hasattr(self, 'request'):
+                        req = self.request
+                        if hasattr(req, 'headers'):
+                            req.headers['Authorization'] = f"Bearer {new_token}"
+                            req.headers['authorization'] = f"Bearer {new_token}"
+                        if hasattr(req, 'auth'):
+                            try:
+                                req.auth = lambda r: r.headers.update({"Authorization": f"Bearer {new_token}"})
+                            except Exception:
+                                pass
                     return _orig_postgrest_query_execute(self, *args, **kwargs)
             except Exception:
                 pass
 
-            # Se il refresh automatico non è possibile (sessione revocata o nulla), reset pulito
-            st.session_state['user'] = None
-            st.session_state['refresh_token'] = None
-            st.session_state['role'] = None
-            st.session_state['view_mode'] = None
-            st.warning("La sessione è scaduta per inattività. Effettua nuovamente il login.")
-            st.rerun()
+            # Non renderizzare mai st.warning() all'interno di container UI attivi (es. sidebar).
+            # Se la sessione è effettivamente compromessa, ensure_valid_session() al main()
+            # gestirà il reindirizzamento pulito alla schermata di login.
+            if not st.session_state.get('user'):
+                st.session_state['refresh_token'] = None
+                st.session_state['role'] = None
+                st.session_state['view_mode'] = None
         raise e
 
 SyncQueryRequestBuilder.execute = _auto_refresh_postgrest_execute
@@ -1373,13 +1386,118 @@ def calcola_blocchi_baseline(df_ath_all, baseline_end, days_window):
     return max(1.0, giorni_effettivi / float(days_window))
 
 
+_EWMA_TIMELINE_CACHE = {}
+
+def get_athlete_ewma_timeline(df, giocatore, col='Training Load', burn_in_mask=True):
+    """
+    Calcola la serie temporale continua giornaliera con algoritmo UNCOUPLED EWMA
+    (Exponentially Weighted Moving Average disaccoppiato — Williams et al., 2017; Impellizzeri et al., 2020).
+    - Finestra Acuta: 7 giorni (lambda = 2 / (7 + 1) = 0.25)
+    - Finestra Cronica: 28 giorni (lambda = 2 / (28 + 1) = 2 / 29 ~= 0.0689655)
+    - Finestra Acute Readiness: 2 giorni (lambda = 2 / (2 + 1) ~= 0.66667)
+    - Disaccoppiamento (Uncoupled): acute(t) / chronic(t-1)
+    - Burn-in: maschera a np.nan i primi 7 giorni dall'avvio o da stop prolungati (>28 giorni).
+    """
+    import numpy as np
+
+    if df is None or df.empty or not giocatore:
+        return {}
+
+    cache_key = (str(giocatore), str(col), len(df))
+    if cache_key in _EWMA_TIMELINE_CACHE:
+        return _EWMA_TIMELINE_CACHE[cache_key]
+
+    d = df[df['Players'] == giocatore].copy()
+    if d.empty:
+        return {}
+
+    d['Date_obj'] = pd.to_datetime(d['Date'], format="%d/%m/%Y", errors='coerce')
+    d = d.dropna(subset=['Date_obj'])
+    if d.empty:
+        return {}
+
+    # Gestione metrica meccanica combinata
+    if col in ('Mechanical Load', 'High Accel + Decel', 'Meccanico', 'Carico Meccanico'):
+        col_acc = pd.to_numeric(d['High Accel IMU'], errors='coerce').fillna(0) if 'High Accel IMU' in d.columns else 0
+        col_dec = pd.to_numeric(d['High Decel IMU'], errors='coerce').fillna(0) if 'High Decel IMU' in d.columns else 0
+        d['__calc_col'] = col_acc + col_dec
+    else:
+        if col not in d.columns:
+            return {}
+        d['__calc_col'] = pd.to_numeric(d[col], errors='coerce').fillna(0)
+
+    # Aggregazione per giorno
+    daily_s = d.groupby('Date_obj')['__calc_col'].sum()
+    min_dt = daily_s.index.min()
+    max_dt = daily_s.index.max()
+    full_idx = pd.date_range(min_dt, max_dt, freq='D')
+    daily = daily_s.reindex(full_idx, fill_value=0.0)
+
+    # Identificazione ripartenze dopo stop prolungati (>28 giorni consecutivi di carico zero)
+    # Calcolo parametri EWMA
+    lambda_7 = 2.0 / (7.0 + 1.0)
+    lambda_2 = 2.0 / (2.0 + 1.0)
+    lambda_28 = 2.0 / (28.0 + 1.0)
+
+    n_days = len(daily)
+    acute7 = np.zeros(n_days)
+    acute2 = np.zeros(n_days)
+    chronic28 = np.zeros(n_days)
+    acwr7 = np.full(n_days, np.nan)
+    acwr2 = np.full(n_days, np.nan)
+
+    consecutive_zero = 0
+    start_block_idx = 0
+
+    for i in range(n_days):
+        load_val = float(daily.iloc[i])
+        if load_val == 0.0:
+            consecutive_zero += 1
+        else:
+            if consecutive_zero > 28:
+                start_block_idx = i  # Reset baseline al rientro dopo infortunio/stop prolungato
+            consecutive_zero = 0
+
+        days_in_block = i - start_block_idx + 1
+
+        if i == 0 or days_in_block == 1:
+            acute7[i] = load_val
+            acute2[i] = load_val
+            chronic28[i] = load_val
+        else:
+            acute7[i] = load_val * lambda_7 + acute7[i - 1] * (1.0 - lambda_7)
+            acute2[i] = load_val * lambda_2 + acute2[i - 1] * (1.0 - lambda_2)
+            chronic28[i] = load_val * lambda_28 + chronic28[i - 1] * (1.0 - lambda_28)
+
+            prev_chr = chronic28[i - 1]
+            if prev_chr > 0:
+                if not burn_in_mask or days_in_block > 7:
+                    acwr7[i] = round((acute7[i] / prev_chr) * 100.0, 1)
+                    acwr2[i] = round((acute2[i] / prev_chr) * 100.0, 1)
+
+    timeline_map = {}
+    for i, dt in enumerate(full_idx):
+        dt_key = dt.strftime("%d/%m/%Y")
+        timeline_map[dt_key] = {
+            "load": float(daily.iloc[i]),
+            "acute7": float(acute7[i]),
+            "acute2": float(acute2[i]),
+            "chronic28": float(chronic28[i]),
+            "acwr7": acwr7[i] if not np.isnan(acwr7[i]) else None,
+            "acwr2": acwr2[i] if not np.isnan(acwr2[i]) else None,
+        }
+
+    _EWMA_TIMELINE_CACHE[cache_key] = timeline_map
+    return timeline_map
+
+
 def acwr_pre_match(df, giocatore, data_match, giorni=2, col='Training Load', include_target=False, burn_in_mask=False):
     """
-    Carico degli ultimi `giorni` giorni in % della media su 28 giorni precedenti. None se non calcolabile.
-    - include_target=False (Match Readiness Pre-Match): finestra [target - giorni, target - 1]
-    - include_target=True (Session Readiness Before Tomorrow): finestra [target - (giorni - 1), target]
-    - burn_in_mask=True: maschera a np.nan i primi 7 giorni dall'esordio/ripresa per eliminare il falso picco iniziale;
-      nei primi 14 giorni utilizza una media progressiva reale basata sui giorni effettivi trascorsi.
+    Calcola l'ACWR su standard UNCOUPLED EWMA (Williams et al., 2017; Impellizzeri et al., 2020).
+    - include_target=False (Match Readiness Pre-Match): valuta la readiness il giorno precedente al match (target - 1 giorno)
+    - include_target=True (Session Readiness / Consolidated): include il carico del target
+    - giorni=2: restituisce l'Acute Readiness a 2 giorni (EWMA lambda_2 vs Chronic 28d)
+    - giorni=7: restituisce l'ACWR classico a 7 giorni (EWMA lambda_7 vs Chronic 28d)
     - Supporta 'Training Load', 'TL_High' e 'Mechanical Load' (High Accel + Decel IMU).
     """
     import numpy as np
@@ -1388,72 +1506,19 @@ def acwr_pre_match(df, giocatore, data_match, giorni=2, col='Training Load', inc
     if pd.isna(target):
         return np.nan if burn_in_mask else None
 
-    d = df[df['Players'] == giocatore].copy()
-    if d.empty:
+    # Determinazione data esatta di calcolo
+    eval_dt = target if include_target else (target - timedelta(days=1))
+    eval_key = eval_dt.strftime("%d/%m/%Y")
+
+    timeline = get_athlete_ewma_timeline(df, giocatore, col=col, burn_in_mask=burn_in_mask)
+    if not timeline or eval_key not in timeline:
         return np.nan if burn_in_mask else None
 
-    d['Date_obj'] = pd.to_datetime(d['Date'], format="%d/%m/%Y", errors='coerce')
-    d = d.dropna(subset=['Date_obj'])
-    if d.empty:
+    item = timeline[eval_key]
+    val = item['acwr2'] if (giorni <= 3) else item['acwr7']
+    if val is None:
         return np.nan if burn_in_mask else None
-
-    # Gestione metrica combinata per carico meccanico
-    if col in ('Mechanical Load', 'High Accel + Decel', 'Meccanico', 'Carico Meccanico'):
-        col_acc = pd.to_numeric(d['High Accel IMU'], errors='coerce').fillna(0) if 'High Accel IMU' in d.columns else 0
-        col_dec = pd.to_numeric(d['High Decel IMU'], errors='coerce').fillna(0) if 'High Decel IMU' in d.columns else 0
-        d['Mechanical Load'] = col_acc + col_dec
-        col = 'Mechanical Load'
-    else:
-        if col not in d.columns:
-            return np.nan if burn_in_mask else None
-        d[col] = pd.to_numeric(d[col], errors='coerce').fillna(0)
-
-    # Identificazione primo giorno utile e controllo stop prolungati (>28 giorni)
-    min_date_ath = d['Date_obj'].min()
-    d_prior = d[d['Date_obj'] < target].sort_values('Date_obj')
-    
-    # Se presente uno stop di oltre 28 giorni consecutivi, resetta la baseline al rientro
-    start_block_date = min_date_ath
-    if not d_prior.empty:
-        date_diffs = d_prior['Date_obj'].diff().dt.days
-        gaps_28 = d_prior[date_diffs > 28]
-        if not gaps_28.empty:
-            start_block_date = gaps_28['Date_obj'].iloc[-1]
-
-    days_since_start = (target - start_block_date).days + 1
-
-    # Burn-in masking dei primi 7 giorni dall'inizio del blocco di carico
-    if burn_in_mask and days_since_start <= 7:
-        return np.nan
-
-    if include_target:
-        w_start = target - timedelta(days=giorni - 1)
-        w_end = target
-    else:
-        w_start = target - timedelta(days=giorni)
-        w_end = target - timedelta(days=1)
-
-    b_end = w_start - timedelta(days=1)
-    b_start = b_end - timedelta(days=27)
-
-    finestra = d[(d['Date_obj'] >= w_start) & (d['Date_obj'] <= w_end)][col].sum()
-    base = d[(d['Date_obj'] >= b_start) & (d['Date_obj'] <= b_end)]
-    if base.empty:
-        return np.nan if burn_in_mask else None
-
-    # Durante i primi 14 giorni calcola il carico cronico dividendo per i giorni effettivi trascorsi
-    if days_since_start <= 14:
-        giorni_eff = max(1.0, float(min(14, days_since_start)))
-        blocchi = max(1.0, giorni_eff / float(giorni))
-    else:
-        blocchi = calcola_blocchi_baseline(d, b_end, giorni)
-
-    media = base[col].sum() / blocchi
-    if media <= 0:
-        return np.nan if burn_in_mask else None
-
-    res_val = round((finestra / media) * 100.0, 1)
-    return res_val
+    return float(val)
 
 
 def stato_acwr(pct):
@@ -1508,17 +1573,37 @@ def delta_confronto(va, vb):
 def get_atleti_associati(user_id):
     try:
         res = supabase.table('associazioni').select('atleti(nome, cognome)').eq('profilo_id', user_id).execute()
-        if res.data: return [f"{item['atleti']['nome']} {item['atleti']['cognome']}" for item in res.data if item.get('atleti')]
+        if not res.data:
+            res = supabase_admin.table('associazioni').select('atleti(nome, cognome)').eq('profilo_id', user_id).execute()
+        if res.data:
+            return [f"{item['atleti']['nome']} {item['atleti']['cognome']}" for item in res.data if item.get('atleti')]
         return []
-    except: return []
+    except Exception:
+        try:
+            res = supabase_admin.table('associazioni').select('atleti(nome, cognome)').eq('profilo_id', user_id).execute()
+            if res.data:
+                return [f"{item['atleti']['nome']} {item['atleti']['cognome']}" for item in res.data if item.get('atleti')]
+        except Exception:
+            pass
+        return []
 
 @st.cache_data(ttl=120, show_spinner=False)
 def get_tutti_gli_atleti():
     try:
         res = supabase.table('atleti').select('nome, cognome').execute()
-        if res.data: return [f"{a['nome']} {a['cognome']}" for a in res.data]
+        if not res.data:
+            res = supabase_admin.table('atleti').select('nome, cognome').execute()
+        if res.data:
+            return [f"{a['nome']} {a['cognome']}" for a in res.data]
         return []
-    except: return []
+    except Exception:
+        try:
+            res = supabase_admin.table('atleti').select('nome, cognome').execute()
+            if res.data:
+                return [f"{a['nome']} {a['cognome']}" for a in res.data]
+        except Exception:
+            pass
+        return []
 
 def clear_atleti_cache():
     """Invalida la cache RAM degli elenchi atleti ed associazioni Supabase."""
@@ -1536,11 +1621,11 @@ def get_lista_atleti_disponibili(user=None, role=None):
     """
     Restituisce l'elenco ordinato e univoco di atleti disponibili per l'utente e il ruolo corrente.
     - Ruolo 'Atleta': restituisce solo il proprio nome associato.
+    - Ruoli Staff / Coach / Fisio / Preparatore (tutti i ruoli non Super-Admin):
+      restituisce ESCLUSIVAMENTE gli atleti a loro associati su Supabase.
+      Non mostra il roster totale per preservare privacy e correttezza della selezione.
     - Ruolo 'Super-Admin': unione di tutti gli atleti da Supabase e dal DB locale GPS.
-    - Ruoli Staff / Coach / Fisio / Preparatore: atleti associati su Supabase (se presenti); se nessuno è associato,
-      fallback a tutti gli atleti registrati o presenti nel DB locale.
     """
-    nomi = []
     # 1. Se Atleta, prendi solo l'atleta collegato all'account
     if role == 'Atleta' and user:
         try:
@@ -1549,12 +1634,16 @@ def get_lista_atleti_disponibili(user=None, role=None):
                 return [atl_info['nome_completo']]
         except Exception:
             pass
-        if hasattr(user, 'email'):
+        if hasattr(user, 'email') and user.email:
             return [user.email.split('@')[0]]
         return ["Atleta"]
 
-    # 2. Per Coach / Fisio / Staff: recupera le associazioni registrate
-    if role not in ('Super-Admin', None) and user:
+    # 2. Per ruoli NON Super-Admin (Coach, Preparatore, Fisio, Staff, ecc.):
+    # Mostra RIGOROSAMENTE E SOLTANTO gli atleti a loro esplicitamente associati
+    is_super_admin = (str(role).strip().lower() in ('super-admin', 'superadmin') or role is None)
+
+    if not is_super_admin and user:
+        nomi = []
         try:
             assoc = get_atleti_associati(user.id)
             if assoc:
@@ -1562,16 +1651,31 @@ def get_lista_atleti_disponibili(user=None, role=None):
         except Exception:
             pass
 
-    # 3. Se Super-Admin oppure se l'utente non ha associazioni assegnate:
-    if not nomi:
-        try:
-            tutti_sb = get_tutti_gli_atleti()
-            if tutti_sb:
-                nomi.extend(tutti_sb)
-        except Exception:
-            pass
+        # Verifica eventuale associazione diretta
+        if not nomi:
+            try:
+                single_info = get_atleta_dettagli_per_utente(user.id)
+                if single_info and single_info.get('nome_completo'):
+                    nomi.append(single_info['nome_completo'])
+            except Exception:
+                pass
 
-    # 4. Aggiungi anche i giocatori presenti nel database locale GPS
+        nomi_unici = sorted(list(dict.fromkeys([n for n in nomi if n and str(n).strip()])))
+        if nomi_unici:
+            return nomi_unici
+        else:
+            # Nessun atleta associato a questo utente: non mostrare il roster totale altrui!
+            return ["Nessun atleta associato"]
+
+    # 3. Solo per Super-Admin: carica l'intero roster da Supabase + database locale GPS
+    nomi = []
+    try:
+        tutti_sb = get_tutti_gli_atleti()
+        if tutti_sb:
+            nomi.extend(tutti_sb)
+    except Exception:
+        pass
+
     try:
         df_loc = load_local_database()
         if not df_loc.empty and 'Players' in df_loc.columns:
@@ -1580,10 +1684,9 @@ def get_lista_atleti_disponibili(user=None, role=None):
     except Exception:
         pass
 
-    # Rimozione duplicati mantenendo l'ordine alfabetico
     nomi_unici = sorted(list(dict.fromkeys([n for n in nomi if n and str(n).strip()])))
     if not nomi_unici:
-        nomi_unici = ["prova uno"]
+        nomi_unici = ["Flavio Cobolli"]
     return nomi_unici
 
 

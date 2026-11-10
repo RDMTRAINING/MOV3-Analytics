@@ -18,6 +18,7 @@ from config import (
     render_page_header,
     render_print_header,
     tr,
+    render_tab_navigation,
 )
 from utils import (
     supabase,
@@ -74,9 +75,14 @@ def render_admin(t):
         st.error("Accesso negato: questa sezione è riservata ai Super-Admin.")
         st.stop()
     render_page_header(t['admin_title'], t['home_admin_desc'], "SYSTEM ADMINISTRATION")
-    tab_atleti, tab_utenti, tab_report, tab_mappe, tab_supporto = st.tabs([t['tab_atl'], t['tab_usr'], t['tab_rep'], t['tab_map'], t.get('tab_sup', 'Supporto & Ticket')])
+    tab_list = [t['tab_atl'], t['tab_usr'], t['tab_map'], t['tab_rep'], t.get('tab_sup', 'Supporto & Ticket')]
+    active_admin_tab = render_tab_navigation(
+        tab_list,
+        key="nav_sub_admin_tabs",
+        default=t['tab_atl']
+    )
     
-    with tab_atleti:
+    if active_admin_tab == t['tab_atl']:
         st.markdown(t['add_atl'])
         col1, col2 = st.columns(2)
         with col1: nuovo_nome = st.text_input(t['atl_name'])
@@ -115,7 +121,7 @@ def render_admin(t):
         else:
             st.info("Nessun atleta / No athletes")
 
-    with tab_utenti:
+    elif active_admin_tab == t['tab_usr']:
         res_profili = supabase_admin.table('profili').select('*').execute()
         res_atleti = supabase_admin.table('atleti').select('*').execute()
         res_tutte_assoc = supabase_admin.table('associazioni').select('*').execute()
@@ -531,7 +537,7 @@ def render_admin(t):
         except Exception as e:
             st.info("Crea la tabella 'richieste_reset' su Supabase per visualizzare qui l'elenco delle richieste.")
                 
-    with tab_mappe:
+    elif active_admin_tab == t['tab_map']:
         st.markdown(t['map_mng'])
         st.info(t['map_info'])
         res_profili = supabase_admin.table('profili').select('*').execute()
@@ -701,7 +707,7 @@ def render_admin(t):
                     except Exception as e:
                         st.error(f"Error: {e}")
 
-    with tab_report:
+    elif active_admin_tab == t['tab_rep']:
         st.markdown(
             f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:16px 20px; border-radius:12px; margin-bottom:18px; border-left:4px solid #0ea5e9; color:#f8fafc; font-family:\"Inter\",sans-serif;'>"
             f"<div style='font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8;'><i class='bi bi-shield-check' style='margin-right:8px;'></i>GESTIONE PERMESSI MODULI & VISIBILITÀ MENU LATERALE</div>"
@@ -868,7 +874,7 @@ def render_admin(t):
                         except Exception as e:
                             st.error(f"Errore durante il salvataggio dei permessi: {e}")
 
-    with tab_supporto:
+    elif active_admin_tab == t.get('tab_sup', 'Supporto & Ticket'):
         st.markdown(
             f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:15px 20px; border-radius:12px; margin-bottom:18px; border-left:4px solid #0284c7; color:#f8fafc; font-family:\"Inter\",sans-serif;'>"
             f"<div style='font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8;'><i class='bi bi-headset' style='margin-right:8px;'></i>PANNELLO GESTIONE SUPPORTO & SEGNALAZIONI (SUPER-ADMIN)</div>"

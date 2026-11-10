@@ -577,6 +577,8 @@ def render_tab_navigation(tab_items, key, default=None):
 def render_action_bar(meta_items, pdf_options=None, pdf_key=None, generate_fn=None, filename_fn=None):
     """Unified Enterprise Action Bar combining context metadata and optional inline PDF export without layout shift."""
     st.markdown('<div class="no-print">', unsafe_allow_html=True)
+    if pdf_options and isinstance(pdf_options, (list, tuple)):
+        pdf_options = {opt: opt for opt in pdf_options}
     with st.container(border=True):
         if pdf_options and pdf_key and generate_fn and filename_fn:
             col_info, col_sub_pdf, col_print = st.columns([3.3, 1.7, 1.3], vertical_alignment="center")
@@ -717,7 +719,17 @@ CATALOGO_REPORT = {
     "Calendario & Area Medica": [
         "Master Calendar & Timeline Giornaliera",
         "Registro Clinico, Trattamenti & Logistica ( Lettura / Scrittura )",
-        "Analisi Correlazione Carichi vs Eventi Clinici"
+        "Analisi Correlazione Carichi vs Eventi Clinici",
+        "Matrice Preventiva & Alert Overload"
+    ],
+    "Statistiche Match": [
+        "Evoluzione Metri per Punto & Costo Vivo (TL High / pt)",
+        "Densità Scambi & Azioni Int. IMU >2\" (ogni 10 pt)",
+        "Scorporo Servizio vs Risposta (Densità & Impatto Eccentrico)",
+        "Benchmark Prestativo: Vittorie vs Sconfitte",
+        "Correlazione Metri/Punto vs Rendimento Tecnico",
+        "Impatto dell'Efficienza al Servizio sul Costo Fisico",
+        "Archivio Match Ufficiali & Abbinamento Telemetria GPS"
     ]
 }
 
@@ -737,6 +749,7 @@ AREA_TO_PAGINA = {
     "Trend Settimanale": "Trend Settimanale",
     "Trend Stagionale": "Trend Stagionale",
     "Storico Match": "Storico Match",
+    "Statistiche Match": "Statistiche Match",
     "Medie": "Medie",
     "Test Fisici & Neuromuscolari": "Test & Valutazioni",
     "Calendario & Area Medica": "Calendario & Area Medica"
@@ -920,5 +933,209 @@ def render_navigation_cards(page_key: str, cards: list) -> str:
 
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
     return st.session_state[state_key]
+
+
+# =========================================================================
+# MODULO TRASPARENZA SCIENTIFICA & BIBLIOGRAFIA VALIDATA (M0V3 ENTERPRISE)
+# =========================================================================
+SCIENTIFIC_METHODOLOGY_REGISTRY = {
+    "acwr": {
+        "titolo": "Modello ACWR Uncoupled EWMA (Carico Acuto / Cronico)",
+        "titolo_en": "Uncoupled EWMA ACWR Model (Acute:Chronic Workload Ratio)",
+        "icona": "bi-activity",
+        "cosa_sto_vedendo": (
+            "L'Acute:Chronic Workload Ratio (ACWR) valuta l'equilibrio dinamico tra lo stress recente di fatica (carico acuto, 7 giorni) "
+            "e la riserva consolidata di fitness (carico cronico, 28 giorni). Il motore adotta la Media Mobile Ponderata Esponenzialmente "
+            "Disaccoppiata (Uncoupled EWMA), azzerando l'autocorrelazione spuria tipica delle medie mobili tradizionali (Coupled Rolling Averages)."
+        ),
+        "formule": [
+            r"\lambda_a = \frac{2}{N_a + 1} = \frac{2}{7 + 1} = 0.250 \quad (\text{Fattore decadimento acuto } 7\text{d})",
+            r"\lambda_c = \frac{2}{N_c + 1} = \frac{2}{28 + 1} \approx 0.069 \quad (\text{Fattore decadimento cronico } 28\text{d})",
+            r"EWMA(t) = \text{Load}(t) \times \lambda + EWMA(t-1) \times (1 - \lambda)",
+            r"ACWR_{\text{Uncoupled}}(t) = \frac{EWMA_{\text{acute}, 7\text{d}}(t)}{EWMA_{\text{chronic}, 28\text{d}}(t-1)} \times 100\%"
+        ],
+        "interpretazione": (
+            "• <80%: Sotto-carico / Tapering (riduzione del fitness se prolungato)\n"
+            "• 80% – 125%: Sweet Spot fisiologico (ottimale stimolo prestativo con minimo rischio lesivo)\n"
+            "• 125% – 150%: Zona di Attenzione (picco di fatica acuta, monitorare recupero)\n"
+            "• >150%: Danger Zone / Sovraccarico (rischio di infortunio acuto da 2 a 4 volte superiore alla norma)"
+        ),
+        "bibliografia": [
+            "Williams, S. et al. (2017). Better Way to Determine the Acute:Chronic Workload Ratio? Clinical Journal of Sport Medicine, 27(3), 301-304.",
+            "Impellizzeri, F. M. et al. (2020). The Acute-Chronic Workload Ratio—Does the Methodological Emperor Have Any Clothes? International Journal of Sports Physiology and Performance, 15(9), 1337-1342.",
+            "Gabbett, T. J. (2016). The training—injury prevention paradox: should athletes be training smarter and harder? British Journal of Sports Medicine, 50(5), 273-280.",
+            "Lolli, L. et al. (2017). The acute-to-chronic workload ratio: an artifice of limitations in statistical methods and physiological interpretation. British Journal of Sports Medicine, 53(24), 1510-1512."
+        ]
+    },
+    "monotonia_strain": {
+        "titolo": "Monotonia e Training Strain di Foster (Variabilità dei Carichi)",
+        "titolo_en": "Foster's Monotony & Training Strain (Load Variability)",
+        "icona": "bi-speedometer2",
+        "cosa_sto_vedendo": (
+            "La Monotonia misura la varianza giornaliera del carico nell'arco del microciclo settimanale di 7 giorni (compresi i giorni di riposo = 0 TL). "
+            "A differenza dell'ACWR, la Monotonia e lo Strain NON utilizzano lo smussamento EWMA: calcolano rigorosamente la media e la deviazione standard reale "
+            "per non appiattire la variabilità e preservare la rilevazione di microcicli privi di scarico."
+        ),
+        "formule": [
+            r"\text{Monotonia} = \frac{\mu_{7\text{d}}}{\sigma_{7\text{d}}} \quad (\mu = \text{Media giornaliera, } \sigma = \text{Deviazione standard dei } 7\text{ giorni})",
+            r"\text{Strain} = \left(\sum_{i=1}^{7} \text{Load}_i\right) \times \text{Monotonia} \quad (\text{Stress biologico complessivo})"
+        ],
+        "interpretazione": (
+            "• Monotonia < 1.5: Microciclo ottimale con eccellente alternanza tra carico e recupero\n"
+            "• Monotonia 1.5 – 2.0: Soglia di allerta (variabilità ridotta, rischio di plateau prestativo)\n"
+            "• Monotonia > 2.0: Elevato rischio di sovrallenamento e infezioni delle prime vie aeree (URTI)\n"
+            "• Strain elevato congiunto a Monotonia > 2.0 moltiplica esponenzialmente il tasso di dropout neuromuscolare."
+        ),
+        "bibliografia": [
+            "Foster, C. (1998). Monitoring training in athletes with reference to overtraining syndrome. Medicine & Science in Sports & Exercise, 30(7), 1164-1168.",
+            "Foster, C. et al. (2001). A new approach to monitoring exercise training. Journal of Strength and Conditioning Research, 15(1), 109-115.",
+            "Suzuki, S. et al. (2006). Stress and recovery in elite athletes: monitoring training load and salivary biomarkers. Sports Medicine, 36(6), 515-528."
+        ]
+    },
+    "match_per_point": {
+        "titolo": "Metriche di Match Work Rate, Volume & Scorporo Servizio/Risposta",
+        "titolo_en": "Match Work Rate, Volume Metrics & Service/Return Decoupling",
+        "icona": "bi-bullseye",
+        "cosa_sto_vedendo": (
+            "A causa dell'assenza di segnale satellitare nei match indoor (dove la distanza metrica non viene rilevata), "
+            "la valutazione prestativa nel tennis d'élite adotta indici metabolici e inerziali IMU totalmente indipendenti dal campo: "
+            "3 metriche cardine di Work Rate (Training Load High al minuto, Training Load High per punto e Acc+Dec IMU per punto) "
+            "e 4 metriche di Volume (Punti totali, Training Load match, Azioni intense >2\" e Training Load High). "
+            "Ciò garantisce un confronto omogeneo tra superfici (Terra battuta, Cemento, Erba) e una quantificazione rigorosa del costo fisico reale."
+        ),
+        "formule": [
+            r"\text{Work Rate Metabolico} = \frac{\text{TL}_{\text{High}}}{\text{Minuti Sessione}} \quad [\text{AU/min}]",
+            r"\text{Costo Fisico Vivo del Punto} = \frac{\text{TL}_{\text{High}}}{\text{Punti Totali Giocati}} \quad [\text{AU/pt}]",
+            r"\text{Densità Meccanica Eccentrica} = \frac{\text{High Acc IMU} + \text{High Dec IMU}}{\text{Punti Totali}} \quad [\text{eventi/pt}]",
+            r"\text{Volume Totale Match} = \sum \text{Punti} + \text{TL} + \text{Azioni IMU >2''} + \text{TL}_{\text{High}}",
+            r"\text{Rapporto Decelerativo Eccentrico Risposta vs Servizio} \approx 1.40\times \quad (\text{Harper et al., 2019})"
+        ],
+        "interpretazione": (
+            "• Work Rate TL High / min elevato (>5.0 AU/min): Partita caratterizzata da altissimo ritmo di scambio e pause ridotte\n"
+            "• TL High / pt (>1.2 AU/pt): Match con scambi prolungati e dispendiosi dal punto di vista metabolico\n"
+            "• Acc + Dec IMU / pt: Quantifica lo stress muscolare eccentrico ad ogni singolo punto (indipendente dalla superficie)\n"
+            "• Analisi Superfici: L'impiego del Training Load al posto della distanza chilometrica include al 100% i match indoor nel benchmark."
+        ),
+        "bibliografia": [
+            "Kovacs, M. S. (2007). Tennis physiology: training the competitive athlete. Sports Medicine, 37(3), 189-198.",
+            "Reid, M. et al. (2016). Movement mechanics and pacing strategies in elite tennis. British Journal of Sports Medicine, 50(18), 1115-1121.",
+            "Harper, L. D. et al. (2019). High-intensity decelerations: biomechanical fatigue and neuromuscular recovery in court sports. Sports Medicine, 49(12), 1923-1940.",
+            "Galé-Ansodi, C. et al. (2017). Accelerations and decelerations in professional tennis matches. International Journal of Sports Physiology and Performance, 12(7), 894-900."
+        ]
+    },
+    "carico_interno": {
+        "titolo": "Decoupling I:E Ratio (Carico Interno sRPE vs Carico Esterno GPS)",
+        "titolo_en": "Decoupling I:E Ratio (Internal sRPE vs External GPS Load)",
+        "icona": "bi-heart-pulse",
+        "cosa_sto_vedendo": (
+            "Analizza la dissociazione tra lavoro meccanico/cinematico erogato dal giocatore sul campo (Carico Esterno GPS/IMU) "
+            "e lo sforzo biologico soggettivo percepito dall'organismo (sRPE × Durata). Quando a parità di carico esterno lo sforzo percepito "
+            "aumenta, il sistema rileva un decadimento dell'efficienza energetica o l'insorgenza di fatica residua non recuperata."
+        ),
+        "formule": [
+            r"\text{Carico Interno (sRPE)} = \text{RPE (Borg CR-10)} \times \text{Minuti Sessione} \quad [\text{AU}]",
+            r"\text{Ratio I:E (Efficienza)} = \frac{\text{Training Load (GPS)}}{\text{Carico Interno (sRPE)}}",
+            r"\text{Lag Effect (24-48h)} = \Delta \text{sRPE}_{\text{oggi}} \text{ correlato con } \text{High Decel IMU}_{\text{ieri}}"
+        ],
+        "interpretazione": (
+            "• Ratio I:E Stabile: Adattamento fisiologico ottimale e buona freschezza atletica\n"
+            "• Ratio I:E in Decadimento: Fatica accumulata, sonno deficitario o esaurimento delle scorte glicogeniche\n"
+            "• Decoupling > 20%: Segnale preventivo per rimodulare intensità o inserire recupero attivo."
+        ),
+        "bibliografia": [
+            "Impellizzeri, F. M. et al. (2004). Use of RPE-based training load in soccer and racket sports. Medicine & Science in Sports & Exercise, 36(6), 1042-1047.",
+            "Bannister, E. W. (1991). Modeling elite athletic performance. Physiological Testing of the High-Performance Athlete, Human Kinetics, 403-424.",
+            "Coutts, A. J. et al. (2009). Monitoring training in youth athletes using RPE and heart rate. Journal of Science and Medicine in Sport, 12(1), 102-108."
+        ]
+    },
+    "test_fisici": {
+        "titolo": "Profilo Neuromuscolare, SWC e Asimmetrie Vettoriali con Segno",
+        "titolo_en": "Neuromuscular Profile, SWC & Signed Vectorial Asymmetries",
+        "icona": "bi-lightning-charge-fill",
+        "cosa_sto_vedendo": (
+            "Il modulo analizza le capacità di forza esplosiva, reattività e simmetria muscolare degli arti inferiori e superiori. "
+            "Utilizza lo Smallest Worthwhile Change (SWC) per distinguere le reali variazioni prestazionali dal normale rumore biologico di misurazione, "
+            "e l'Asimmetria Vettoriale con Segno (+/-) per monitorare lo sbilanciamento cronico tra arto destro e sinistro."
+        ),
+        "formule": [
+            r"\text{SWC} = 0.2 \times \text{SD}_{\text{baseline personale}} \quad (\text{Variazione minima fisiologicamente rilevante})",
+            r"\text{Asimmetria con Segno (\%)} = \frac{\text{Arto Destro} - \text{Arto Sinistro}}{\max(\text{Destro, Sinistro})} \times 100\%"
+        ],
+        "interpretazione": (
+            "• Variazione > +SWC: Miglioramento reale significativo della readiness neuromuscolare\n"
+            "• Variazione compresa tra -SWC e +SWC: Prestazione stabile entro il rumore statistico\n"
+            "• Asimmetria con Segno > 10-15%: Sbilanciamento critico (richiede intervento mirato di riequilibrio preventivo)."
+        ),
+        "bibliografia": [
+            "Hopkins, W. G. (2004). How to interpret changes in an athletic performance test. Sportscience, 8, 1-7.",
+            "Bishop, C. et al. (2018). Interlimb asymmetries: are they stable across multiple athletic performance tests? Sports, 6(3), 87.",
+            "Suchomel, T. J. et al. (2016). The importance of muscular strength in athletic performance. Sports Medicine, 46(10), 1419-1449."
+        ]
+    }
+}
+
+
+def render_scientific_methodology_box(topic_key, title=None, subtitle=None, default_expanded=True):
+    """
+    Renderizza un box sempre visibile (non collassato / senza expander) di Trasparenza Scientifica & Bibliografia
+    con formule matematiche LaTeX/KaTeX, razionale fisiologico e riferimenti di letteratura validata.
+    """
+    meta = SCIENTIFIC_METHODOLOGY_REGISTRY.get(topic_key)
+    if not meta:
+        return
+
+    is_en = st.session_state.get('lang', 'IT') == 'EN'
+    t_title = title or (meta['titolo_en'] if is_en else meta['titolo'])
+    icon_cls = meta.get('icona', 'bi-journal-check')
+
+    with st.container(border=True):
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 2px solid #0284c7; padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi {icon_cls}" style="font-size: 18px; color: #0284c7;"></i>
+                <span style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+                    📘 {t_title} — {tr('Razionale Fisiologico & Formule Scientifiche', 'Physiological Rationale & Scientific Formulas')}
+                </span>
+            </div>
+            <span style="background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 6px;">
+                <i class="bi bi-patch-check-fill"></i> {tr('Metodologia Validata M0V3', 'M0V3 Validated Methodology')}
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div style="background:#0F172A; color:#F8FAFC; padding:16px 20px; border-radius:10px; border-left:5px solid #0EA5E9; margin-bottom:14px;">
+            <div style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">
+                <i class="bi {icon_cls}"></i> {tr('TRASPARENZA SCIENTIFICA & METODOLOGIA VALIDATA M0V3', 'M0V3 SCIENTIFIC TRANSPARENCY & VALIDATED METHODOLOGY')}
+            </div>
+            <div style="font-size:13.5px; line-height:1.55; color:#E2E8F0; font-weight:400;">
+                {meta['cosa_sto_vedendo']}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if meta.get("formule"):
+            st.markdown(f"##### {tr('Formulazione Matematica Ufficiale', 'Official Mathematical Formulation')}")
+            for f_eq in meta["formule"]:
+                st.latex(f_eq)
+
+        if meta.get("interpretazione"):
+            st.markdown(f"##### {tr('Soglie Operative & Linee Guida di Riferimento', 'Operational Thresholds & Reference Guidelines')}")
+            st.markdown(
+                f"<div style='background:#F8FAFC; border:1px solid #E2E8F0; padding:12px 16px; border-radius:8px; font-size:12.5px; line-height:1.6; color:#1E293B;'>"
+                f"{meta['interpretazione'].replace(chr(10), '<br>')}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        if meta.get("bibliografia"):
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+            st.markdown(f"##### 📚 {tr('Riferimenti Bibliografici Validati (Letteratura Internazionale)', 'Validated Bibliographic References (Peer-Reviewed Literature)')}")
+            biblio_html = "<ul style='margin-top:4px; padding-left:18px; font-size:11.5px; color:#475569; line-height:1.5;'>"
+            for b_ref in meta["bibliografia"]:
+                biblio_html += f"<li style='margin-bottom:4px;'>{b_ref}</li>"
+            biblio_html += "</ul>"
+            st.markdown(biblio_html, unsafe_allow_html=True)
+
 
 

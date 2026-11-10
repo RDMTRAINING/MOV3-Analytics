@@ -26,11 +26,13 @@ from utils import (
     check_stato_giornaliero_atleta,
 )
 
-DEV_MODE = os.environ.get("MOV3_DEV_MODE", "0") == "1"
+DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"
 
 def _load_view(mod):
-    if DEV_MODE:
+    try:
         importlib.reload(mod)
+    except Exception:
+        pass
     return mod
 
 try:
@@ -83,6 +85,36 @@ add_custom_css(LOGO_CIRCULAR_PATH)
 # AUTENTICAZIONE E RICHIESTA SUPPORTO PASSWORD A M0V3
 # =========================================================================
 def auth_module():
+    # Auto-ripristino sessione persistente via localStorage/parent-cookie su reload/refresh
+    if not st.session_state.get('logged_out', False) and st.query_params.get('logged_out') != '1':
+        components.html("""
+        <script>
+        (function() {
+            try {
+                var p = window.parent || window;
+                var token = null;
+                try { token = p.localStorage.getItem("m0v3_rt"); } catch(e) {}
+                if (!token) {
+                    try { token = localStorage.getItem("m0v3_rt"); } catch(e) {}
+                }
+                if (!token) {
+                    try {
+                        var m = (p.document.cookie || document.cookie).match(/(?:^|; )m0v3_rt=([^;]*)/);
+                        if (m) token = decodeURIComponent(m[1]);
+                    } catch(e) {}
+                }
+                if (token && token.length > 10) {
+                    var curUrl = new URL(p.location.href);
+                    if (!curUrl.searchParams.has("m0v3_rt") && !curUrl.searchParams.has("logged_out")) {
+                        curUrl.searchParams.set("m0v3_rt", token);
+                        p.location.replace(curUrl.href);
+                    }
+                }
+            } catch(e) {}
+        })();
+        </script>
+        """, height=0)
+
     logo_b64 = get_base64_image(LOGO_CIRCULAR_PATH)
     if not logo_b64:
         logo_b64 = get_base64_image(LOGO_PATH)
@@ -691,6 +723,8 @@ MATCH READY
                         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                         st.session_state['user'] = res.user
                         st.session_state['logged_out'] = False
+                        if 'logged_out' in st.query_params:
+                            del st.query_params['logged_out']
                         if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
                             st.session_state['refresh_token'] = res.session.refresh_token
 
@@ -754,17 +788,20 @@ MATCH READY
 # =========================================================================
 def main():
     if not st.session_state.get('user'):
-        # 1. Recupero sessione automatica da cookie persistente (anti-pull-to-refresh logout)
+        # 1. Recupero sessione automatica da cookie persistente o query param (anti-pull-to-refresh / reload)
         # Se l'utente ha cliccato esplicitamente "Logout", non auto-ricollegare
-        if not st.session_state.get('logged_out', False):
+        if not st.session_state.get('logged_out', False) and st.query_params.get('logged_out') != '1':
             rt_cookie = None
             if hasattr(st, 'context') and hasattr(st.context, 'cookies'):
                 rt_cookie = st.context.cookies.get('m0v3_rt')
+            if not rt_cookie and 'm0v3_rt' in st.query_params:
+                rt_cookie = st.query_params.get('m0v3_rt')
             if rt_cookie:
                 try:
                     res = supabase.auth.refresh_session(rt_cookie)
                     if res and res.user:
                         st.session_state['user'] = res.user
+                        st.session_state['logged_out'] = False
                         if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
                             st.session_state['refresh_token'] = res.session.refresh_token
                         profilo = supabase.table('profili').select('ruolo, privacy_accettata').eq('id', res.user.id).execute()
@@ -774,9 +811,12 @@ def main():
                         else:
                             st.session_state['role'] = 'Atleta'
                             st.session_state['privacy_accettata'] = False
+                        if 'm0v3_rt' in st.query_params:
+                            del st.query_params['m0v3_rt']
                         st.rerun()
                 except Exception:
-                    pass
+                    if 'm0v3_rt' in st.query_params:
+                        del st.query_params['m0v3_rt']
 
         auth_module()
         return
@@ -788,8 +828,14 @@ def main():
         <script>
         (function() {
             try {
-                document.cookie = "m0v3_rt=__TOKEN__; path=/; max-age=2592000; SameSite=Lax";
-                try { localStorage.setItem("m0v3_rt", "__TOKEN__"); } catch(e) {}
+                var token = "__TOKEN__";
+                var cookieStr = "m0v3_rt=" + encodeURIComponent(token) + "; path=/; max-age=2592000; SameSite=Lax";
+                document.cookie = cookieStr;
+                try { localStorage.setItem("m0v3_rt", token); } catch(e) {}
+                if (window.parent && window.parent !== window) {
+                    try { window.parent.document.cookie = cookieStr; } catch(e) {}
+                    try { window.parent.localStorage.setItem("m0v3_rt", token); } catch(e) {}
+                }
                 window.scrollTo(0, 0);
                 if (window.parent) {
                     window.parent.scrollTo(0, 0);
@@ -1115,12 +1161,17 @@ def main():
             st.session_state['view_mode'] = None
             st.session_state['logged_out'] = True
             st.query_params.clear()
+            st.query_params['logged_out'] = '1'
             components.html("""
             <script>
             (function() {
                 try {
                     document.cookie = "m0v3_rt=; path=/; max-age=0;";
                     try { localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    if (window.parent && window.parent !== window) {
+                        try { window.parent.document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {}
+                        try { window.parent.localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    }
                 } catch(e) {}
             })();
             </script>
@@ -1258,7 +1309,7 @@ def main():
     if DEV_MODE:
         importlib.reload(pdf_generator)
 
-    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)", "Statistiche Match"]:
+    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)"]:
         st.warning(tr("Non disponi dei permessi per accedere a questa sezione. Contatta l'amministratore.", "You do not have permissions to access this section. Contact the administrator."))
         st.stop()
 

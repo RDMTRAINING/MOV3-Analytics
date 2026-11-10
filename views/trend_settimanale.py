@@ -22,6 +22,7 @@ from config import (
     render_meta_bar,
     render_action_bar,
     render_tab_navigation,
+    render_scientific_methodology_box,
 )
 from utils import (
     supabase,
@@ -1807,15 +1808,17 @@ def render_trend_settimanale(t):
                             f"""
                             <div style="font-size: 13px; color: #334155; line-height: 1.6;">
                                 <b>Parametri Fisici Analizzati nel Referto:</b><br>
-                                • <b>ACWR Settimanale (Gabbett)</b>: Rapporto tra Carico Acuto (Lun-Dom) e Cronico (media 4 settimane precedenti). Valori ottimali: <b>0.80 - 1.30</b>.<br>
-                                • <b>ACWR Rolling 7D</b>: Finestra mobile continua sugli ultimi 7 giorni reali fino alla data selezionata.<br>
+                                • <b>ACWR Uncoupled EWMA (Williams / Impellizzeri)</b>: Modello matematico ponderato esponenzialmente (7d acuto / 28d cronico disaccoppiato). Sweet spot: <b>0.80 - 1.25 (80-125%)</b>.<br>
                                 • <b>TL High & Spaziatura Neuromuscolare</b>: Monitoraggio della quota di alta intensità e intervallo minimo di <b>48-72 ore</b> tra i picchi per la rigenerazione del SNC e la prevenzione microtraumi.<br>
-                                • <b>Monotonia di Foster (&mu; / &sigma;)</b>: Valutata includendo i giorni a 0 (riposo). Soglia di allerta sovrallenamento: <b>> 2.0</b>.<br>
-                                • <b>Training Strain (Carico &times; Monotonia)</b>: Moltiplicatore di stress globale.
+                                • <b>Monotonia di Foster (&mu; / &sigma;)</b>: Calcolata sui dati reali giornalieri del microciclo (inclusi giorni di riposo = 0). Soglia allerta: <b>> 2.0</b>.<br>
+                                • <b>Training Strain (Carico &times; Monotonia)</b>: Indice moltiplicativo dello stress biologico complessivo.
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
+
+            st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box("acwr")
 
 
 

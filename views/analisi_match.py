@@ -20,6 +20,7 @@ from config import (
     render_action_bar,
     render_print_header,
     render_tab_navigation,
+    render_scientific_methodology_box,
 )
 from utils import (
     supabase,
@@ -841,4 +842,7 @@ def render_analisi_match(t):
                             title_accent=accent_col,
                         )
                         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+    render_scientific_methodology_box("match_per_point")
 

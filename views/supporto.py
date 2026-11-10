@@ -9,6 +9,7 @@ from config import (
     SUPPORT_EMAIL,
     tr,
     render_page_header,
+    render_tab_navigation,
 )
 from utils import card_kpi
 
@@ -161,15 +162,18 @@ def render_supporto(t):
     curr_email = curr_user.email if (curr_user and hasattr(curr_user, 'email')) else "utente@mov3.com"
     curr_role = st.session_state.get('role', 'Utente')
 
-    tab_nuova, tab_miei = st.tabs([
-        tr("Invia Nuova Segnalazione", "Submit New Ticket"),
-        tr("Le Mie Segnalazioni & Chat", "My Tickets & Direct Chat")
-    ])
+    lbl_tab_nuova = tr("Invia Nuova Segnalazione", "Submit New Ticket")
+    lbl_tab_miei = tr("Le Mie Segnalazioni & Chat", "My Tickets & Direct Chat")
+    active_sup_tab = render_tab_navigation(
+        [lbl_tab_nuova, lbl_tab_miei],
+        key="nav_sub_supporto_tab",
+        default=lbl_tab_nuova
+    )
 
     # -------------------------------------------------------------------------
     # TAB 1: FORM NUOVA SEGNALAZIONE
     # -------------------------------------------------------------------------
-    with tab_nuova:
+    if active_sup_tab == lbl_tab_nuova:
         st.markdown(
             f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:16px 20px; border-radius:12px; margin-bottom:20px; border-left:4px solid #0284c7; color:#f8fafc; font-family:\"Inter\",sans-serif;'>"
             f"<div style='font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8;'><i class='bi bi-headset' style='margin-right:8px;'></i>{tr('Centro Assistenza e Segnalazioni M0V3', 'M0V3 Support Center')}</div>"
@@ -255,7 +259,7 @@ def render_supporto(t):
     # -------------------------------------------------------------------------
     # TAB 2: STORICO TICKET & CHAT DIRETTA CON ADMIN
     # -------------------------------------------------------------------------
-    with tab_miei:
+    else:
         all_tickets = load_all_tickets()
         # Filtra i ticket dell'utente corrente (se Super-Admin vede tutti, altrimenti solo i propri)
         if curr_role == "Super-Admin":

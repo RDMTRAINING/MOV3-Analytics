@@ -83,6 +83,172 @@ def fig_to_rl_image(fig, width=360, height=210):
         return Paragraph("<i>[Grafico non disponibile]</i>", getSampleStyleSheet()['Normal'])
 def slugify_name(text):
     return re.sub(r'[^A-Za-z0-9]+', '_', str(text)).strip('_')
+
+
+def genera_blocco_tabella_paginata(
+    righe_dati,
+    col_widths,
+    headers,
+    table_style,
+    max_righe_p1=12,
+    max_righe_pn=16,
+    titolo_continuazione="[SECONDA PARTE — TABELLA CONTINUATA]",
+    sec_style=None,
+    row_bg_colors=None
+):
+    """
+    Gestisce la paginazione intelligente e anti-taglio delle tabelle ReportLab.
+    Se la tabella entra in una pagina (<= max_righe_p1), la restituisce come blocco indivisibile KeepTogether.
+    Se la tabella eccede l'altezza utile, la divide in tronconi inserendo un PageBreak esplicito,
+    riproponendo obbligatoriamente l'intestazione di colonna preceduta dal banner in evidenza:
+    [SECONDA PARTE — TABELLA CONTINUATA] (o TERZA PARTE).
+    """
+    flowables = []
+    tot_righe = len(righe_dati)
+
+    def _apply_row_colors(t_obj, slice_rows, start_orig_idx):
+        if not row_bg_colors:
+            return
+        extra_styles = []
+        for i_local in range(len(slice_rows)):
+            orig_i = start_orig_idx + i_local
+            if orig_i in row_bg_colors:
+                c = row_bg_colors[orig_i]
+                if isinstance(c, str):
+                    c = colors.HexColor(c)
+                extra_styles.append(('BACKGROUND', (0, i_local + 1), (-1, i_local + 1), c))
+        if extra_styles:
+            t_obj.setStyle(TableStyle(extra_styles))
+
+    if tot_righe <= max_righe_p1:
+        t_single = Table([headers] + righe_dati, colWidths=col_widths, repeatRows=1)
+        t_single.setStyle(table_style)
+        _apply_row_colors(t_single, righe_dati, 0)
+        flowables.append(KeepTogether([t_single]))
+        return flowables
+
+    # Se eccede, effettua chunking controllato con marcatura esplicita
+    p1_rows = righe_dati[:max_righe_p1]
+    t_p1 = Table([headers] + p1_rows, colWidths=col_widths, repeatRows=1)
+    t_p1.setStyle(table_style)
+    _apply_row_colors(t_p1, p1_rows, 0)
+    flowables.append(KeepTogether([t_p1]))
+
+    rimanenti = righe_dati[max_righe_p1:]
+    part_idx = 2
+    ordinali = {2: "SECONDA", 3: "TERZA", 4: "QUARTA", 5: "QUINTA", 6: "SESTA", 7: "SETTIMA", 8: "OTTAVA"}
+    curr_orig_idx = max_righe_p1
+
+    while rimanenti:
+        flowables.append(PageBreak())
+        chunk = rimanenti[:max_righe_pn]
+        rimanenti = rimanenti[max_righe_pn:]
+
+        ord_str = ordinali.get(part_idx, f"{part_idx}ª")
+        lbl_cont = f"[{ord_str} PARTE — TABELLA CONTINUATA]"
+
+        if sec_style:
+            p_cont = Paragraph(f"<font color='#0284c7'><b>{lbl_cont}</b></font>", sec_style)
+        else:
+            p_cont = Paragraph(f"<font color='#0284c7' size='10'><b>{lbl_cont}</b></font>", ParagraphStyle('ContStyle', fontName='Helvetica-Bold', fontSize=10, leading=13))
+
+        t_pn = Table([headers] + chunk, colWidths=col_widths, repeatRows=1)
+        t_pn.setStyle(table_style)
+        _apply_row_colors(t_pn, chunk, curr_orig_idx)
+        flowables.append(KeepTogether([p_cont, Spacer(1, 6), t_pn]))
+        curr_orig_idx += len(chunk)
+        part_idx += 1
+
+    return flowables
+
+
+def genera_sezione_metodologia_pdf(modulo_chiave, styles=None, width=792):
+    """
+    Genera un blocco compatto indivisibile (KeepTogether) con note metodologiche,
+    formule matematiche, linee guida e riferimenti bibliografici validati per i referti esportati in PDF.
+    """
+    from config import SCIENTIFIC_METHODOLOGY_REGISTRY
+    meta = SCIENTIFIC_METHODOLOGY_REGISTRY.get(modulo_chiave)
+    if not meta:
+        return []
+
+    actual_w = width if width is not None else 792
+
+    p_style_hdr = ParagraphStyle(
+        'PDF_Biblio_Hdr',
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
+        textColor=colors.HexColor('#0284c7')
+    )
+    p_style_subhdr = ParagraphStyle(
+        'PDF_Biblio_SubHdr',
+        fontName='Helvetica-Bold',
+        fontSize=7.2,
+        leading=9.5,
+        textColor=colors.HexColor('#0f172a')
+    )
+    p_style_body = ParagraphStyle(
+        'PDF_Biblio_Body',
+        fontName='Helvetica',
+        fontSize=7.0,
+        leading=9.0,
+        textColor=colors.HexColor('#334155')
+    )
+    p_style_formula = ParagraphStyle(
+        'PDF_Biblio_Formula',
+        fontName='Courier-Bold',
+        fontSize=6.8,
+        leading=8.8,
+        textColor=colors.HexColor('#0369a1')
+    )
+    p_style_ref = ParagraphStyle(
+        'PDF_Biblio_Ref',
+        fontName='Helvetica-Oblique',
+        fontSize=6.2,
+        leading=8.0,
+        textColor=colors.HexColor('#64748b')
+    )
+
+    flowables = []
+    flowables.append(Spacer(1, 4))
+    flowables.append(Paragraph(f"<b>NOTE METODOLOGICHE &amp; TRASPARENZA SCIENTIFICA M0V3 — {meta['titolo'].upper()}</b>", p_style_hdr))
+    flowables.append(Spacer(1, 3))
+    flowables.append(Paragraph(_clean_text_for_pdf(meta['cosa_sto_vedendo']), p_style_body))
+    flowables.append(Spacer(1, 3))
+
+    if meta.get('formule'):
+        flowables.append(Paragraph("<b>Formulazioni Matematiche &amp; Rapporti Meccanici:</b>", p_style_subhdr))
+        for f_txt in meta['formule']:
+            clean_f = f_txt.replace(r'\text{', '').replace('}', '').replace(r'\quad', ' ').replace(r'\[', '').replace(r'\]', '')
+            clean_f = clean_f.replace(r'\approx', '≈').replace(r'\times', '×').replace(r'\frac', '').replace(r'\sum', 'Σ ')
+            clean_f = clean_f.replace('{', '').replace('}', '').replace('_', ' ')
+            flowables.append(Paragraph(f"• {_clean_text_for_pdf(clean_f)}", p_style_formula))
+        flowables.append(Spacer(1, 3))
+
+    if meta.get('interpretazione'):
+        flowables.append(Paragraph("<b>Linee Guida &amp; Soglie Operative di Riferimento:</b>", p_style_subhdr))
+        for l_int in meta['interpretazione'].split('\n'):
+            if l_int.strip():
+                flowables.append(Paragraph(_clean_text_for_pdf(l_int.strip()), p_style_body))
+        flowables.append(Spacer(1, 3))
+
+    if meta.get('bibliografia'):
+        flowables.append(Paragraph("<b>Riferimenti Bibliografici Validati (Peer-Reviewed Literature):</b>", p_style_subhdr))
+        bib_lines = "<br/>• ".join([_clean_text_for_pdf(b) for b in meta['bibliografia']])
+        flowables.append(Paragraph(f"• {bib_lines}", p_style_ref))
+
+    t_box = Table([[flowables]], colWidths=[actual_w])
+    t_box.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('LINELEFT', (0, 0), (0, -1), 3.5, colors.HexColor('#0284c7')),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    return [KeepTogether([t_box])]
 # =========================================================================
 # 1. MOTORE PDF: ANALISI MATCH (TUTTE LE SOTTOAREE)
 # =========================================================================
@@ -260,7 +426,7 @@ def crea_pdf_m0v3(giocatore, data_match, sessione, campo, ambiente, sparring, da
 
         t_charts_en = Table([[fig_to_rl_image(fig_b1, 385, 210), fig_to_rl_image(fig_b2, 385, 210)]], colWidths=[396, 396])
         t_charts_en.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-        elements.append(t_charts_en)
+        elements.append(KeepTogether([t_charts_en]))
         need_break = True
 
     # --- SOTTOAREA 3: DATI MECCANICI & GPS ---
@@ -322,7 +488,7 @@ def crea_pdf_m0v3(giocatore, data_match, sessione, campo, ambiente, sparring, da
 
         t_c_mg = Table([[fig_to_rl_image(fig_imu_pdf, 385, 165), fig_to_rl_image(fig_gps_pdf, 385, 165)]], colWidths=[396, 396])
         t_c_mg.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-        elements.append(t_c_mg)
+        elements.append(KeepTogether([t_c_mg]))
         need_break = True
 
     # --- SOTTOAREA 4: READINESS (ACUTO / CRONICO) ---
@@ -382,7 +548,10 @@ def crea_pdf_m0v3(giocatore, data_match, sessione, campo, ambiente, sparring, da
             if len(radar_imgs) == 2:
                 t_rad = Table([radar_imgs], colWidths=[396, 396])
                 t_rad.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-                elements.append(t_rad)
+                elements.append(KeepTogether([t_rad]))
+
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("match_per_point", styles))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -537,7 +706,7 @@ def crea_pdf_sessione_m0v3(giocatore, data_sess, sessione, tipologia, campo, amb
 
         t_charts_en = Table([[fig_to_rl_image(fig_b1, 385, 210), fig_to_rl_image(fig_b2, 385, 210)]], colWidths=[396, 396])
         t_charts_en.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-        elements.append(t_charts_en)
+        elements.append(KeepTogether([t_charts_en]))
         need_break = True
 
     # --- SOTTOAREA 3: DATI MECCANICI, GPS, AEROBIC & ANAEROBIC ---
@@ -599,7 +768,7 @@ def crea_pdf_sessione_m0v3(giocatore, data_sess, sessione, tipologia, campo, amb
 
         t_charts = Table([[fig_to_rl_image(fig_load_pdf, 385, 175), fig_to_rl_image(fig_imu_pdf, 385, 175)]], colWidths=[396, 396])
         t_charts.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-        elements.append(t_charts)
+        elements.append(KeepTogether([t_charts]))
         need_break = True
 
     # --- SOTTOAREA 4: READINESS (BEFORE TOMORROW) ---
@@ -658,7 +827,10 @@ def crea_pdf_sessione_m0v3(giocatore, data_sess, sessione, tipologia, campo, amb
             if len(radar_imgs) == 2:
                 t_rad = Table([radar_imgs], colWidths=[396, 396])
                 t_rad.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-                elements.append(t_rad)
+                elements.append(KeepTogether([t_rad]))
+
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("carico_interno" if tipologia == "S-RPE" else "acwr", styles))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -792,7 +964,11 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
 
         t_idx_pdf = Table([[fig_to_rl_image(f_vi_pdf, 770, 175)], [fig_to_rl_image(f_wi_pdf, 770, 175)]], colWidths=[792])
         t_idx_pdf.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
-        elements.append(t_idx_pdf)
+        elements.append(KeepTogether([t_idx_pdf]))
+
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("acwr", styles))
+
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
 
@@ -906,16 +1082,19 @@ def crea_pdf_storico_m0v3(giocatore, data_inizio_str, df_timeline, sottoarea="Tu
             pct_media = (val_max / media_val * 100) if media_val > 0 else 0
             rows_rec.append([etichetta, f"{val_max:.0f}", f"{pct_media:.0f}%", str(df_c.loc[idx_max, 'Date']), str(df_c.loc[idx_max, 'Session'])])
 
-        t_rec = Table(rows_rec, colWidths=[200, 100, 100, 110, 282])
-        t_rec.setStyle(TableStyle([
+        t_rec_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (0, -1), 'LEFT'), ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
             ('TOPPADDING', (0, 0), (-1, -1), 5), ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]))
-        elements.append(t_rec)
+        ])
+        elements.extend(genera_blocco_tabella_paginata(
+            rows_rec[1:], [200, 100, 100, 110, 282], rows_rec[0], t_rec_style,
+            max_righe_p1=14, max_righe_pn=18, sec_style=sec_style
+        ))
 
+    elements.extend(genera_sezione_metodologia_pdf("match_per_point", styles))
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
 
@@ -947,19 +1126,19 @@ def crea_pdf_medie_m0v3(modalita, **kwargs):
         else: elements.extend(header_title)
 
         cols = ["TIPOLOGIA SESSIONE"] + list(df_grouped.columns)
-        rows = [cols]
+        rows_data = []
         for idx, r in df_grouped.iterrows():
-            rows.append([str(idx)] + [f"{val:.1f}" for val in r.values])
+            rows_data.append([str(idx)] + [f"{val:.1f}" for val in r.values])
 
-        t_m = Table(rows, colWidths=[132] + [82]*len(df_grouped.columns))
-        t_m.setStyle(TableStyle([
+        t_m_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]))
-        elements.append(t_m)
+        ])
+        col_w = [132] + [82]*len(df_grouped.columns)
+        elements.extend(genera_blocco_tabella_paginata(rows_data, col_w, cols, t_m_style, max_righe_p1=11, max_righe_pn=15))
     else:
         ath_a, ath_b, sess_sel = kwargs.get('ath_a', ''), kwargs.get('ath_b', ''), kwargs.get('sess_sel', '')
         mean_a, mean_b, col_analisi = kwargs.get('mean_a'), kwargs.get('mean_b'), kwargs.get('col_analisi', [])
@@ -974,23 +1153,22 @@ def crea_pdf_medie_m0v3(modalita, **kwargs):
             elements.append(t_head)
         else: elements.extend(header_title)
 
-        rows = [["PARAMETRO ANALIZZATO", ath_a.upper(), ath_b.upper(), "DELTA (A vs B)"]]
+        headers = ["PARAMETRO ANALIZZATO", ath_a.upper(), ath_b.upper(), "DELTA (A vs B)"]
+        rows_data = []
         for c in col_analisi:
             va = 0 if pd.isna(mean_a[c]) else mean_a[c]
             vb = 0 if pd.isna(mean_b[c]) else mean_b[c]
             diff_str = f"{((va - vb) / vb * 100):+.0f}%" if vb > 0 else "N/A"
-            rows.append([c, f"{va:.1f}", f"{vb:.1f}", diff_str])
+            rows_data.append([c, f"{va:.1f}", f"{vb:.1f}", diff_str])
 
-        t_comp = Table(rows, colWidths=[260, 175, 175, 182])
-        t_comp.setStyle(TableStyle([
+        t_comp_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 9.5),
             ('ALIGN', (0, 0), (0, -1), 'LEFT'), ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]))
-        colora_delta(t_comp, rows, [3])
-        elements.append(t_comp)
+        ])
+        elements.extend(genera_blocco_tabella_paginata(rows_data, [260, 175, 175, 182], headers, t_comp_style, max_righe_p1=12, max_righe_pn=16))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -1549,6 +1727,11 @@ def crea_pdf_stagionale_m0v3(giocatore, stagione, df_season, df_ath=None, sottoa
             y_title="Strain [AU]", height=220
         )
         elements.append(fig_to_rl_image(fig_sn, 792, 220))
+
+    if sottoarea in ["Tutte", "ACWR_Stagionale"]:
+        elements.extend(genera_sezione_metodologia_pdf("acwr", styles))
+    if sottoarea in ["Tutte", "Monotonia_Stagionale", "Strain_Stagionale"]:
+        elements.extend(genera_sezione_metodologia_pdf("monotonia_strain", styles))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -2525,21 +2708,24 @@ def crea_pdf_report_test_fisici(atleta_nome, sessioni, area_filtro="Tutte le Mac
             Paragraph("-", td_center)
         ])
 
-    t_sess = Table(table_data, colWidths=[65, 140, 115, 60, 85, 230, 97])
-    t_sess.setStyle(TableStyle([
+    t_sess_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
-        ('TOPPADDING', (0, 0), (-1, -1), 2),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2.5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
         ('LEFTPADDING', (0, 0), (-1, -1), 3),
         ('RIGHTPADDING', (0, 0), (-1, -1), 3),
         ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#cbd5e1')),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ]))
-    for r_i in range(1, len(table_data)):
-        bg_c = '#ffffff' if r_i % 2 != 0 else '#f8fafc'
-        t_sess.setStyle(TableStyle([('BACKGROUND', (0, r_i), (-1, r_i), colors.HexColor(bg_c))]))
-    elements.append(t_sess)
+    ])
+    row_bgs = {idx: ('#ffffff' if idx % 2 == 0 else '#f8fafc') for idx in range(len(table_data) - 1)}
+    elements.extend(genera_blocco_tabella_paginata(
+        table_data[1:], [65, 140, 115, 60, 85, 230, 97], table_data[0], t_sess_style,
+        max_righe_p1=11, max_righe_pn=15, row_bg_colors=row_bgs
+    ))
+
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("test_fisici", styles))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -2684,8 +2870,7 @@ def crea_pdf_calendario_medico(atleta_nome, month, year, master_calendar, kpis):
             Paragraph(med_txt, td_style)
         ])
 
-    t_cal = Table(table_data, colWidths=[65, 80, 85, 85, 95, 75, 305])
-    t_style = [
+    t_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
         ('TOPPADDING', (0, 0), (-1, -1), 2.5),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
@@ -2694,15 +2879,21 @@ def crea_pdf_calendario_medico(atleta_nome, month, year, master_calendar, kpis):
         ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#cbd5e1')),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]
-    # Highlight non-disponibile rows
-    for r_idx, d_str in enumerate(dates_sorted, 1):
+    ])
+    # Highlight non-disponibile rows via row_bg_colors
+    row_bgs = {}
+    for r_idx, d_str in enumerate(dates_sorted):
         st_op = master_calendar[d_str].get('status_operativo', 'DISPONIBILE')
         if st_op in status_bg_colors:
-            t_style.append(('BACKGROUND', (0, r_idx), (-1, r_idx), colors.HexColor(status_bg_colors[st_op])))
+            row_bgs[r_idx] = status_bg_colors[st_op]
 
-    t_cal.setStyle(TableStyle(t_style))
-    elements.append(t_cal)
+    elements.extend(genera_blocco_tabella_paginata(
+        table_data[1:], [65, 80, 85, 85, 95, 75, 305], table_data[0], t_style,
+        max_righe_p1=11, max_righe_pn=15, row_bg_colors=row_bgs
+    ))
+
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("acwr", styles))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()
@@ -2935,6 +3126,9 @@ def crea_pdf_move_tennis_test(test_dict, dati_calc):
         ]))
         elements.append(t_sug)
 
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("test_fisici", styles))
+
     build_pdf_con_footer(doc, elements, is_landscape=False)
     return buffer.getvalue()
 
@@ -3093,8 +3287,516 @@ def crea_pdf_carico_interno(atleta_nome, periodo_label, kpis, df_srpe=None, df_w
     else:
         elements.append(Paragraph("<i>Nessuna rilevazione Wellness mattutina nel periodo selezionato.</i>", td_st))
 
+    # Sezione Note Metodologiche & Bibliografia Validata
+    elements.extend(genera_sezione_metodologia_pdf("carico_interno", styles, width=545))
+
     build_pdf_con_footer(doc, elements, is_landscape=False)
     return buffer.getvalue()
+
+
+# =========================================================================
+# 11. MOTORE PDF: REPORT STATISTICHE MATCH SINGOLI & TELEMETRIA FISICA
+# =========================================================================
+def crea_pdf_statistiche_match(atleta_nome, df_corr, df_f, df_matches=None, kpis=None):
+    """
+    Genera il Referto Esecutivo PDF Ufficiale M0V3 per Statistiche Match Singoli e Telemetria Fisica GPS/IMU.
+    Riproduce fedelmente tutti i grafici, tabelle e spiegazioni scientifiche del portale
+    senza tagli a meta' tra le pagine, con layout orizzontale (A4 Landscape) strutturato in 4 pagine tematiche.
+    """
+    import io
+    import numpy as np
+    import pandas as pd
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=25,
+        rightMargin=25,
+        topMargin=20,
+        bottomMargin=24
+    )
+    elements = []
+    styles = getSampleStyleSheet()
+
+    page_w = 792
+
+    title_st = ParagraphStyle('SmTitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=13, textColor=colors.HexColor('#0f172a'), leading=16)
+    sub_st = ParagraphStyle('SmSub', parent=styles['Normal'], fontName='Helvetica', fontSize=7.5, textColor=colors.HexColor('#64748b'), leading=10)
+    sec_title = ParagraphStyle('SmSec', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9.5, textColor=colors.HexColor('#0284c7'), leading=12, spaceBefore=4, spaceAfter=4)
+    th_st = ParagraphStyle('SmTH', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.2, textColor=colors.HexColor('#ffffff'), alignment=1)
+    th_left = ParagraphStyle('SmTHL', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.2, textColor=colors.HexColor('#ffffff'), alignment=0)
+    td_st = ParagraphStyle('SmTD', parent=styles['Normal'], fontName='Helvetica', fontSize=7.0, textColor=colors.HexColor('#0f172a'), alignment=1)
+    td_left = ParagraphStyle('SmTDL', parent=styles['Normal'], fontName='Helvetica', fontSize=7.0, textColor=colors.HexColor('#0f172a'), alignment=0)
+    td_bold = ParagraphStyle('SmTDBold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.0, textColor=colors.HexColor('#0f172a'), alignment=1)
+    kpi_lbl = ParagraphStyle('SmKPILbl', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#64748b'), alignment=1)
+    kpi_val = ParagraphStyle('SmKPIVal', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=10.5, textColor=colors.HexColor('#0f172a'), alignment=1)
+
+    tot_m = len(df_f) if df_f is not None else len(df_corr)
+    vittorie = len(df_f[df_f["result"] == "Vittoria"]) if df_f is not None and not df_f.empty else len(df_corr[df_corr['result'] == 'Vittoria'])
+    sconfitte = len(df_f[df_f["result"] == "Sconfitta"]) if df_f is not None and not df_f.empty else len(df_corr[df_corr['result'] == 'Sconfitta'])
+    win_rate = (vittorie / tot_m * 100) if tot_m > 0 else 0.0
+
+    tot_dur_min = df_f["duration_min"].sum() if df_f is not None and not df_f.empty else df_corr['min'].sum()
+    avg_dur_min = (tot_dur_min / tot_m) if tot_m > 0 else 0
+    h_avg, m_avg = divmod(int(avg_dur_min), 60)
+    dur_avg_str = f"{h_avg}h {m_avg:02d}m" if h_avg > 0 else f"{m_avg}m"
+
+    tot_aces = int(df_f["aces"].sum()) if df_f is not None and 'aces' in df_f.columns else (int(df_corr['aces'].sum()) if 'aces' in df_corr.columns else 0)
+    avg_aces = (tot_aces / tot_m) if tot_m > 0 else 0.0
+    linked_gps_count = len(df_corr)
+    pct_gps_linked = (linked_gps_count / tot_m * 100) if tot_m > 0 else 0.0
+
+    # =========================================================================
+    # PAGINA 1: TESTATA + KPI DI SINTESI + SEZIONE 1 (COSTO FISICO DEL PUNTO)
+    # =========================================================================
+    p1_elements = []
+
+    # 1. Header Istituzionale
+    header_title = [
+        Paragraph("M0V3 ANALYTICS — REPORT STATISTICHE MATCH SINGOLI & TELEMETRIA FISICA", title_st),
+        Paragraph(f"ATLETA: {atleta_nome.upper()}   |   DATABASE: {tot_m} MATCH SINGOLI ({linked_gps_count} TELEMETRIE GPS REALI ABBINATE)   |   DATA REFERTO: {datetime.date.today().strftime('%d/%m/%Y')}", sub_st)
+    ]
+    if os.path.exists(LOGO_PATH):
+        logo_img = RLImage(LOGO_PATH, width=38, height=38)
+        t_head = Table([[header_title, logo_img]], colWidths=[730, 62])
+        t_head.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT')]))
+        p1_elements.append(t_head)
+    else:
+        p1_elements.extend(header_title)
+
+    p1_elements.append(Spacer(1, 4))
+
+    # 2. KPI Summary Bar (4 blocchi)
+    kpi_cells = [
+        [Paragraph("WIN RATE MATCH SINGOLI", kpi_lbl), Paragraph("DURATA MEDIA PARTITA", kpi_lbl), Paragraph("ACE TOTALI & MEDIA", kpi_lbl), Paragraph("TELEMETRIA FISICA REALE", kpi_lbl)],
+        [
+            Paragraph(f"<font color='#16a34a'>{win_rate:.1f}%</font> ({vittorie}W - {sconfitte}L)", kpi_val),
+            Paragraph(f"<font color='#0284c7'>{dur_avg_str}</font>", kpi_val),
+            Paragraph(f"<font color='#f59e0b'>{tot_aces}</font> ({avg_aces:.1f} / match)", kpi_val),
+            Paragraph(f"<font color='#8b5cf6'>{linked_gps_count} / {tot_m}</font> ({pct_gps_linked:.0f}% reali)", kpi_val)
+        ]
+    ]
+    t_kpi = Table(kpi_cells, colWidths=[198, 198, 198, 198])
+    t_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#cbd5e1')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    p1_elements.append(t_kpi)
+    p1_elements.append(Spacer(1, 6))
+
+    # 3. Sezione 1: Costo Fisico del Punto nei Match Singoli (senza metri/punto)
+    p1_elements.append(Paragraph("1. COSTO FISICO DEL PUNTO NEI MATCH SINGOLI (WORK RATE & INTENSITÀ METABOLICA)", sec_title))
+
+    tl_high_min_avg = df_corr['tl_high_per_min'].mean() if 'tl_high_per_min' in df_corr.columns else 0.0
+    tl_high_pt_avg = df_corr['tl_high_per_point'].mean() if 'tl_high_per_point' in df_corr.columns else 0.0
+    acc_dec_pt_avg = df_corr['acc_dec_per_point'].mean() if 'acc_dec_per_point' in df_corr.columns else 0.0
+    imu_actions_avg = df_corr['imu_actions_per_10pt'].mean() if 'imu_actions_per_10pt' in df_corr.columns else 0.0
+
+    kpi_pt_cells = [
+        [Paragraph("TL HIGH AL MINUTO", kpi_lbl), Paragraph("COSTO FISICO VIVO (TL HIGH / PT)", kpi_lbl), Paragraph("ACC + DEC IMU PER PUNTO", kpi_lbl), Paragraph("DENSITÀ SCAMBI IMU >2\"", kpi_lbl)],
+        [
+            Paragraph(f"<font color='#0284c7'>{tl_high_min_avg:.1f} AU/min</font>", kpi_val),
+            Paragraph(f"<font color='#ef4444'>{tl_high_pt_avg:.2f} AU/pt</font>", kpi_val),
+            Paragraph(f"<font color='#ea580c'>{acc_dec_pt_avg:.2f} ev/pt</font>", kpi_val),
+            Paragraph(f"<font color='#8b5cf6'>{imu_actions_avg:.1f} / 10pt</font>", kpi_val)
+        ]
+    ]
+    t_pt_kpi = Table(kpi_pt_cells, colWidths=[198, 198, 198, 198])
+    t_pt_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#ffffff')),
+        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#cbd5e1')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#f1f5f9')),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    p1_elements.append(t_pt_kpi)
+    p1_elements.append(Spacer(1, 5))
+
+    # Grafico 1: Cronologico Costo Vivo TL High / pt per ciascun match singolo
+    bar_labels = []
+    bar_colors = []
+    for _, r in df_corr.iterrows():
+        r_dt = str(r.get('date', '')).strip()
+        opp_str = str(r.get('opponent', 'Opp')).strip()
+        bar_labels.append(f"{r_dt} vs {opp_str[:10]}")
+        bar_colors.append('#10b981' if r.get('result') == 'Vittoria' else '#ef4444')
+
+    fig_pt = go.Figure()
+    fig_pt.add_trace(go.Bar(
+        x=bar_labels,
+        y=df_corr['tl_high_per_point'],
+        marker=dict(color=bar_colors),
+        name="Costo Vivo TL High / pt"
+    ))
+    # Rolling trend (3 matches)
+    roll_trend = df_corr['tl_high_per_point'].rolling(window=3, min_periods=1).mean()
+    fig_pt.add_trace(go.Scatter(
+        x=bar_labels,
+        y=roll_trend,
+        mode='lines',
+        line=dict(color='#0284c7', width=2),
+        name="Media Mobile (3 Match)"
+    ))
+    fig_pt.add_hline(
+        y=tl_high_pt_avg,
+        line_dash="dash",
+        line_color="#64748b",
+        annotation_text=f"Media: {tl_high_pt_avg:.2f} AU/pt",
+        annotation_position="top left",
+        annotation_font=dict(size=9, color="#475569")
+    )
+    fig_pt.update_layout(
+        title=dict(text="<b>Costo Fisico Vivo (TL High / pt) per ciascun Match Singolo Ufficiale (Cronologico)</b>", font=dict(size=10.5, family="Inter")),
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
+        height=260,
+        margin=dict(l=35, r=15, t=30, b=55),
+        xaxis=dict(showgrid=False, tickangle=-45, tickfont=dict(size=7.5)),
+        yaxis=dict(showgrid=True, gridcolor="#f1f5f9", title="AU/pt", tickfont=dict(size=8)),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=8))
+    )
+    img_chart1 = fig_to_rl_image(fig_pt, width=785, height=215)
+    p1_elements.append(img_chart1)
+
+    elements.append(KeepTogether(p1_elements))
+    elements.append(PageBreak())
+
+    # =========================================================================
+    # PAGINA 2: BENCHMARK PRESTATIVO (3 WORK RATE + 4 VOLUME) + EFFICIENZA SERVIZIO
+    # =========================================================================
+    p2_elements = []
+    p2_elements.append(Paragraph("2. BENCHMARK PRESTATIVO: VITTORIE VS SCONFITTE (MATCH SINGOLI)", sec_title))
+
+    m_win = df_corr[df_corr['result'] == 'Vittoria']
+    m_loss = df_corr[df_corr['result'] == 'Sconfitta']
+
+    if not m_win.empty and not m_loss.empty:
+        # 3 Work Rate
+        w_tlh_min = m_win['tl_high_per_min'].mean() if 'tl_high_per_min' in m_win.columns else 0.0
+        l_tlh_min = m_loss['tl_high_per_min'].mean() if 'tl_high_per_min' in m_loss.columns else 0.0
+        delta_tlh_min = ((w_tlh_min - l_tlh_min) / l_tlh_min * 100) if l_tlh_min > 0 else 0.0
+
+        w_tlh_pt = m_win['tl_high_per_point'].mean() if 'tl_high_per_point' in m_win.columns else 0.0
+        l_tlh_pt = m_loss['tl_high_per_point'].mean() if 'tl_high_per_point' in m_loss.columns else 0.0
+        delta_tlh_pt = ((w_tlh_pt - l_tlh_pt) / l_tlh_pt * 100) if l_tlh_pt > 0 else 0.0
+
+        w_accdec_pt = m_win['acc_dec_per_point'].mean() if 'acc_dec_per_point' in m_win.columns else 0.0
+        l_accdec_pt = m_loss['acc_dec_per_point'].mean() if 'acc_dec_per_point' in m_loss.columns else 0.0
+        delta_accdec_pt = ((w_accdec_pt - l_accdec_pt) / l_accdec_pt * 100) if l_accdec_pt > 0 else 0.0
+
+        # 4 Volume
+        w_pts = m_win['total_points'].mean() if 'total_points' in m_win.columns else 0.0
+        l_pts = m_loss['total_points'].mean() if 'total_points' in m_loss.columns else 0.0
+        delta_pts = ((w_pts - l_pts) / l_pts * 100) if l_pts > 0 else 0.0
+
+        w_tl = m_win['tl'].mean() if 'tl' in m_win.columns else 0.0
+        l_tl = m_loss['tl'].mean() if 'tl' in m_loss.columns else 0.0
+        delta_tl = ((w_tl - l_tl) / l_tl * 100) if l_tl > 0 else 0.0
+
+        w_act_imu = m_win['actions_imu_2s'].mean() if 'actions_imu_2s' in m_win.columns else 0.0
+        l_act_imu = m_loss['actions_imu_2s'].mean() if 'actions_imu_2s' in m_loss.columns else 0.0
+        delta_act_imu = ((w_act_imu - l_act_imu) / l_act_imu * 100) if l_act_imu > 0 else 0.0
+
+        w_tl_high = m_win['tl_high'].mean() if 'tl_high' in m_win.columns else 0.0
+        l_tl_high = m_loss['tl_high'].mean() if 'tl_high' in m_loss.columns else 0.0
+        delta_tl_high = ((w_tl_high - l_tl_high) / l_tl_high * 100) if l_tl_high > 0 else 0.0
+
+        # Tabella Fedele a 7 metriche
+        bench_hdr = [
+            Paragraph("METRICA FISICA REALE", th_left),
+            Paragraph(f"VITTORIE ({len(m_win)})", th_st),
+            Paragraph(f"SCONFITTE ({len(m_loss)})", th_st),
+            Paragraph("DELTA %", th_st)
+        ]
+        cat_wr_hdr = [Paragraph("<b>⚡ 3 VALORI DI WORK RATE (INTENSITÀ REALE)</b>", ParagraphStyle('WRH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#0369a1'))), "", "", ""]
+        cat_vol_hdr = [Paragraph("<b>📊 4 VALORI DI VOLUME (CARICO TOTALE MATCH)</b>", ParagraphStyle('VOLH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#7c3aed'))), "", "", ""]
+
+        def _fmt_delta(d_val):
+            c_hex = '#16a34a' if d_val > 0 else ('#dc2626' if d_val < 0 else '#64748b')
+            return Paragraph(f"<font color='{c_hex}'><b>{d_val:+.1f}%</b></font>", td_st)
+
+        bench_table_rows = [
+            bench_hdr,
+            cat_wr_hdr,
+            [Paragraph("Training Load High al Minuto", td_left), Paragraph(f"{w_tlh_min:.1f} AU/min", td_bold), Paragraph(f"{l_tlh_min:.1f} AU/min", td_st), _fmt_delta(delta_tlh_min)],
+            [Paragraph("Training Load High per Punto", td_left), Paragraph(f"{w_tlh_pt:.2f} AU/pt", td_bold), Paragraph(f"{l_tlh_pt:.2f} AU/pt", td_st), _fmt_delta(delta_tlh_pt)],
+            [Paragraph("Acc + Dec IMU per Punto", td_left), Paragraph(f"{w_accdec_pt:.2f} ev/pt", td_bold), Paragraph(f"{l_accdec_pt:.2f} ev/pt", td_st), _fmt_delta(delta_accdec_pt)],
+            cat_vol_hdr,
+            [Paragraph("Punti Totali nel Match", td_left), Paragraph(f"{w_pts:.0f} pts", td_bold), Paragraph(f"{l_pts:.0f} pts", td_st), _fmt_delta(delta_pts)],
+            [Paragraph("Training Load nel Match", td_left), Paragraph(f"{w_tl:.0f} TL", td_bold), Paragraph(f"{l_tl:.0f} TL", td_st), _fmt_delta(delta_tl)],
+            [Paragraph("Azioni Intense >2\" nel Match", td_left), Paragraph(f"{w_act_imu:.0f} az", td_bold), Paragraph(f"{l_act_imu:.0f} az", td_st), _fmt_delta(delta_act_imu)],
+            [Paragraph("Training Load High nel Match", td_left), Paragraph(f"{w_tl_high:.0f} TL", td_bold), Paragraph(f"{l_tl_high:.0f} TL", td_st), _fmt_delta(delta_tl_high)]
+        ]
+        t_bench = Table(bench_table_rows, colWidths=[185, 75, 75, 65])
+        t_bench.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
+            ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#e0f2fe')),
+            ('SPAN', (0, 1), (-1, 1)),
+            ('BACKGROUND', (0, 5), (-1, 5), colors.HexColor('#f3e8ff')),
+            ('SPAN', (0, 5), (-1, 5)),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+            ('ROWBACKGROUNDS', (0, 2), (-1, 4), [colors.white, colors.HexColor('#f8fafc')]),
+            ('ROWBACKGROUNDS', (0, 6), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+
+        # Subplots Chart Fedele: Work Rate (Row 1) & Volume (Row 2)
+        fig_bench_pdf = make_subplots(
+            rows=2, cols=1,
+            shared_xaxes=False,
+            vertical_spacing=0.28,
+            subplot_titles=[
+                "<b>Work Rate: Intensita' Reale (AU/min, AU/pt, ev/pt)</b>",
+                "<b>Volume: Carico Totale nel Match (pts, TL, azioni, TL High)</b>"
+            ]
+        )
+        cat_wr = ['TL High / min', 'TL High / pt', 'Acc+Dec / pt']
+        v_win_wr = [w_tlh_min, w_tlh_pt, w_accdec_pt]
+        v_loss_wr = [l_tlh_min, l_tlh_pt, l_accdec_pt]
+
+        fig_bench_pdf.add_trace(go.Bar(name='Vittorie', x=cat_wr, y=v_win_wr, marker_color='#16a34a', text=[f"{v:.2f}" for v in v_win_wr], textposition='auto'), row=1, col=1)
+        fig_bench_pdf.add_trace(go.Bar(name='Sconfitte', x=cat_wr, y=v_loss_wr, marker_color='#dc2626', text=[f"{v:.2f}" for v in v_loss_wr], textposition='auto'), row=1, col=1)
+
+        cat_vol = ['Punti Tot', 'Training Load', 'Azioni IMU >2"', 'TL High Match']
+        v_win_vol = [w_pts, w_tl, w_act_imu, w_tl_high]
+        v_loss_vol = [l_pts, l_tl, l_act_imu, l_tl_high]
+
+        fig_bench_pdf.add_trace(go.Bar(name='Vittorie', x=cat_vol, y=v_win_vol, marker_color='#16a34a', text=[f"{v:.0f}" for v in v_win_vol], textposition='auto', showlegend=False), row=2, col=1)
+        fig_bench_pdf.add_trace(go.Bar(name='Sconfitte', x=cat_vol, y=v_loss_vol, marker_color='#dc2626', text=[f"{v:.0f}" for v in v_loss_vol], textposition='auto', showlegend=False), row=2, col=1)
+
+        fig_bench_pdf.update_layout(
+            barmode='group',
+            plot_bgcolor="#ffffff",
+            paper_bgcolor="#ffffff",
+            height=280,
+            margin=dict(l=25, r=15, t=35, b=25),
+            legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=1, font=dict(size=7.5))
+        )
+        for i in [1, 2]:
+            fig_bench_pdf.update_xaxes(tickfont=dict(size=7.5), row=i, col=1)
+            fig_bench_pdf.update_yaxes(showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=7.5), row=i, col=1)
+
+        img_bench = fig_to_rl_image(fig_bench_pdf, width=375, height=230)
+
+        # Affianca tabella e grafico
+        t_row_bench = Table([[t_bench, img_bench]], colWidths=[405, 380])
+        t_row_bench.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP')]))
+        p2_elements.append(t_row_bench)
+        p2_elements.append(Spacer(1, 5))
+
+        # Box Evidenza Prestativa
+        evid_txt = (
+            f"<b>Evidenza Prestativa Reale:</b> Nelle partite vinte Flavio esprime un Training Load High al Minuto di "
+            f"<b>{w_tlh_min:.1f} AU/min</b> ({delta_tlh_min:+.1f}% rispetto alle sconfitte) e un Training Load High per Punto di "
+            f"<b>{w_tlh_pt:.2f} AU/pt</b> ({delta_tlh_pt:+.1f}%), sostenendo un Training Load complessivo superiore del <b>{delta_tl:+.1f}%</b>."
+        )
+        t_evid = Table([[Paragraph(evid_txt, ParagraphStyle('EvidSt', parent=styles['Normal'], fontName='Helvetica', fontSize=7.2, leading=9.5, textColor=colors.HexColor('#1e293b')))]], colWidths=[785])
+        t_evid.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f0fdf4')),
+            ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#86efac')),
+            ('LINELEFT', (0, 0), (0, -1), 3.5, colors.HexColor('#16a34a')),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('LEFTPADDING', (0, 0), (-1, -1), 7),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ]))
+        p2_elements.append(t_evid)
+        p2_elements.append(Spacer(1, 5))
+
+    # Sezione 5: Efficienza del Servizio vs Risparmio Fisico
+    p2_elements.append(Paragraph("5. EFFICIENZA DEL SERVIZIO VS RISPARMIO FISICO (MATCH SINGOLI)", sec_title))
+    hi_ace = df_corr[df_corr['aces'] >= 6] if 'aces' in df_corr.columns else pd.DataFrame()
+    lo_ace = df_corr[df_corr['aces'] < 6] if 'aces' in df_corr.columns else pd.DataFrame()
+    tlh_hi = hi_ace['tl_high_per_point'].mean() if not hi_ace.empty else 0.0
+    tlh_lo = lo_ace['tl_high_per_point'].mean() if not lo_ace.empty else 0.0
+    wr_hi = (hi_ace['result'] == 'Vittoria').mean() * 100.0 if not hi_ace.empty else 0.0
+    wr_lo = (lo_ace['result'] == 'Vittoria').mean() * 100.0 if not lo_ace.empty else 0.0
+
+    srv_txt = (
+        f"<b>Impatto Ace &amp; Battuta:</b> Nelle partite con <b>&ge;6 Ace</b> il Costo Fisico Vivo per Punto e' di <b>{tlh_hi:.2f} AU/pt</b> (Win Rate: {wr_hi:.1f}%), "
+        f"mentre con <b>&lt;6 Ace</b> sale a <b>{tlh_lo:.2f} AU/pt</b> (Win Rate: {wr_lo:.1f}%). Il servizio dominante consente di abbreviare gli scambi e preservare "
+        f"l'integrita' muscolare eccentrica per le fasi cruciali del torneo."
+    )
+    t_srv = Table([[Paragraph(srv_txt, ParagraphStyle('SrvSt', parent=styles['Normal'], fontName='Helvetica', fontSize=7.0, leading=9.0, textColor=colors.HexColor('#334155')))]], colWidths=[785])
+    t_srv.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('LINELEFT', (0, 0), (0, -1), 3.0, colors.HexColor('#f59e0b')),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    p2_elements.append(t_srv)
+
+    elements.append(KeepTogether(p2_elements))
+    elements.append(PageBreak())
+
+    # =========================================================================
+    # PAGINA 3: IMPATTO DELLA SUPERFICIE & DIFFICOLTA' AVVERSARIO (RANKING TIER)
+    # =========================================================================
+    p3_elements = []
+
+    # Sezione 3: Impatto della Superficie basato su Training Load
+    p3_elements.append(Paragraph("3. IMPATTO DELLA SUPERFICIE: TERRA VS CEMENTO VS ERBA (ANALISI BASATA SU TRAINING LOAD)", sec_title))
+
+    surf_agg = df_corr.groupby('surface').agg(
+        n_match=('match_id', 'count'),
+        tl_avg=('tl', 'mean'),
+        tl_high_avg=('tl_high', 'mean'),
+        tl_high_pct=('pct_tl_high', 'mean'),
+        tl_high_min=('tl_high_per_min', 'mean'),
+        tl_high_pt=('tl_high_per_point', 'mean'),
+        dec_avg=('dec', 'mean'),
+        dur_avg=('duration_min', 'mean')
+    ).reset_index()
+
+    surf_rows = [
+        [
+            Paragraph("SUPERFICIE", th_left),
+            Paragraph("MATCH", th_st),
+            Paragraph("TRAINING LOAD MEDIO", th_st),
+            Paragraph("TL HIGH MEDIO", th_st),
+            Paragraph("TL HIGH / MIN", th_st),
+            Paragraph("TL HIGH / PT", th_st),
+            Paragraph("FRENATE HIGH IMU", th_st),
+            Paragraph("DURATA MEDIA", th_st)
+        ]
+    ]
+    for _, sr in surf_agg.iterrows():
+        s_name = str(sr['surface'])
+        surf_rows.append([
+            Paragraph(f"<b>{s_name.upper()}</b>", td_left),
+            Paragraph(f"{int(sr['n_match'])}", td_st),
+            Paragraph(f"{sr['tl_avg']:.0f} TL", td_bold),
+            Paragraph(f"{sr['tl_high_avg']:.0f} TL ({sr['tl_high_pct']:.1f}%)", td_st),
+            Paragraph(f"{sr['tl_high_min']:.1f} AU/min", td_st),
+            Paragraph(f"{sr['tl_high_pt']:.2f} AU/pt", td_st),
+            Paragraph(f"{sr['dec_avg']:.0f} / match", td_st),
+            Paragraph(f"{sr['dur_avg']:.0f} min", td_st),
+        ])
+    t_surf = Table(surf_rows, colWidths=[95, 55, 115, 120, 95, 95, 110, 97])
+    t_surf.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ea580c')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    p3_elements.append(t_surf)
+    p3_elements.append(Spacer(1, 6))
+
+    # Sezione 4: Difficolta' Avversario (Ranking Tier) & Top 5 Match Logoramento
+    p3_elements.append(Paragraph("4. DIFFICOLTÀ AVVERSARIO (RANKING TIER) & TOP 5 MATCH A MASSIMO LOGORAMENTO", sec_title))
+
+    def _assign_rank_tier_pdf(r):
+        if pd.isna(r) or r <= 0: return "Oltre 100"
+        if r <= 10: return "Top 10"
+        if r <= 20: return "Top 20"
+        if r <= 50: return "Top 50"
+        if r <= 100: return "Top 100"
+        return "Oltre 100"
+
+    df_corr['rank_tier'] = df_corr['opponent_rank'].apply(_assign_rank_tier_pdf)
+    tier_order = ['Top 10', 'Top 20', 'Top 50', 'Top 100', 'Oltre 100']
+    tier_data = []
+    for t_name in tier_order:
+        df_t = df_corr[df_corr['rank_tier'] == t_name]
+        n_t = len(df_t)
+        if n_t > 0:
+            w_rate = (df_t['result'] == 'Vittoria').mean() * 100.0
+            tl_m = df_t['tl'].mean()
+            tlh_m = df_t['tl_high'].mean()
+            tier_data.append({'tier': t_name, 'count': n_t, 'win_rate': w_rate, 'tl_mean': tl_m, 'tlh_mean': tlh_m})
+
+    # Grafico a Barre Ranking Tier Esplicativo
+    if tier_data:
+        df_td = pd.DataFrame(tier_data)
+        fig_tier_pdf = go.Figure()
+        fig_tier_pdf.add_trace(go.Bar(
+            x=df_td['tier'],
+            y=df_td['tl_mean'],
+            marker=dict(color=['#8b5cf6', '#3b82f6', '#0ea5e9', '#10b981', '#64748b'][:len(df_td)]),
+            text=[f"<b>{tl:.0f} TL</b><br><span style='font-size:8px;'>Win: {wr:.0f}% ({cnt}m)</span>" for tl, wr, cnt in zip(df_td['tl_mean'], df_td['win_rate'], df_td['count'])],
+            textposition='auto',
+            name="Training Load Medio"
+        ))
+        fig_tier_pdf.update_layout(
+            title=dict(text="<b>Training Load Medio Reale per Fascia di Ranking Avversario (Tier)</b>", font=dict(size=10, family="Inter")),
+            plot_bgcolor="#ffffff",
+            paper_bgcolor="#ffffff",
+            height=200,
+            margin=dict(l=30, r=15, t=30, b=25),
+            xaxis=dict(showgrid=False, tickfont=dict(size=8)),
+            yaxis=dict(showgrid=True, gridcolor="#f1f5f9", title="TL", tickfont=dict(size=7.5))
+        )
+        img_tier = fig_to_rl_image(fig_tier_pdf, width=380, height=185)
+    else:
+        img_tier = Paragraph("<i>Dati di Ranking Tier non disponibili</i>", td_st)
+
+    # Tabella Top 5 Match a Massimo Logoramento Meccanico
+    top5_df = df_corr.sort_values(by='tl', ascending=False).head(5)
+    top5_rows = [
+        [
+            Paragraph("TORNEO &amp; AVVERSARIO", th_left),
+            Paragraph("SUP", th_st),
+            Paragraph("PUNTI", th_st),
+            Paragraph("TL HIGH", th_st),
+            Paragraph("TL TOT", th_st),
+            Paragraph("ESITO", th_st)
+        ]
+    ]
+    for _, s_r in top5_df.iterrows():
+        res_col = '#16a34a' if s_r['result'] == 'Vittoria' else '#dc2626'
+        opp_lbl = f"{s_r['tournament']} · vs {s_r['opponent']}"
+        top5_rows.append([
+            Paragraph(f"<b>{opp_lbl[:30]}</b>", td_left),
+            Paragraph(f"{str(s_r['surface'])[:4]}", td_st),
+            Paragraph(f"{int(s_r['total_points'])}", td_st),
+            Paragraph(f"{s_r['tl_high']:.0f} AU", td_st),
+            Paragraph(f"<b>{s_r['tl']:.0f} TL</b>", td_bold),
+            Paragraph(f"<font color='{res_col}'><b>{s_r['result'][:3].upper()}</b></font>", td_st)
+        ])
+    t_top5 = Table(top5_rows, colWidths=[150, 40, 45, 55, 55, 45])
+    t_top5.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8b5cf6')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+
+    t_rk_row = Table([[img_tier, t_top5]], colWidths=[395, 390])
+    t_rk_row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP')]))
+    p3_elements.append(t_rk_row)
+
+    elements.append(KeepTogether(p3_elements))
+    elements.append(PageBreak())
+
+    # =========================================================================
+    # PAGINA 4: TRASPARENZA SCIENTIFICA, FORMULE & BIBLIOGRAFIA INTERNAZIONALE
+    # =========================================================================
+    p4_elements = []
+    p4_elements.append(Paragraph("METODOLOGIA VALIDATA &amp; TRASPARENZA SCIENTIFICA M0V3 ANALYTICS", sec_title))
+    p4_elements.extend(genera_sezione_metodologia_pdf("match_per_point", styles, width=785))
+
+    elements.append(KeepTogether(p4_elements))
+
+    build_pdf_con_footer(doc, elements, brand="M0V3 Analytics — Match Intelligence", is_landscape=True)
+    return buffer.getvalue()
+
 
 
 

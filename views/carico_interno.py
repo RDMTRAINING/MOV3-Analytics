@@ -4,7 +4,7 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from config import tr, render_page_header, render_tab_navigation, render_action_bar
+from config import tr, render_page_header, render_tab_navigation, render_action_bar, render_scientific_methodology_box
 from pdf_generator import crea_pdf_carico_interno, slugify_name
 from utils import (
     supabase,
@@ -687,3 +687,6 @@ def render_carico_interno(t):
                     "Ultimo Aggiornamento": str(u_at)[:16].replace('T', ' ') if u_at else '-'
                 })
             st.dataframe(pd.DataFrame(tabella_audit), use_container_width=True)
+
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+    render_scientific_methodology_box("carico_interno")

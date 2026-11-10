@@ -570,12 +570,17 @@ def render_atleta_mobile(t=None):
             st.session_state['view_mode'] = None
             st.session_state['logged_out'] = True
             st.query_params.clear()
+            st.query_params['logged_out'] = '1'
             st.components.v1.html("""
             <script>
             (function() {
                 try {
                     document.cookie = "m0v3_rt=; path=/; max-age=0;";
                     try { localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    if (window.parent && window.parent !== window) {
+                        try { window.parent.document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {}
+                        try { window.parent.localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    }
                 } catch(e) {}
             })();
             </script>

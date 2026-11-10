@@ -12,6 +12,7 @@ from config import (
     render_page_header,
     render_action_bar,
     render_tab_navigation,
+    render_scientific_methodology_box,
 )
 from pdf_generator import (
     crea_pdf_report_test_fisici,
@@ -2418,3 +2419,6 @@ def render_test_fisici(t):
                             st.rerun()
                         else:
                             st.error(f"Errore durante la creazione del protocollo: {res}")
+
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+    render_scientific_methodology_box("test_fisici")
