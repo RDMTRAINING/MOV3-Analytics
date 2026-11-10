@@ -184,7 +184,7 @@ def render_gestione_file(t):
         opzioni_atleti_mod = list(dict.fromkeys((atleti_consentiti or []) + atleti_in_db + ([curr_player] if curr_player else [])))
         idx_player = opzioni_atleti_mod.index(curr_player) if curr_player in opzioni_atleti_mod else 0
 
-        opzioni_tipologie_mod = get_tipologie_sessione(None if st.session_state['role'] == 'Super-Admin' else user_email)
+        opzioni_tipologie_mod = get_tipologie_sessione(None if st.session_state['role'] == 'Super-Admin' else user_email, atleta_nome=curr_player)
         if curr_tipo and curr_tipo not in opzioni_tipologie_mod:
             opzioni_tipologie_mod.append(curr_tipo)
         idx_tipo = opzioni_tipologie_mod.index(curr_tipo) if curr_tipo in opzioni_tipologie_mod else 0

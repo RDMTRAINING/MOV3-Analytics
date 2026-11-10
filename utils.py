@@ -224,45 +224,57 @@ def get_tipologie_sessione(uploader_email=None, atleta_nome=None):
         ath = st.session_state.get('selected_athlete')
     
     is_cobolli = False
-    if ath and "cobolli" in str(ath).lower():
-        is_cobolli = True
+    if ath:
+        # Se l'atleta e' specificato esplicitamente, valutiamo solo il suo nome
+        if "cobolli" in str(ath).lower():
+            is_cobolli = True
+        else:
+            is_cobolli = False
     elif uploader_email:
-        # Se l'uploader ha sessioni di Cobolli nel DB
+        # Solo come fallback secondario se nessun atleta e' specificato
         try:
             df = load_local_database()
             if not df.empty and 'Uploader_Email' in df.columns and 'Players' in df.columns:
                 u_df = df[df['Uploader_Email'] == uploader_email]
-                if any("cobolli" in str(p).lower() for p in u_df['Players'].dropna().unique()):
+                atleti_u = [str(p).lower() for p in u_df['Players'].dropna().unique()]
+                if atleti_u and all("cobolli" in p for p in atleti_u):
                     is_cobolli = True
         except Exception:
             pass
 
+    cobolli_only_lower = {
+        tp.lower().strip() for tp in CANONICAL_COBOLLI_TIPOLOGIE 
+        if tp not in STANDARD_TIPOLOGIE_SESSIONE
+    }
+
     if is_cobolli:
-        # Per Flavio Cobolli e Coach dedicati: le 10 tipologie specifiche + quelle standard
+        # Per Flavio Cobolli: le 10 tipologie specifiche + quelle standard
         base_types = list(CANONICAL_COBOLLI_TIPOLOGIE)
         for std in STANDARD_TIPOLOGIE_SESSIONE:
             if std not in base_types:
                 base_types.append(std)
     else:
-        # Per tutti gli altri atleti: le vecchie diciture standard
+        # Per tutti gli altri atleti: le tipologie standard del tennis
         base_types = list(STANDARD_TIPOLOGIE_SESSIONE)
 
     df = load_local_database()
     if not df.empty and 'Tipologia Sessione' in df.columns:
-        # Raccoglie tutte le tipologie personalizzate create dagli utenti
-        if uploader_email and 'Uploader_Email' in df.columns:
-            user_df = df[df['Uploader_Email'] == uploader_email]
-            custom_types = list(user_df['Tipologia Sessione'].dropna().unique())
+        # Raccoglie le tipologie associate all'atleta (o all'uploader)
+        if ath and 'Players' in df.columns:
+            scoped_df = df[df['Players'] == ath]
+            if uploader_email and 'Uploader_Email' in df.columns:
+                scoped_df = scoped_df[scoped_df['Uploader_Email'] == uploader_email]
+        elif uploader_email and 'Uploader_Email' in df.columns:
+            scoped_df = df[df['Uploader_Email'] == uploader_email]
         else:
-            custom_types = list(df['Tipologia Sessione'].dropna().unique())
+            scoped_df = df
 
-        for c_type in df['Tipologia Sessione'].dropna().unique():
-            if c_type not in custom_types:
-                custom_types.append(c_type)
+        custom_types = list(scoped_df['Tipologia Sessione'].dropna().unique())
 
         for c_type in custom_types:
             c_str = str(c_type).strip()
-            if not is_cobolli and c_str in CANONICAL_COBOLLI_TIPOLOGIE and c_str not in STANDARD_TIPOLOGIE_SESSIONE:
+            # Esclude tassativamente le tipologie specifiche di Cobolli per altri atleti
+            if not is_cobolli and c_str.lower() in cobolli_only_lower:
                 continue
             if c_str and c_str not in base_types and c_str != "Non definita":
                 base_types.append(c_str)

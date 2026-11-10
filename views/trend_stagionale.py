@@ -1952,7 +1952,7 @@ def render_trend_stagionale(t):
 
             # Tipologie di sessione dinamiche (campionate dai dati dell'atleta e config utente)
             user_email_dist = None if st.session_state.get('role') == 'Super-Admin' else st.session_state.get('user', {}).email if hasattr(st.session_state.get('user', None), 'email') else None
-            all_known_types = get_tipologie_sessione(user_email_dist)
+            all_known_types = get_tipologie_sessione(user_email_dist, atleta_nome=giocatore_selezionato)
             raw_present_types = [
                 str(x).strip() for x in df_dist['Tipologia Sessione'].dropna().unique()
                 if str(x).strip() and str(x).strip() not in ["-", "N/D", "None", "nan"]

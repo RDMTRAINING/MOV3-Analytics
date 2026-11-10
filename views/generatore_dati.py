@@ -109,7 +109,7 @@ def render_generatore_dati(t):
             st.text_input(t['sess_name'], key="gen_nome_input", placeholder=f"Lascia vuoto per: Sim_{data_sessione.strftime('%d-%m-%Y')}")
             
         with col2:
-            opzioni_sess = get_tipologie_sessione(utente_target_email) + [t['add_new']]
+            opzioni_sess = get_tipologie_sessione(utente_target_email, atleta_nome=atleta) + [t['add_new']]
             tipo_sess = st.selectbox(t['sess_type'], opzioni_sess)
             tipo_sess_effettiva = st.text_input(t['spec_new']) if tipo_sess == t['add_new'] else tipo_sess
             minuti_sessione = st.number_input(t['duration'], min_value=1, value=val_min)

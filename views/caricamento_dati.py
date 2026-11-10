@@ -175,7 +175,9 @@ def render_caricamento_dati(t):
                 with col3:
                     sparring = st.number_input(t['sparring'], min_value=0, step=1, key=f"s_{f_key}")
                 with col4:
-                    opz = get_tipologie_sessione(utente_target_email) + [t['add_new']]
+                    opz = get_tipologie_sessione(uploader_email=utente_target_email, atleta_nome=atleta_scelto) + [t['add_new']]
+                    if st.session_state.get(f"t_{f_key}") not in opz:
+                        st.session_state[f"t_{f_key}"] = opz[0]
                     sess = st.selectbox(t['sess_type'], opz, key=f"t_{f_key}")
                     sess_effettiva = st.text_input(t['spec_new'], key=f"n_{f_key}") if sess == t['add_new'] else sess
 
