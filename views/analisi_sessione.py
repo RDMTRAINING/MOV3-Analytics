@@ -77,7 +77,7 @@ def render_analisi_sessione(t):
     if df_completo.empty:
         st.warning(t['am_no_db'])
         return
-    df_valido = df_completo[df_completo['Tipologia Sessione'].astype(str).str.lower() != 'match'].copy()
+    df_valido = df_completo[~df_completo['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])].copy()
     
     if df_valido.empty:
         st.warning(tr("Nessuna sessione di allenamento (Non-Match) disponibile nel database.", "No training sessions (Non-Match) available in the database."))
@@ -169,7 +169,9 @@ def render_analisi_sessione(t):
             df_tipo_gps = df_tipo[df_tipo['Ambiente'].astype(str).str.lower() != 'indoor'].copy()
             medie_tipo_gps = df_tipo_gps.mean(numeric_only=True).fillna(0) if not df_tipo_gps.empty else pd.Series(0.0, index=medie_tipo.index)
             
-            df_match = df_completo[(df_completo['Players'] == giocatore_selezionato) & (df_completo['Tipologia Sessione'].astype(str).str.lower() == 'match') & (df_completo['Dato_Simulato'] == False)].copy()
+            sim_cond = (df_completo['Dato_Simulato'].fillna(False) != True) if 'Dato_Simulato' in df_completo.columns else True
+            is_match_sess = df_completo['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
+            df_match = df_completo[(df_completo['Players'] == giocatore_selezionato) & is_match_sess & sim_cond].copy()
             for c_s in col_num_std:
                 if c_s in df_match.columns:
                     df_match[c_s] = pd.to_numeric(df_match[c_s], errors='coerce').fillna(0.0)

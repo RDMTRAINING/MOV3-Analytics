@@ -989,17 +989,9 @@ def render_atleta_mobile(t=None):
             data_ult = ultima_sess.get('Date', 'N/D')
             tipo_ult = str(ultima_sess.get('Tipologia Sessione', ultima_sess.get('Session', 'Sessione'))).strip()
 
-            # Riconoscimento match vs allenamento
-            is_curr_match = (
-                tipo_ult.lower() == 'match' or
-                any(w in str(ultima_sess.get('Session', '')).lower() for w in ['match', 'torneo', 'partita'])
-            )
-
-            is_match_all = (
-                df_atleta['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'
-            ) | (
-                df_atleta['Session'].astype(str).str.lower().str.contains('match|torneo|partita')
-            )
+            # Riconoscimento rigoroso match vs allenamento
+            is_curr_match = tipo_ult.lower() in ['match', 'match doppio']
+            is_match_all = df_atleta['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
             df_matches = df_atleta[is_match_all]
             df_tipo = df_atleta[df_atleta['Tipologia Sessione'].astype(str).str.strip().str.lower() == tipo_ult.lower()]
 
