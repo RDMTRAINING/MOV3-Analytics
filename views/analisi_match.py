@@ -82,7 +82,7 @@ def render_analisi_match(t):
         df_storico = df_storico[df_storico['Players'].isin(atleti_consentiti)]
         if df_storico.empty: st.warning(t['gen_no_data']); return
 
-    df_match = df_storico[df_storico['Tipologia Sessione'].astype(str).str.lower() == 'match'].copy()
+    df_match = df_storico[df_storico['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])].copy()
     if df_match.empty: st.warning(t['am_no_match']); return
 
     giocatori_disponibili = df_match['Players'].unique().tolist()

@@ -1,0 +1,1838 @@
+[
+  {
+    "year": 2019,
+    "tournament": "M15 Tabarka",
+    "start_date": "2019-03-11",
+    "end_date": "2019-03-11",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2019,
+    "tournament": "Rome CH",
+    "start_date": "2019-05-06",
+    "end_date": "2019-05-06",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2019,
+    "tournament": "M25 Santa Margherita Di Pula",
+    "start_date": "2019-09-16",
+    "end_date": "2019-09-23",
+    "matches": 6,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "Bergamo CH",
+    "start_date": "2020-02-17",
+    "end_date": "2020-02-17",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "Todi CH",
+    "start_date": "2020-08-17",
+    "end_date": "2020-08-17",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "Trieste CH",
+    "start_date": "2020-08-24",
+    "end_date": "2020-08-24",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "Rome Masters",
+    "start_date": "2020-09-14",
+    "end_date": "2020-09-14",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "M15 Sharm El Sheikh",
+    "start_date": "2020-10-19",
+    "end_date": "2020-10-26",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "Parma CH",
+    "start_date": "2020-11-02",
+    "end_date": "2020-11-02",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2020,
+    "tournament": "M15 Antalya",
+    "start_date": "2020-11-30",
+    "end_date": "2020-11-30",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "M15 Sharm El Sheikh",
+    "start_date": "2021-02-22",
+    "end_date": "2021-02-22",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Biella 3 CH",
+    "start_date": "2021-03-08",
+    "end_date": "2021-03-08",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Biella 4 CH",
+    "start_date": "2021-03-15",
+    "end_date": "2021-03-15",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Zadar CH",
+    "start_date": "2021-03-22",
+    "end_date": "2021-03-22",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "M15 Antalya",
+    "start_date": "2021-03-29",
+    "end_date": "2021-04-05",
+    "matches": 8,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Rome 1 CH",
+    "start_date": "2021-04-19",
+    "end_date": "2021-04-19",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Rome 2 CH",
+    "start_date": "2021-04-26",
+    "end_date": "2021-04-26",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Rome Masters",
+    "start_date": "2021-05-10",
+    "end_date": "2021-05-10",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Biella 6 CH",
+    "start_date": "2021-05-17",
+    "end_date": "2021-05-17",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Parma",
+    "start_date": "2021-05-24",
+    "end_date": "2021-05-24",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Biella 7 CH",
+    "start_date": "2021-05-31",
+    "end_date": "2021-05-31",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Forli CH",
+    "start_date": "2021-06-14",
+    "end_date": "2021-06-14",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Perugia CH",
+    "start_date": "2021-07-05",
+    "end_date": "2021-07-05",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Todi CH",
+    "start_date": "2021-07-12",
+    "end_date": "2021-07-12",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Umag",
+    "start_date": "2021-07-19",
+    "end_date": "2021-07-19",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Trieste CH",
+    "start_date": "2021-07-26",
+    "end_date": "2021-07-26",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Verona CH",
+    "start_date": "2021-08-16",
+    "end_date": "2021-08-16",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Barletta CH",
+    "start_date": "2021-08-23",
+    "end_date": "2021-08-23",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Como CH",
+    "start_date": "2021-08-29",
+    "end_date": "2021-08-29",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Seville CH",
+    "start_date": "2021-09-06",
+    "end_date": "2021-09-06",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Bucharest CH",
+    "start_date": "2021-09-20",
+    "end_date": "2021-09-20",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Murcia CH",
+    "start_date": "2021-09-27",
+    "end_date": "2021-09-27",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Napoli CH",
+    "start_date": "2021-10-04",
+    "end_date": "2021-10-04",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Ercolano CH",
+    "start_date": "2021-10-11",
+    "end_date": "2021-10-11",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Bergamo CH",
+    "start_date": "2021-11-01",
+    "end_date": "2021-11-01",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Helsinki CH",
+    "start_date": "2021-11-15",
+    "end_date": "2021-11-15",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Bari CH",
+    "start_date": "2021-11-22",
+    "end_date": "2021-11-22",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2021,
+    "tournament": "Forli 2 CH",
+    "start_date": "2021-11-29",
+    "end_date": "2021-11-29",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Bendigo CH",
+    "start_date": "2022-01-03",
+    "end_date": "2022-01-03",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Australian Open",
+    "start_date": "2022-01-17",
+    "end_date": "2022-01-17",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Rotterdam",
+    "start_date": "2022-02-07",
+    "end_date": "2022-02-07",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Marseille",
+    "start_date": "2022-02-14",
+    "end_date": "2022-02-14",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Forli 5 CH",
+    "start_date": "2022-02-21",
+    "end_date": "2022-02-21",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Roseto Degli Abruzzi 1 CH",
+    "start_date": "2022-03-07",
+    "end_date": "2022-03-07",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Roseto Degli Abruzzi 2 CH",
+    "start_date": "2022-03-14",
+    "end_date": "2022-03-14",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Zadar CH",
+    "start_date": "2022-03-21",
+    "end_date": "2022-03-21",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Sanremo CH",
+    "start_date": "2022-04-04",
+    "end_date": "2022-04-04",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Monte Carlo Masters",
+    "start_date": "2022-04-11",
+    "end_date": "2022-04-11",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Belgrade",
+    "start_date": "2022-04-18",
+    "end_date": "2022-04-18",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Rome CH",
+    "start_date": "2022-04-25",
+    "end_date": "2022-04-25",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Rome Masters",
+    "start_date": "2022-05-09",
+    "end_date": "2022-05-09",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Vicenza CH",
+    "start_date": "2022-05-23",
+    "end_date": "2022-05-23",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Roland Garros",
+    "start_date": "2022-05-23",
+    "end_date": "2022-05-23",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Forli 6 CH",
+    "start_date": "2022-05-30",
+    "end_date": "2022-05-30",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Perugia CH",
+    "start_date": "2022-06-06",
+    "end_date": "2022-06-06",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Parma CH",
+    "start_date": "2022-06-13",
+    "end_date": "2022-10-03",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Wimbledon",
+    "start_date": "2022-06-27",
+    "end_date": "2022-06-27",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Todi CH",
+    "start_date": "2022-07-04",
+    "end_date": "2022-07-04",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Verona CH",
+    "start_date": "2022-07-11",
+    "end_date": "2022-07-11",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Gstaad",
+    "start_date": "2022-07-18",
+    "end_date": "2022-07-18",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Umag",
+    "start_date": "2022-07-25",
+    "end_date": "2022-07-25",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Cordenons CH",
+    "start_date": "2022-08-01",
+    "end_date": "2022-08-01",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "San Marino CH",
+    "start_date": "2022-08-08",
+    "end_date": "2022-08-08",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "US Open",
+    "start_date": "2022-08-29",
+    "end_date": "2022-08-29",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Tulln CH",
+    "start_date": "2022-09-05",
+    "end_date": "2022-09-05",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Szczecin CH",
+    "start_date": "2022-09-12",
+    "end_date": "2022-09-12",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Florence",
+    "start_date": "2022-10-10",
+    "end_date": "2022-10-10",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Naples",
+    "start_date": "2022-10-17",
+    "end_date": "2022-10-17",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Ortisei CH",
+    "start_date": "2022-10-24",
+    "end_date": "2022-10-24",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Bergamo CH",
+    "start_date": "2022-10-31",
+    "end_date": "2022-10-31",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Bratislava CH",
+    "start_date": "2022-11-07",
+    "end_date": "2022-11-07",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2022,
+    "tournament": "Andria CH",
+    "start_date": "2022-11-21",
+    "end_date": "2022-11-21",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Pune",
+    "start_date": "2023-01-02",
+    "end_date": "2023-01-02",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Tenerife 1 CH",
+    "start_date": "2023-01-16",
+    "end_date": "2023-01-16",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Australian Open",
+    "start_date": "2023-01-16",
+    "end_date": "2023-01-16",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Quimper CH",
+    "start_date": "2023-01-23",
+    "end_date": "2023-01-23",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Antalya CH",
+    "start_date": "2023-03-06",
+    "end_date": "2023-03-06",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Szekesfehervar CH",
+    "start_date": "2023-03-13",
+    "end_date": "2023-03-13",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Zadar CH",
+    "start_date": "2023-03-20",
+    "end_date": "2023-03-20",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Sanremo CH",
+    "start_date": "2023-03-27",
+    "end_date": "2023-03-27",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Barletta CH",
+    "start_date": "2023-04-03",
+    "end_date": "2023-04-03",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Split CH",
+    "start_date": "2023-04-10",
+    "end_date": "2023-04-10",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Munich",
+    "start_date": "2023-04-17",
+    "end_date": "2023-04-17",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Rome CH",
+    "start_date": "2023-04-24",
+    "end_date": "2023-04-24",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Cagliari CH",
+    "start_date": "2023-05-01",
+    "end_date": "2023-05-01",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Rome Masters",
+    "start_date": "2023-05-08",
+    "end_date": "2023-05-08",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Turin CH",
+    "start_date": "2023-05-15",
+    "end_date": "2023-05-15",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Roland Garros",
+    "start_date": "2023-05-29",
+    "end_date": "2023-05-29",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Prostejov CH",
+    "start_date": "2023-06-05",
+    "end_date": "2023-06-05",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Wimbledon",
+    "start_date": "2023-07-03",
+    "end_date": "2023-07-03",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Milan CH",
+    "start_date": "2023-07-03",
+    "end_date": "2023-07-03",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "San Benedetto Del Tronto CH",
+    "start_date": "2023-07-10",
+    "end_date": "2023-07-10",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Trieste CH",
+    "start_date": "2023-07-17",
+    "end_date": "2023-07-17",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Umag",
+    "start_date": "2023-07-24",
+    "end_date": "2023-07-24",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "San Marino CH",
+    "start_date": "2023-07-31",
+    "end_date": "2023-07-31",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Santo Domingo CH",
+    "start_date": "2023-08-07",
+    "end_date": "2023-08-07",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "US Open",
+    "start_date": "2023-08-28",
+    "end_date": "2023-08-28",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Como CH",
+    "start_date": "2023-08-28",
+    "end_date": "2023-08-28",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Tulln CH",
+    "start_date": "2023-09-04",
+    "end_date": "2023-09-04",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Szczecin CH",
+    "start_date": "2023-09-11",
+    "end_date": "2023-09-11",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Sibiu CH",
+    "start_date": "2023-09-18",
+    "end_date": "2023-09-18",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Lisbon CH",
+    "start_date": "2023-10-02",
+    "end_date": "2023-10-02",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Malaga CH",
+    "start_date": "2023-10-09",
+    "end_date": "2023-10-09",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Olbia CH",
+    "start_date": "2023-10-16",
+    "end_date": "2023-10-16",
+    "matches": 5,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Bergamo CH",
+    "start_date": "2023-10-30",
+    "end_date": "2023-10-30",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Helsinki CH",
+    "start_date": "2023-11-06",
+    "end_date": "2023-11-06",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "Danderyd CH",
+    "start_date": "2023-11-13",
+    "end_date": "2023-11-13",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2023,
+    "tournament": "NextGen Finals",
+    "start_date": "2023-11-27",
+    "end_date": "2023-11-27",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Australian Open",
+    "start_date": "2024-01-15",
+    "end_date": "2024-01-15",
+    "matches": 6,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Montpellier",
+    "start_date": "2024-01-29",
+    "end_date": "2024-01-29",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Delray Beach",
+    "start_date": "2024-02-12",
+    "end_date": "2024-02-12",
+    "matches": 5,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Los Cabos",
+    "start_date": "2024-02-19",
+    "end_date": "2024-02-19",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Acapulco",
+    "start_date": "2024-02-26",
+    "end_date": "2024-02-26",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Indian Wells Masters",
+    "start_date": "2024-03-04",
+    "end_date": "2024-03-04",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Miami Masters",
+    "start_date": "2024-03-18",
+    "end_date": "2024-03-18",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Marrakech",
+    "start_date": "2024-04-01",
+    "end_date": "2024-04-01",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Monte Carlo Masters",
+    "start_date": "2024-04-08",
+    "end_date": "2024-04-08",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Barcelona",
+    "start_date": "2024-04-15",
+    "end_date": "2024-04-15",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Madrid Masters",
+    "start_date": "2024-04-22",
+    "end_date": "2024-04-22",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Rome Masters",
+    "start_date": "2024-05-06",
+    "end_date": "2024-05-06",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Geneva",
+    "start_date": "2024-05-20",
+    "end_date": "2024-05-20",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Roland Garros",
+    "start_date": "2024-05-27",
+    "end_date": "2024-05-27",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Stuttgart",
+    "start_date": "2024-06-10",
+    "end_date": "2024-06-10",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Halle",
+    "start_date": "2024-06-17",
+    "end_date": "2024-06-17",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Eastbourne",
+    "start_date": "2024-06-24",
+    "end_date": "2024-06-24",
+    "matches": 3,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Wimbledon",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-01",
+    "matches": 2,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Hamburg",
+    "start_date": "2024-07-15",
+    "end_date": "2024-07-15",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Umag",
+    "start_date": "2024-07-22",
+    "end_date": "2024-07-22",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Washington",
+    "start_date": "2024-07-29",
+    "end_date": "2024-07-29",
+    "matches": 5,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Canada Masters",
+    "start_date": "2024-08-05",
+    "end_date": "2024-08-05",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Cincinnati Masters",
+    "start_date": "2024-08-12",
+    "end_date": "2024-08-12",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "US Open",
+    "start_date": "2024-08-26",
+    "end_date": "2024-08-26",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Davis Cup Finals RR: ITA vs BEL",
+    "start_date": "2024-09-13",
+    "end_date": "2024-09-13",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Davis Cup Finals RR: ITA vs NED",
+    "start_date": "2024-09-15",
+    "end_date": "2024-09-15",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Beijing",
+    "start_date": "2024-09-26",
+    "end_date": "2024-09-26",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Shanghai Masters",
+    "start_date": "2024-10-02",
+    "end_date": "2024-10-02",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "Vienna",
+    "start_date": "2024-10-21",
+    "end_date": "2024-10-21",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2024,
+    "tournament": "United Cup",
+    "start_date": "2024-12-27",
+    "end_date": "2024-12-27",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Auckland",
+    "start_date": "2025-01-06",
+    "end_date": "2025-01-06",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Australian Open",
+    "start_date": "2025-01-13",
+    "end_date": "2025-01-13",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Montpellier",
+    "start_date": "2025-01-27",
+    "end_date": "2025-01-27",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Rotterdam",
+    "start_date": "2025-02-03",
+    "end_date": "2025-02-03",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Acapulco",
+    "start_date": "2025-02-24",
+    "end_date": "2025-02-24",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Indian Wells Masters",
+    "start_date": "2025-03-05",
+    "end_date": "2025-03-05",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Phoenix CH",
+    "start_date": "2025-03-11",
+    "end_date": "2025-03-12",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Miami",
+    "start_date": "2025-03-19",
+    "end_date": "2025-03-19",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Bucharest",
+    "start_date": "2025-04-02",
+    "end_date": "2025-04-06",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Monte-Carlo",
+    "start_date": "2025-04-08",
+    "end_date": "2025-04-09",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Monaco",
+    "start_date": "2025-04-14",
+    "end_date": "2025-04-15",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Madrid",
+    "start_date": "2025-04-23",
+    "end_date": "2025-04-29",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Rome",
+    "start_date": "2025-05-08",
+    "end_date": "2025-05-08",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Turin CH",
+    "start_date": "2025-05-15",
+    "end_date": "2025-05-16",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Hamburg",
+    "start_date": "2025-05-20",
+    "end_date": "2025-05-24",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Roland Garros",
+    "start_date": "2025-05-27",
+    "end_date": "2025-05-31",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Halle",
+    "start_date": "2025-06-14",
+    "end_date": "2025-06-20",
+    "matches": 4,
+    "surfaces": "Grass",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Eastbourne",
+    "start_date": "2025-06-24",
+    "end_date": "2025-06-24",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Wimbledon",
+    "start_date": "2025-07-01",
+    "end_date": "2025-07-09",
+    "matches": 6,
+    "surfaces": "Grass",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "HOPMAN CUP",
+    "start_date": "2025-07-16",
+    "end_date": "2025-07-20",
+    "matches": 6,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "WASHINGTON",
+    "start_date": "2025-07-21",
+    "end_date": "2025-07-24",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Toronto",
+    "start_date": "2025-07-30",
+    "end_date": "2025-08-03",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "TORONTO",
+    "start_date": "2025-07-31",
+    "end_date": "2025-07-31",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Doppio"
+  },
+  {
+    "year": 2025,
+    "tournament": "Cincinnati",
+    "start_date": "2025-08-09",
+    "end_date": "2025-08-09",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "US Open",
+    "start_date": "2025-08-25",
+    "end_date": "2025-08-30",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Lever Cup",
+    "start_date": "2025-09-19",
+    "end_date": "2025-09-19",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Beijing",
+    "start_date": "2025-09-26",
+    "end_date": "2025-09-28",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Shanghai",
+    "start_date": "2025-10-03",
+    "end_date": "2025-10-03",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Almaty",
+    "start_date": "2025-10-15",
+    "end_date": "2025-10-17",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Vienna",
+    "start_date": "2025-10-22",
+    "end_date": "2025-10-23",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Paris",
+    "start_date": "2025-10-27",
+    "end_date": "2025-10-28",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Metz",
+    "start_date": "2025-11-04",
+    "end_date": "2025-11-04",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Davis Cup Finals RR: ITA vs AUS",
+    "start_date": "2025-11-19",
+    "end_date": "2025-11-19",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Davis Cup Finals RR: ITA vs BEL",
+    "start_date": "2025-11-21",
+    "end_date": "2025-11-21",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Davis Cup Finals RR: ITA vs SPA",
+    "start_date": "2025-11-23",
+    "end_date": "2025-11-23",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2025,
+    "tournament": "Esibizione",
+    "start_date": "2025-12-27",
+    "end_date": "2025-12-28",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "United Cup",
+    "start_date": "2026-01-04",
+    "end_date": "2026-01-06",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Kooyong Classic",
+    "start_date": "2026-01-15",
+    "end_date": "2026-01-15",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Australian Open",
+    "start_date": "2026-01-18",
+    "end_date": "2026-01-18",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Montpellier",
+    "start_date": "2026-02-05",
+    "end_date": "2026-02-05",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Dallas",
+    "start_date": "2026-02-10",
+    "end_date": "2026-02-12",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Delray Beach",
+    "start_date": "2026-02-18",
+    "end_date": "2026-02-21",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Acapulco",
+    "start_date": "2026-02-23",
+    "end_date": "2026-02-28",
+    "matches": 6,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Indian Wells",
+    "start_date": "2026-03-06",
+    "end_date": "2026-03-08",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Indian Welles",
+    "start_date": "2026-03-10",
+    "end_date": "2026-03-14",
+    "matches": 4,
+    "surfaces": "Hard",
+    "types": "Doppio"
+  },
+  {
+    "year": 2026,
+    "tournament": "Miami",
+    "start_date": "2026-03-20",
+    "end_date": "2026-03-20",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Monte-Carlo",
+    "start_date": "2026-04-06",
+    "end_date": "2026-04-08",
+    "matches": 3,
+    "surfaces": "Clay",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Munich",
+    "start_date": "2026-04-14",
+    "end_date": "2026-04-19",
+    "matches": 5,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Madrid",
+    "start_date": "2026-04-25",
+    "end_date": "2026-04-30",
+    "matches": 4,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Roma",
+    "start_date": "2026-05-09",
+    "end_date": "2026-05-11",
+    "matches": 2,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Hamburg",
+    "start_date": "2026-05-19",
+    "end_date": "2026-05-19",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Roland Garros",
+    "start_date": "2026-05-25",
+    "end_date": "2026-06-07",
+    "matches": 6,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Halle",
+    "start_date": "2026-06-15",
+    "end_date": "2026-06-20",
+    "matches": 4,
+    "surfaces": "Grass",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "HURLINGHAM",
+    "start_date": "2026-06-27",
+    "end_date": "2026-06-27",
+    "matches": 1,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Wimbledon",
+    "start_date": "2026-07-01",
+    "end_date": "2026-07-08",
+    "matches": 5,
+    "surfaces": "Grass",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Umag",
+    "start_date": "2026-07-14",
+    "end_date": "2026-07-14",
+    "matches": 1,
+    "surfaces": "Clay",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Montreal",
+    "start_date": "2026-08-04",
+    "end_date": "2026-08-05",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Cincinnati",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-22",
+    "matches": 6,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "US Open",
+    "start_date": "2026-08-25",
+    "end_date": "2026-09-05",
+    "matches": 7,
+    "surfaces": "Hard",
+    "types": "Doppio + Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "LEVER CUP",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-26",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Lever Cup",
+    "start_date": "2026-09-27",
+    "end_date": "2026-09-27",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Doppio"
+  },
+  {
+    "year": 2026,
+    "tournament": "Beijing",
+    "start_date": "2026-10-01",
+    "end_date": "2026-10-01",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "BEIJING",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-02",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Doppio"
+  },
+  {
+    "year": 2026,
+    "tournament": "Shanghai",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-09",
+    "matches": 1,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Lyon",
+    "start_date": "2026-10-22",
+    "end_date": "2026-10-24",
+    "matches": 3,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  },
+  {
+    "year": 2026,
+    "tournament": "Vienna",
+    "start_date": "2026-10-27",
+    "end_date": "2026-10-29",
+    "matches": 2,
+    "surfaces": "Hard",
+    "types": "Singolare"
+  }
+]

@@ -980,11 +980,7 @@ def render_trend_settimanale(t):
             df_bm_week['Training Load'] = pd.to_numeric(df_bm_week['Training Load'], errors='coerce').fillna(0)
 
             # 1. Medie Storiche dell'Atleta
-            is_match_all = (
-                df_ath['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'
-            ) | (
-                df_ath['Session'].astype(str).str.lower().str.contains('match|torneo|partita')
-            )
+            is_match_all = df_ath['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
             df_all_matches = df_ath[is_match_all].copy()
             hist_match_tl_avg = float(df_all_matches['Training Load'].mean()) if not df_all_matches.empty else 0.0
             hist_match_time_avg = float(df_all_matches['Minuti'].mean()) if not df_all_matches.empty else 0.0
@@ -1019,11 +1015,7 @@ def render_trend_settimanale(t):
             pct_grass = (min_grass / tot_denom_min * 100) if tot_min_w > 0 else 0.0
 
             # Tipologie
-            is_match_w = (
-                df_bm_week['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'
-            ) | (
-                df_bm_week['Session'].astype(str).str.lower().str.contains('match|torneo|partita')
-            )
+            is_match_w = df_bm_week['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
             df_w_matches = df_bm_week[is_match_w]
             df_w_sparring = df_bm_week[~is_match_w]
 

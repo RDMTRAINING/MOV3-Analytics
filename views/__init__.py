@@ -10,6 +10,7 @@ from views.analisi_sessione import render_analisi_sessione
 from views.trend_settimanale import render_trend_settimanale
 from views.trend_stagionale import render_trend_stagionale
 from views.storico_match import render_storico_match
+from views.statistiche_match import render_statistiche_match
 from views.supporto import render_supporto
 from views.manuale_report import render_manuale_report
 from views.carico_interno import render_carico_interno

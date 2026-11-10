@@ -28,6 +28,7 @@ from utils import (
 )
 import importlib
 import pdf_generator
+from utils_tennis_matches import get_tournament_for_week
 if not hasattr(pdf_generator, 'crea_pdf_stagionale_m0v3'):
     importlib.reload(pdf_generator)
 from pdf_generator import crea_pdf_stagionale_m0v3
@@ -436,6 +437,74 @@ def render_metric_month_row_block(
 
 
 # =============================================================================
+# HELPER PER ASSE X STAGIONALE CON TORNEI E ORIENTAMENTO VERTICALE
+# =============================================================================
+def get_seasonal_tournament_axis_data(weeks_list, week_start_key='week_start', col_label_key='col_label', is_active=True):
+    """
+    Costruisce le etichette dell'asse X arricchite con il nome del torneo e la tipologia (S/D),
+    e genera le evidenziazioni verticali colorate per superficie (Terra, Erba, Cemento).
+    """
+    rich_x_labels = []
+    tournaments_dict = {}
+    highlights = []
+
+    for idx, w in enumerate(weeks_list):
+        w_start = w[week_start_key]
+        lbl = str(w[col_label_key])
+        t = get_tournament_for_week(w_start) if is_active else None
+        tournaments_dict[idx] = t
+        if t:
+            t_name = str(t.get('tournament', '')).strip()
+            t_surf = str(t.get('surfaces', 'Hard')).strip()
+            t_type = str(t.get('types', 'Singolare')).strip()
+            short_type = 'D' if t_type.lower() == 'doppio' else ('S+D' if '+' in t_type else 'S')
+            
+            # Formato asse X verticale: Data · Nome Torneo [S/D]
+            rich_lbl = f"{lbl} · {t_name} [{short_type}]"
+            rich_x_labels.append(rich_lbl)
+
+            if t_surf == 'Clay':
+                bg_col = 'rgba(249, 115, 22, 0.16)'
+                border_col = '#ea580c'
+            elif t_surf == 'Grass':
+                bg_col = 'rgba(16, 185, 129, 0.16)'
+                border_col = '#059669'
+            else:
+                bg_col = 'rgba(14, 165, 233, 0.14)'
+                border_col = '#0284c7'
+
+            highlights.append({
+                'idx': idx,
+                'label': rich_lbl,
+                'bg_col': bg_col,
+                'border_col': border_col,
+                'name': t_name,
+                'surf': t_surf,
+                'type': t_type
+            })
+        else:
+            rich_x_labels.append(lbl)
+
+    return rich_x_labels, tournaments_dict, highlights
+
+
+def render_surface_legend_banner():
+    st.markdown(
+        """
+        <div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 14px; margin-top:8px; margin-bottom:12px; font-size:11px; font-weight:700; color:#475569;'>
+            <span style='color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;'><i class='bi bi-trophy-fill' style='color:#f59e0b; margin-right:4px;'></i>SUPERFICI TORNEI:</span>
+            <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#ea580c; border-radius:2px; display:inline-block;'></span>Terra Rossa (Clay)</span>
+            <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#059669; border-radius:2px; display:inline-block;'></span>Erba (Grass)</span>
+            <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#0284c7; border-radius:2px; display:inline-block;'></span>Cemento (Hard)</span>
+            <span style='color:#cbd5e1;'>|</span>
+            <span style='color:#64748b;'>Tipologia: <b>[S]</b> Singolare · <b>[D]</b> Doppio · <b>[S+D]</b> Entrambi</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+# =============================================================================
 # RENDERING GRAFICO SPLINE AD AREA - TIMELINE STAGIONALE
 # =============================================================================
 def render_spline_metric_chart(
@@ -451,11 +520,13 @@ def render_spline_metric_chart(
     season_avg_str,
     peak_val_str,
     chart_key,
-    y_unit=""
+    y_unit="",
+    tournaments_highlights=None
 ):
     """
     Renderizza un grafico ad Area Spline morbida con gradiente Dark Navy,
     marker evidenziati, etichette numeriche, linea tratteggiata di media e statistiche di sintesi.
+    Se presente tournaments_highlights, evidenzia con bande e orientamento verticale i tornei giocati.
     """
     header_html = (
         f'<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px 12px 0 0; padding:12px 18px; margin-top:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:\'Inter\', sans-serif;">'
@@ -477,6 +548,22 @@ def render_spline_metric_chart(
         max_y = 10.0
 
     fig = go.Figure()
+
+    # Se ci sono tornei, evidenziamo ciascuna colonna con sfondo trasparente per superficie
+    if tournaments_highlights:
+        for h in tournaments_highlights:
+            fig.add_shape(
+                type="rect",
+                xref="x",
+                yref="paper",
+                x0=h["idx"] - 0.45,
+                x1=h["idx"] + 0.45,
+                y0=0,
+                y1=1,
+                fillcolor=h["bg_col"],
+                layer="below",
+                line=dict(color=h["border_col"], width=1.5, dash="dot"),
+            )
 
     # Area Spline con gradiente
     fig.add_trace(go.Scatter(
@@ -507,15 +594,17 @@ def render_spline_metric_chart(
             annotation_font=dict(size=10, color="#64748b", family='Inter, sans-serif')
         )
 
+    has_tournaments = bool(tournaments_highlights)
     fig.update_layout(
-        height=240,
-        margin=dict(l=35, r=25, t=25, b=30),
+        height=420 if has_tournaments else 260,
+        margin=dict(l=35, r=25, t=25, b=130 if has_tournaments else 30),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(248,250,252,0.6)',
         xaxis=dict(
-            tickfont=dict(size=10, color='#475569', family='Inter, sans-serif'),
+            tickfont=dict(size=9.5, color='#334155', family='Inter, sans-serif'),
             showgrid=False,
-            linecolor='#cbd5e1'
+            linecolor='#cbd5e1',
+            tickangle=-90 if has_tournaments else 0
         ),
         yaxis=dict(
             showgrid=True,
@@ -558,7 +647,8 @@ def render_acwr_risk_chart(
     hover_texts_2d,
     chart_key="chart_acwr",
     mode_key="mode_acwr",
-    is_daily=False
+    is_daily=False,
+    tournaments_highlights=None
 ):
     """
     Renderizza il grafico Executive ACWR con:
@@ -697,15 +787,32 @@ def render_acwr_risk_chart(
             hovertext=hover_texts_2d
         ))
 
+    if tournaments_highlights:
+        for h in tournaments_highlights:
+            fig.add_shape(
+                type="rect",
+                xref="x",
+                yref="paper",
+                x0=h["idx"] - 0.45,
+                x1=h["idx"] + 0.45,
+                y0=0,
+                y1=1,
+                fillcolor=h["bg_col"],
+                layer="below",
+                line=dict(color=h["border_col"], width=1.5, dash="dot"),
+            )
+
+    has_tourn_acwr = bool(tournaments_highlights)
     fig.update_layout(
-        height=380,
-        margin=dict(l=35, r=25, t=30, b=40),
+        height=490 if has_tourn_acwr else 380,
+        margin=dict(l=35, r=25, t=30, b=130 if has_tourn_acwr else 40),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(248,250,252,0.6)',
         xaxis=dict(
-            tickfont=dict(size=9.5 if is_daily else 10, color='#475569', family='Inter, sans-serif'),
+            tickfont=dict(size=9.5 if is_daily else 9.5, color='#334155', family='Inter, sans-serif'),
             showgrid=False,
             linecolor='#cbd5e1',
+            tickangle=-90 if has_tourn_acwr else 0,
             nticks=20 if is_daily else None
         ),
         yaxis=dict(
@@ -1243,12 +1350,8 @@ def render_trend_stagionale(t):
                 n_sess_w = len(df_w)
 
                 if n_sess_w > 0:
-                    # Filtro soli Match
-                    is_match = (
-                        df_w['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'
-                    ) | (
-                        df_w['Session'].astype(str).str.lower().str.contains('match|torneo|partita')
-                    )
+                    # Filtro soli Match (solo 'match' o 'match doppio')
+                    is_match = df_w['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
                     df_m_w = df_w[is_match]
 
                     t_match = float(df_m_w['Minuti'].sum()) if not df_m_w.empty else 0.0
@@ -1336,14 +1439,27 @@ def render_trend_stagionale(t):
             avg_wr = sum(w['wr_index'] for w in active_weeks) / n_act_w if active_weeks else 0.0
             avg_vol = sum(w['vol_index'] for w in active_weeks) / n_act_w if active_weeks else 0.0
 
-            x_labels = [w['col_label'] for w in weekly_timeline_raw]
+            # Asse X arricchito con Torneo e tipo gara, e highlights verticali per superficie
+            is_cobolli = "cobolli" in str(giocatore_selezionato).lower()
+            x_labels, t_dict_w, highlights_w = get_seasonal_tournament_axis_data(
+                weekly_timeline_raw, week_start_key='week_start', col_label_key='col_label', is_active=is_cobolli
+            )
+            for idx, w in enumerate(weekly_timeline_raw):
+                t_w = t_dict_w.get(idx)
+                if t_w:
+                    w['tourn_tag'] = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})"
+                else:
+                    w['tourn_tag'] = ""
+
+            if highlights_w:
+                render_surface_legend_banner()
 
             # 4. RENDERING DEI 6 GRAFICI AD AREA SPLINE
 
             # --- GRAFICO 1: TEMPO DEI SOLI MATCH ---
             y_mtime = [w['match_time'] for w in weekly_timeline_raw]
             txt_mtime = [format_minutes_hours_mins(v) if v > 0 else "0" for v in y_mtime]
-            hov_mtime = [f"<b>{w['full_label']}</b><br>Tempo Match: <b>{format_minutes_hours_mins(w['match_time'])}</b>" for w in weekly_timeline_raw]
+            hov_mtime = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>Tempo Match: <b>{format_minutes_hours_mins(w['match_time'])}</b>" for w in weekly_timeline_raw]
             peak_mtime_val = max(y_mtime) if y_mtime else 0.0
 
             render_spline_metric_chart(
@@ -1358,13 +1474,14 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_match_time,
                 season_avg_str=format_minutes_hours_mins(avg_match_time),
                 peak_val_str=format_minutes_hours_mins(peak_mtime_val),
-                chart_key="spline_match_time"
+                chart_key="spline_match_time",
+                tournaments_highlights=highlights_w
             )
 
             # --- GRAFICO 2: TEMPO TOTALE DI TUTTE LE SESSIONI ---
             y_ttime = [w['tot_time'] for w in weekly_timeline_raw]
             txt_ttime = [format_minutes_hours_mins(v) if v > 0 else "0" for v in y_ttime]
-            hov_ttime = [f"<b>{w['full_label']}</b><br>Tempo Totale: <b>{format_minutes_hours_mins(w['tot_time'])}</b> ({w['num_sessions']} sess.)" for w in weekly_timeline_raw]
+            hov_ttime = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>Tempo Totale: <b>{format_minutes_hours_mins(w['tot_time'])}</b> ({w['num_sessions']} sess.)" for w in weekly_timeline_raw]
             peak_ttime_val = max(y_ttime) if y_ttime else 0.0
 
             render_spline_metric_chart(
@@ -1379,13 +1496,14 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_tot_time,
                 season_avg_str=format_minutes_hours_mins(avg_tot_time),
                 peak_val_str=format_minutes_hours_mins(peak_ttime_val),
-                chart_key="spline_tot_time"
+                chart_key="spline_tot_time",
+                tournaments_highlights=highlights_w
             )
 
             # --- GRAFICO 3: TRAINING LOAD ---
             y_tl = [w['training_load'] for w in weekly_timeline_raw]
             txt_tl = [f"{int(round(v)):,}".replace(",", ".") if v > 0 else "0" for v in y_tl]
-            hov_tl = [f"<b>{w['full_label']}</b><br>Training Load: <b>{int(round(w['training_load'])):,}</b>" for w in weekly_timeline_raw]
+            hov_tl = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>Training Load: <b>{int(round(w['training_load'])):,}</b>" for w in weekly_timeline_raw]
             peak_tl_val = max(y_tl) if y_tl else 0.0
 
             render_spline_metric_chart(
@@ -1400,13 +1518,14 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_tl,
                 season_avg_str=f"{int(round(avg_tl)):,}".replace(",", "."),
                 peak_val_str=f"{int(round(peak_tl_val)):,}".replace(",", "."),
-                chart_key="spline_tl"
+                chart_key="spline_tl",
+                tournaments_highlights=highlights_w
             )
 
             # --- GRAFICO 4: % TRAINING LOAD HIGH SUL TOTALE ---
             y_pct_high = [w['pct_tl_high'] for w in weekly_timeline_raw]
             txt_pct_high = [f"{v:.0f}%" if v > 0 else "0%" for v in y_pct_high]
-            hov_pct_high = [f"<b>{w['full_label']}</b><br>% TL High: <b>{w['pct_tl_high']:.1f}%</b> ({w['tl_high']:.0f} TL High)" for w in weekly_timeline_raw]
+            hov_pct_high = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>% TL High: <b>{w['pct_tl_high']:.1f}%</b> ({w['tl_high']:.0f} TL High)" for w in weekly_timeline_raw]
             peak_pct_high_val = max(y_pct_high) if y_pct_high else 0.0
 
             render_spline_metric_chart(
@@ -1421,13 +1540,14 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_pct_tl_high,
                 season_avg_str=f"{avg_pct_tl_high:.0f}%",
                 peak_val_str=f"{peak_pct_high_val:.0f}%",
-                chart_key="spline_pct_high"
+                chart_key="spline_pct_high",
+                tournaments_highlights=highlights_w
             )
 
             # --- GRAFICO 5: INDICE DI WORK RATE GENERALE ---
             y_wr = [w['wr_index'] for w in weekly_timeline_raw]
             txt_wr = [f"{v:.1f}" if v > 0 else "0" for v in y_wr]
-            hov_wr = [f"<b>{w['full_label']}</b><br>Indice Work Rate: <b>{w['wr_index']:.1f}</b>" for w in weekly_timeline_raw]
+            hov_wr = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>Indice Work Rate: <b>{w['wr_index']:.1f}</b>" for w in weekly_timeline_raw]
             peak_wr_val = max(y_wr) if y_wr else 0.0
 
             render_spline_metric_chart(
@@ -1442,13 +1562,14 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_wr,
                 season_avg_str=f"{avg_wr:.1f}",
                 peak_val_str=f"{peak_wr_val:.1f}",
-                chart_key="spline_wr"
+                chart_key="spline_wr",
+                tournaments_highlights=highlights_w
             )
 
             # --- GRAFICO 6: INDICE DI VOLUME (TEMPO + TL + AZIONI >2") ---
             y_vol = [w['vol_index'] for w in weekly_timeline_raw]
             txt_vol = [f"{v:.1f}" if v > 0 else "0" for v in y_vol]
-            hov_vol = [f"<b>{w['full_label']}</b><br>Indice Volume: <b>{w['vol_index']:.1f}</b>" for w in weekly_timeline_raw]
+            hov_vol = [f"<b>{w['full_label']}</b>{w.get('tourn_tag', '')}<br>Indice Volume: <b>{w['vol_index']:.1f}</b>" for w in weekly_timeline_raw]
             peak_vol_val = max(y_vol) if y_vol else 0.0
 
             render_spline_metric_chart(
@@ -1463,7 +1584,8 @@ def render_trend_stagionale(t):
                 season_avg_val=avg_vol,
                 season_avg_str=f"{avg_vol:.1f}",
                 peak_val_str=f"{peak_vol_val:.1f}",
-                chart_key="spline_vol"
+                chart_key="spline_vol",
+                tournaments_highlights=highlights_w
             )
 
     # -------------------------------------------------------------------------
@@ -1588,17 +1710,26 @@ def render_trend_stagionale(t):
 
             st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
 
-            x_lbls_season = [p['w_lbl'] for p in season_acwr_data]
+            is_cobolli = "cobolli" in str(giocatore_selezionato).lower()
+            x_lbls_season, t_dict_acwr, highlights_acwr = get_seasonal_tournament_axis_data(
+                season_acwr_data, week_start_key='w_start', col_label_key='w_lbl', is_active=is_cobolli
+            )
+
+            if highlights_acwr:
+                render_surface_legend_banner()
+
             y_7d_season = [p['acwr_7d'] for p in season_acwr_data]
             y_2d_season = [p['acute_2d'] for p in season_acwr_data]
 
             hov_7d_season = []
             hov_2d_season = []
-            for p in season_acwr_data:
+            for idx, p in enumerate(season_acwr_data):
                 z_info = get_acwr_zone_details(p['acwr_7d'])[0]
                 val_7_str = f"{p['acwr_7d']:.1f}%" if p['acwr_7d'] is not None else "N/D"
+                t_w = t_dict_acwr.get(idx)
+                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
                 hov_7d_season.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"ACWR 7 Giorni: <b>{val_7_str}</b><br>"
                     f"Stato: <b>{z_info}</b><br>"
                     f"Carico Settimanale: <b>{int(round(p['training_load'])):,} TL</b> ({p['num_sessions']} sess.)"
@@ -1606,7 +1737,7 @@ def render_trend_stagionale(t):
                 val_2_str = f"{p['acute_2d']:.1f}%" if p['acute_2d'] is not None else "N/D"
                 z2_info = get_acwr_zone_details(p['acute_2d'])[0]
                 hov_2d_season.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"Acute Readiness 2 Giorni: <b>{val_2_str}</b><br>"
                     f"Stato: <b>{z2_info}</b>"
                 )
@@ -1621,7 +1752,8 @@ def render_trend_stagionale(t):
                 hover_texts_2d=hov_2d_season,
                 chart_key="acwr_season_chart",
                 mode_key="acwr_season_mode",
-                is_daily=False
+                is_daily=False,
+                tournaments_highlights=highlights_acwr
             )
 
             with st.expander(tr("Tabella Dettagliata ACWR Stagionale", "Detailed Seasonal ACWR Table")):
@@ -1859,7 +1991,7 @@ def render_trend_stagionale(t):
             # Aggregati stagione
             tot_season_min = float(df_dist['Minuti'].sum())
             tot_season_sparring_min = float(df_dist['Minuti Sparring'].fillna(0).sum()) if 'Minuti Sparring' in df_dist.columns else 0.0
-            tot_season_matches = len(df_dist[df_dist['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'])
+            tot_season_matches = len(df_dist[df_dist['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])])
 
             surface_season_min = {
                 s: float(df_dist[df_dist['Tipologia Campo'].astype(str).str.strip().str.lower() == s.lower()]['Minuti'].sum())
@@ -2022,7 +2154,7 @@ def render_trend_stagionale(t):
                     )
 
                 # Cella N Match
-                n_match_m = len(df_m[df_m['Tipologia Sessione'].astype(str).str.strip().str.lower() == 'match'])
+                n_match_m = len(df_m[df_m['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])])
                 if n_match_m > 0:
                     cell_match_html = f"<td style='padding:8px 8px; text-align:center; background:#fffafa; font-size:16px; font-weight:900; color:#ef4444;'>{n_match_m}</td>"
                 else:
@@ -2456,25 +2588,34 @@ def render_trend_stagionale(t):
                 )
 
             # Costruzione Grafico Plotly Executive a Soglie (Foster)
-            x_labels = [p['w_lbl'] for p in mono_season_data]
+            is_cobolli = "cobolli" in str(giocatore_selezionato).lower()
+            x_labels, t_dict_mono, highlights_mono = get_seasonal_tournament_axis_data(
+                mono_season_data, week_start_key='w_start', col_label_key='w_lbl', is_active=is_cobolli
+            )
+
+            if highlights_mono:
+                render_surface_legend_banner()
+
             y_tlh = [p['mono_tlh'] for p in mono_season_data]
             y_tl = [p['mono_tl'] for p in mono_season_data]
 
             hover_tlh = []
             hover_tl = []
-            for p in mono_season_data:
+            for idx, p in enumerate(mono_season_data):
                 st_tlh = tr("[ALLARME] (> 2.0)", "[ALARM] (> 2.0)") if p['mono_tlh'] >= 2.0 else tr("[OTTIMALE] (< 2.0)", "[OPTIMAL] (< 2.0)")
                 st_tl = tr("[ALLARME] (> 2.0)", "[ALARM] (> 2.0)") if p['mono_tl'] >= 2.0 else tr("[OTTIMALE] (< 2.0)", "[OPTIMAL] (< 2.0)")
+                t_w = t_dict_mono.get(idx)
+                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
 
                 hover_tlh.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"Monotonia TL High: <b>{p['mono_tlh']:.2f}</b><br>"
                     f"Stato: <b>{st_tlh}</b><br>"
                     f"TL High Settimanale: <b>{int(round(p['tot_tlh'])):,} AU</b> ({p['num_sessions']} sess.)<br>"
                     f"Media Giornaliera (μ): <b>{p['mean_tlh']:.1f}</b> · Dev.Std (σ): <b>{p['std_tlh']:.1f}</b>"
                 )
                 hover_tl.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"Monotonia TL Volume: <b>{p['mono_tl']:.2f}</b><br>"
                     f"Stato: <b>{st_tl}</b><br>"
                     f"Training Load Settimanale: <b>{int(round(p['tot_tl'])):,} TL</b> ({p['num_sessions']} sess.)<br>"
@@ -2482,6 +2623,22 @@ def render_trend_stagionale(t):
                 )
 
             fig_mono = go.Figure()
+
+            # Evidenziazione verticale tornei per superficie
+            if highlights_mono:
+                for h in highlights_mono:
+                    fig_mono.add_shape(
+                        type="rect",
+                        xref="x",
+                        yref="paper",
+                        x0=h["idx"] - 0.45,
+                        x1=h["idx"] + 0.45,
+                        y0=0,
+                        y1=1,
+                        fillcolor=h["bg_col"],
+                        line=dict(color=h["border_col"], width=1.5, dash="dot"),
+                        layer="below"
+                    )
 
             # Fascia Ottimale Verde (< 2.0)
             max_y_val = max(max(y_tlh + y_tl + [2.5]), 3.5)
@@ -2574,14 +2731,14 @@ def render_trend_stagionale(t):
                 ))
 
             fig_mono.update_layout(
-                margin=dict(l=40, r=40, t=25, b=40),
-                height=420,
+                margin=dict(l=40, r=40, t=25, b=130 if highlights_mono else 40),
+                height=490 if highlights_mono else 420,
                 xaxis=dict(
                     title=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"),
-                    tickangle=-45,
+                    tickangle=-90 if highlights_mono else -45,
                     gridcolor="#f1f5f9",
                     linecolor="#cbd5e1",
-                    tickfont=dict(size=11, color="#475569")
+                    tickfont=dict(size=9.5 if highlights_mono else 11, color="#475569")
                 ),
                 yaxis=dict(
                     title=tr("Indice di Monotonia (μ / σ)", "Monotony Index (μ / σ)"),
@@ -2835,31 +2992,56 @@ def render_trend_stagionale(t):
             threshold_strain_tl_alarm = avg_strain_tl * 1.50 if avg_strain_tl > 0 else 5000.0
 
             # Costruzione Grafico Plotly Executive a Soglie per lo Strain
-            x_labels_s = [p['w_lbl'] for p in strain_season_data]
+            is_cobolli = "cobolli" in str(giocatore_selezionato).lower()
+            x_labels_s, t_dict_strain, highlights_strain = get_seasonal_tournament_axis_data(
+                strain_season_data, week_start_key='w_start', col_label_key='w_lbl', is_active=is_cobolli
+            )
+
+            if highlights_strain:
+                render_surface_legend_banner()
+
             y_strain_tlh = [p['strain_tlh'] for p in strain_season_data]
             y_strain_tl = [p['strain_tl'] for p in strain_season_data]
 
             hover_strain_tlh = []
             hover_strain_tl = []
-            for p in strain_season_data:
+            for idx, p in enumerate(strain_season_data):
                 is_alert_tlh = (p['strain_tlh'] > threshold_strain_alarm and p['strain_tlh'] > 0)
                 st_tlh_str = tr("[ALLARME PICCO STRAIN]", "[ALARM STRAIN PEAK]") if is_alert_tlh else tr("[RANGE TOLLERABILE]", "[TOLERABLE RANGE]")
+                t_w = t_dict_strain.get(idx)
+                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
 
                 hover_strain_tlh.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"Strain TL High: <b>{p['strain_tlh']:,.0f} AU</b><br>"
                     f"Stato: <b>{st_tlh_str}</b><br>"
                     f"Carico TL High: <b>{int(round(p['tot_tlh'])):,} AU</b> · Monotonia: <b>{p['mono_tlh']:.2f}</b><br>"
                     f"Formula: {int(round(p['tot_tlh'])):,} AU × {p['mono_tlh']:.2f} ({p['num_sessions']} sess.)"
                 )
                 hover_strain_tl.append(
-                    f"<b>{p['full_label']}</b><br>"
+                    f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"Strain Training Load: <b>{p['strain_tl']:,.0f} AU</b><br>"
                     f"Carico TL: <b>{int(round(p['tot_tl'])):,} TL</b> · Monotonia: <b>{p['mono_tl']:.2f}</b><br>"
                     f"Formula: {int(round(p['tot_tl'])):,} TL × {p['mono_tl']:.2f} ({p['num_sessions']} sess.)"
                 )
 
             fig_strain = go.Figure()
+
+            # Evidenziazione verticale tornei per superficie
+            if highlights_strain:
+                for h in highlights_strain:
+                    fig_strain.add_shape(
+                        type="rect",
+                        xref="x",
+                        yref="paper",
+                        x0=h["idx"] - 0.45,
+                        x1=h["idx"] + 0.45,
+                        y0=0,
+                        y1=1,
+                        fillcolor=h["bg_col"],
+                        line=dict(color=h["border_col"], width=1.5, dash="dot"),
+                        layer="below"
+                    )
 
             is_overlay_mode = (sel_strain_mode == strain_mode_labels[2])
             is_volume_only = (sel_strain_mode == strain_mode_labels[1])
@@ -3094,14 +3276,14 @@ def render_trend_stagionale(t):
                 )
 
             fig_strain.update_layout(
-                margin=dict(l=40, r=40, t=25, b=40),
-                height=430,
+                margin=dict(l=40, r=40, t=25, b=130 if highlights_strain else 40),
+                height=500 if highlights_strain else 430,
                 xaxis=dict(
                     title=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"),
-                    tickangle=-45,
+                    tickangle=-90 if highlights_strain else -45,
                     gridcolor="#f1f5f9",
                     linecolor="#cbd5e1",
-                    tickfont=dict(size=11, color="#475569")
+                    tickfont=dict(size=9.5 if highlights_strain else 11, color="#475569")
                 ),
                 legend=dict(
                     orientation="h",

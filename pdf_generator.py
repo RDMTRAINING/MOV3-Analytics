@@ -19,7 +19,9 @@ from utils import (
     calcola_delta_percentuale,
     delta_puro,
     calcola_blocchi_baseline,
+    acwr_pre_match,
 )
+from utils_tennis_matches import get_tournament_for_week
 
 LOGO_PATH = "logo.png"
 
@@ -71,9 +73,11 @@ def build_pdf_con_footer(doc, elements, brand="M0V3 Analytics", is_landscape=Tru
         canvas.restoreState()
     doc.build(elements, onFirstPage=_footer, onLaterPages=_footer)
 def fig_to_rl_image(fig, width=360, height=210):
-    """Converte un grafico Plotly in un'immagine ad alta risoluzione per ReportLab."""
+    """Converte un grafico Plotly in un'immagine ad alta risoluzione proporzionale per ReportLab."""
     try:
-        img_bytes = fig.to_image(format="png", width=800, height=460, scale=2)
+        pixel_w = int(max(width * 2, 800))
+        pixel_h = int(pixel_w * (height / width))
+        img_bytes = fig.to_image(format="png", width=pixel_w, height=pixel_h, scale=1.5)
         return RLImage(BytesIO(img_bytes), width=width, height=height)
     except Exception:
         return Paragraph("<i>[Grafico non disponibile]</i>", getSampleStyleSheet()['Normal'])
@@ -1001,19 +1005,25 @@ def crea_pdf_stagionale_m0v3(giocatore, stagione, df_season, df_ath=None, sottoa
     elements = []
     styles = getSampleStyleSheet()
 
-    title_style = ParagraphStyle('M0V3Title', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=18, textColor=colors.HexColor('#0f172a'), spaceAfter=4)
-    sub_style = ParagraphStyle('M0V3Sub', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=10.5, textColor=colors.HexColor('#0ea5e9'), spaceAfter=12)
-    sec_style = ParagraphStyle('M0V3Sec', keepWithNext=1, parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=11.5, textColor=colors.HexColor('#0f172a'), spaceBefore=8, spaceAfter=6)
+    title_style = ParagraphStyle('M0V3Title', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=17, textColor=colors.HexColor('#0f172a'), spaceAfter=3)
+    sub_style = ParagraphStyle('M0V3Sub', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9.5, textColor=colors.HexColor('#0ea5e9'), spaceAfter=8)
+    sec_style = ParagraphStyle('M0V3Sec', keepWithNext=1, parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=11, textColor=colors.HexColor('#0f172a'), spaceBefore=6, spaceAfter=4)
+    chart_kpi_style = ParagraphStyle('M0V3ChartKPI', keepWithNext=1, parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor('#475569'), spaceBefore=2, spaceAfter=2)
 
-    sub_label = "REPORT COMPLETO" if sottoarea == "Tutte" else sottoarea.replace('_', ' ').upper()
+    sub_label = "REPORT STAGIONALE COMPLETO" if sottoarea == "Tutte" else sottoarea.replace('_', ' ').upper()
     header_title = [
-        Paragraph(f"M0V3 ANALYTICS — SEASONAL TREND ({sub_label})", title_style),
-        Paragraph(f"ATLETA: {giocatore.upper()}   |   STAGIONE: {stagione}", sub_style)
+        Paragraph("M0V3 ANALYTICS — SEASONAL EXECUTIVE REPORT", title_style),
+        Paragraph(f"ATLETA: <b>{giocatore.upper()}</b>   |   STAGIONE: <b>{stagione}</b>   |   MODULO: <b>{sub_label}</b>", sub_style)
     ]
     if os.path.exists(LOGO_PATH):
-        logo_img = RLImage(LOGO_PATH, width=55, height=55)
-        t_head = Table([[header_title, logo_img]], colWidths=[715, 75])
-        t_head.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT'), ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
+        logo_img = RLImage(LOGO_PATH, width=50, height=50)
+        t_head = Table([[header_title, logo_img]], colWidths=[720, 72])
+        t_head.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0)
+        ]))
         elements.append(t_head)
     else:
         elements.extend(header_title)
@@ -1028,31 +1038,56 @@ def crea_pdf_stagionale_m0v3(giocatore, stagione, df_season, df_ath=None, sottoa
     df_s['Week_Start'] = df_s['Date_obj'] - pd.to_timedelta(df_s['Date_obj'].dt.dayofweek, unit='d')
     df_s['Week_Start_Date'] = df_s['Week_Start'].dt.date
 
-    # KPI Banner
+    # Aggregati di stagione
     tot_sess = len(df_s)
     tot_min = float(df_s['Minuti'].sum()) if 'Minuti' in df_s.columns else 0.0
     tot_tl = float(df_s['Training Load'].sum()) if 'Training Load' in df_s.columns else 0.0
     tot_tlh = float(df_s['TL_High'].sum()) if 'TL_High' in df_s.columns else 0.0
     n_sett_attive = df_s['Week_Start_Date'].nunique()
+    avg_tl_week = tot_tl / max(n_sett_attive, 1)
+
+    # Filtro soli Match (esclusivamente "Match" o "Match Doppio")
+    is_match_season = df_s['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
+    tot_match_min = float(df_s[is_match_season]['Minuti'].sum()) if not df_s.empty else 0.0
 
     kpi_rows = [
-        ["STAGIONE", "SESSIONI", "ORE TOTALI", "TRAINING LOAD TOTALE", "TL HIGH TOTALE", "MEDIA SETTIMANALE TL"],
-        [str(stagione), str(tot_sess), f"{tot_min/60.0:.1f} h", f"{tot_tl:,.0f}", f"{tot_tlh:,.0f}", f"{tot_tl/max(n_sett_attive, 1):,.0f} TL"]
+        ["STAGIONE", "SESSIONI TOTALI", "ORE TOTALI", "ORE SOLI MATCH", "TRAINING LOAD TOTALE", "TL HIGH TOTALE", "MEDIA SETTIMANALE TL"],
+        [str(stagione), str(tot_sess), f"{tot_min/60.0:.1f} h", f"{tot_match_min/60.0:.1f} h", f"{tot_tl:,.0f}", f"{tot_tlh:,.0f}", f"{avg_tl_week:,.0f} TL"]
     ]
-    t_kpi = Table(kpi_rows, colWidths=[110, 110, 120, 160, 140, 152])
+    t_kpi = Table(kpi_rows, colWidths=[90, 105, 95, 120, 130, 115, 137])
     t_kpi.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 3.5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3.5),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
         ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f8fafc')),
         ('FONTNAME', (0, 1), (-1, 1), 'Helvetica-Bold'),
     ]))
     elements.append(t_kpi)
+    elements.append(Spacer(1, 6))
+
+    # Banner Legenda Superfici Tornei (stile identico al portale)
+    t_surf_legend = Table([[
+        Paragraph("<b>LEGENDA SUPERFICI TORNEI:</b>", ParagraphStyle('Lg0', fontName='Helvetica-Bold', fontSize=7.5, textColor=colors.HexColor('#0f172a'))),
+        Paragraph("<font color='#ea580c'>&#9632;</font> <b>Terra Rossa (Clay)</b>", ParagraphStyle('Lg1', fontName='Helvetica', fontSize=7.5, textColor=colors.HexColor('#334155'))),
+        Paragraph("<font color='#059669'>&#9632;</font> <b>Erba (Grass)</b>", ParagraphStyle('Lg2', fontName='Helvetica', fontSize=7.5, textColor=colors.HexColor('#334155'))),
+        Paragraph("<font color='#0284c7'>&#9632;</font> <b>Cemento (Hard)</b>", ParagraphStyle('Lg3', fontName='Helvetica', fontSize=7.5, textColor=colors.HexColor('#334155'))),
+        Paragraph("Tipologie: <b>[S]</b> Singolare  |  <b>[D]</b> Doppio  |  <b>[S+D]</b> Entrambi", ParagraphStyle('Lg4', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor('#64748b')))
+    ]], colWidths=[150, 130, 120, 130, 262])
+    t_surf_legend.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(t_surf_legend)
     elements.append(Spacer(1, 8))
 
     min_w_start = df_s['Week_Start_Date'].min()
@@ -1063,343 +1098,457 @@ def crea_pdf_stagionale_m0v3(giocatore, stagione, df_season, df_ath=None, sottoa
         all_mondays.append(curr_mon)
         curr_mon += timedelta(days=7)
 
-    # 1. Timeline Settimanale
+    # Costruzione asse X con tornei e orientamento verticale (-90°)
+    is_cobolli = "cobolli" in str(giocatore).lower()
+    x_axis_labels = []
+    tournaments_highlights = []
+
+    for idx, w_st in enumerate(all_mondays):
+        t = get_tournament_for_week(w_st) if is_cobolli else None
+        lbl = w_st.strftime('%d/%m')
+        if t:
+            t_name = str(t.get('tournament', '')).strip()
+            t_surf = str(t.get('surfaces', 'Hard')).strip()
+            t_type = str(t.get('types', 'Singolare')).strip()
+            short_type = 'D' if t_type.lower() == 'doppio' else ('S+D' if '+' in t_type else 'S')
+            rich_lbl = f"{lbl} · {t_name} [{short_type}]"
+            x_axis_labels.append(rich_lbl)
+
+            if t_surf == 'Clay':
+                bg_col, border_col = 'rgba(249, 115, 22, 0.16)', '#ea580c'
+            elif t_surf == 'Grass':
+                bg_col, border_col = 'rgba(16, 185, 129, 0.16)', '#059669'
+            else:
+                bg_col, border_col = 'rgba(14, 165, 233, 0.14)', '#0284c7'
+
+            tournaments_highlights.append({
+                'idx': idx,
+                'label': rich_lbl,
+                'bg_col': bg_col,
+                'border_col': border_col,
+                'name': t_name,
+                'surf': t_surf,
+                'type': t_type
+            })
+        else:
+            x_axis_labels.append(lbl)
+
+    def apply_pdf_chart_styling(fig, max_y, title_text, y_title="", height=195):
+        for h in tournaments_highlights:
+            fig.add_shape(
+                type="rect",
+                xref="x",
+                yref="paper",
+                x0=h["idx"] - 0.45,
+                x1=h["idx"] + 0.45,
+                y0=0,
+                y1=1,
+                fillcolor=h["bg_col"],
+                line=dict(color=h["border_col"], width=1.2, dash="dot"),
+                layer="below"
+            )
+        fig.update_layout(
+            title=dict(text=title_text, font=dict(family='Helvetica, Arial', size=10.5, color='#0f172a')),
+            paper_bgcolor='white',
+            plot_bgcolor='rgba(248, 250, 252, 0.6)',
+            font=dict(family='Helvetica, Arial', color='#0f172a', size=8.5),
+            margin=dict(l=35, r=25, t=30, b=95),
+            xaxis=dict(
+                tickangle=-90,
+                tickfont=dict(size=7.5, color='#334155', family='Helvetica, Arial'),
+                linecolor='#cbd5e1',
+                showgrid=False
+            ),
+            yaxis=dict(
+                title=dict(text=y_title, font=dict(size=8, color='#64748b')) if y_title else None,
+                showgrid=True,
+                gridcolor='#f1f5f9',
+                zerolinecolor='#cbd5e1',
+                range=[0, max_y],
+                tickfont=dict(size=8, color='#64748b')
+            ),
+            showlegend=False
+        )
+
+    # -------------------------------------------------------------------------
+    # 1. TIMELINE SETTIMANALE STAGIONE
+    # -------------------------------------------------------------------------
     if sottoarea in ["Tutte", "Timeline_Settimanale"]:
-        elements.append(Paragraph("TIMELINE SETTIMANALE STAGIONE (VOLUME & INTENSITÀ)", sec_style))
-        th_t = [["SETT.", "PERIODO", "SESS.", "MIN", "TL", "TL HIGH", "% TL HIGH", "HIGH ACC", "HIGH DEC", "AZIONI >2\""]]
-        rows_t = list(th_t)
+        elements.append(Paragraph("1. TIMELINE SETTIMANALE STAGIONE (VOLUME & INTENSITÀ)", sec_style))
 
-        x_weeks_lbl = []
-        y_weeks_tl = []
-        y_weeks_tlh = []
-
+        # Calcolo dati settimanali
+        weekly_data = []
         for w_st in all_mondays:
             w_en = w_st + timedelta(days=6)
-            w_num = pd.to_datetime(w_st).isocalendar()[1]
-            w_short = f"{w_st.strftime('%d/%m')}"
-            w_lbl = f"{w_st.strftime('%d/%m')}-{w_en.strftime('%d/%m')}"
             df_w = df_s[df_s['Week_Start_Date'] == w_st]
+            w_num = pd.to_datetime(w_st).isocalendar()[1]
+            w_lbl = f"{w_st.strftime('%d/%m')}-{w_en.strftime('%d/%m')}"
 
             if not df_w.empty:
                 w_sess = len(df_w)
-                w_min = float(df_w['Minuti'].sum()) if 'Minuti' in df_w.columns else 0.0
-                w_tl = float(df_w['Training Load'].sum()) if 'Training Load' in df_w.columns else 0.0
-                w_tlh = float(df_w['TL_High'].sum()) if 'TL_High' in df_w.columns else 0.0
-                pct_h = (w_tlh / w_tl * 100) if w_tl > 0 else 0.0
-                w_acc = float(df_w['High Accel IMU'].sum()) if 'High Accel IMU' in df_w.columns else 0.0
-                w_dec = float(df_w['High Decel IMU'].sum()) if 'High Decel IMU' in df_w.columns else 0.0
-                w_az2 = float(df_w['Azioni Int. IMU >2'].sum()) if 'Azioni Int. IMU >2' in df_w.columns else 0.0
+                # Filtro soli Match (esclusivamente "Match" o "Match Doppio")
+                is_m_w = df_w['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])
+                m_time = float(df_w[is_m_w]['Minuti'].sum()) if not df_w.empty else 0.0
+                tot_time = float(df_w['Minuti'].sum())
+                tl_tot = float(df_w['Training Load'].sum())
+                tl_h = float(df_w['TL_High'].sum())
+                pct_h = (tl_h / tl_tot * 100) if tl_tot > 0 else 0.0
             else:
-                w_sess, w_min, w_tl, w_tlh, pct_h, w_acc, w_dec, w_az2 = 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                w_sess, m_time, tot_time, tl_tot, tl_h, pct_h = 0, 0.0, 0.0, 0.0, 0.0, 0.0
 
-            x_weeks_lbl.append(w_short)
-            y_weeks_tl.append(w_tl)
-            y_weeks_tlh.append(w_tlh)
+            weekly_data.append({
+                "w_num": w_num,
+                "w_lbl": w_lbl,
+                "sess": w_sess,
+                "m_time": m_time,
+                "tot_time": tot_time,
+                "tl": tl_tot,
+                "tl_h": tl_h,
+                "pct_h": pct_h
+            })
 
-            rows_t.append([
-                f"W{w_num:02d}", w_lbl, str(w_sess), f"{w_min:.0f}", f"{w_tl:.0f}", f"{w_tlh:.0f}",
-                f"{pct_h:.0f}%", f"{w_acc:.0f}", f"{w_dec:.0f}", f"{w_az2:.0f}"
-            ])
+        active_w = [w for w in weekly_data if w['sess'] > 0]
+        n_act = len(active_w) if active_w else 1
+        avg_mtime = sum(w['m_time'] for w in active_w) / n_act
+        peak_mtime = max([w['m_time'] for w in weekly_data] or [0.0])
+        avg_ttime = sum(w['tot_time'] for w in active_w) / n_act
+        peak_ttime = max([w['tot_time'] for w in weekly_data] or [0.0])
+        avg_tl_w = sum(w['tl'] for w in active_w) / n_act
+        peak_tl_w = max([w['tl'] for w in weekly_data] or [0.0])
 
-        t_tl_table = Table(rows_t, colWidths=[52, 90, 50, 70, 80, 80, 75, 80, 80, 85])
-        t_tl_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 2.5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]))
-        elements.append(t_tl_table)
+        # --- GRAFICO 1: TEMPO DEI SOLI MATCH ---
+        y_mtime = [w['m_time'] for w in weekly_data]
+        fig_mtime = go.Figure()
+        fig_mtime.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_mtime, mode='lines+markers',
+            line=dict(color='#f97316', width=2.5, shape='spline', smoothing=0.65),
+            marker=dict(size=5, color='#f97316', line=dict(color='#ffffff', width=1.5)),
+            fill='tozeroy', fillcolor='rgba(249, 115, 22, 0.12)'
+        ))
+        if avg_mtime > 0:
+            fig_mtime.add_hline(y=avg_mtime, line_dash="dash", line_color="#64748b", line_width=1.2,
+                                annotation_text=f"Media: {int(avg_mtime//60)}h {int(avg_mtime%60):02d}m",
+                                annotation_position="top right", annotation_font_size=8, annotation_font_color="#64748b")
+        max_y_m = max(max(y_mtime or [60.0]), avg_mtime) * 1.25
+        apply_pdf_chart_styling(
+            fig_mtime, max_y_m,
+            f"TEMPO DEI SOLI MATCH (MINUTI)  —  Media: {int(avg_mtime//60)}h {int(avg_mtime%60):02d}m  |  Picco: {int(peak_mtime//60)}h {int(peak_mtime%60):02d}m",
+            y_title="Minuti Match"
+        )
+        elements.append(fig_to_rl_image(fig_mtime, 792, 195))
         elements.append(Spacer(1, 8))
 
-        fig_tl_pdf = go.Figure()
-        fig_tl_pdf.add_trace(go.Scatter(
-            x=x_weeks_lbl, y=y_weeks_tl, mode='lines+markers', name='Training Load',
-            line=dict(color='#0ea5e9', width=2.5, shape='spline'), marker=dict(size=6, color='#0ea5e9')
+        # --- GRAFICO 2: TEMPO TOTALE DI TUTTE LE SESSIONI ---
+        y_ttime = [w['tot_time'] for w in weekly_data]
+        fig_ttime = go.Figure()
+        fig_ttime.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_ttime, mode='lines+markers',
+            line=dict(color='#0ea5e9', width=2.5, shape='spline', smoothing=0.65),
+            marker=dict(size=5, color='#0ea5e9', line=dict(color='#ffffff', width=1.5)),
+            fill='tozeroy', fillcolor='rgba(14, 165, 233, 0.12)'
         ))
-        fig_tl_pdf.add_trace(go.Scatter(
-            x=x_weeks_lbl, y=y_weeks_tlh, mode='lines+markers', name='TL High (Intensità)',
-            line=dict(color='#ef4444', width=2, shape='spline'), marker=dict(size=5, color='#ef4444')
-        ))
-        avg_tl_val = tot_tl / max(n_sett_attive, 1)
-        fig_tl_pdf.add_hline(y=avg_tl_val, line_dash="dash", line_color="#10b981", line_width=1.5,
-                             annotation_text=f"Media Stagionale ({avg_tl_val:,.0f} TL)", annotation_position="top left",
-                             annotation_font_size=9, annotation_font_color="#10b981")
-        fig_tl_pdf.update_layout(
-            title="Progressione Training Load & Intensità Settimanale",
-            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
-            margin=dict(l=30, r=30, t=35, b=25), yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+        if avg_ttime > 0:
+            fig_ttime.add_hline(y=avg_ttime, line_dash="dash", line_color="#64748b", line_width=1.2,
+                                annotation_text=f"Media: {int(avg_ttime//60)}h {int(avg_ttime%60):02d}m",
+                                annotation_position="top right", annotation_font_size=8, annotation_font_color="#64748b")
+        max_y_t = max(max(y_ttime or [60.0]), avg_ttime) * 1.25
+        apply_pdf_chart_styling(
+            fig_ttime, max_y_t,
+            f"TEMPO TOTALE DI TUTTE LE SESSIONI (MATCH + ALLENAMENTI)  —  Media: {int(avg_ttime//60)}h {int(avg_ttime%60):02d}m  |  Picco: {int(peak_ttime//60)}h {int(peak_ttime%60):02d}m",
+            y_title="Minuti Totali"
         )
-        elements.append(fig_to_rl_image(fig_tl_pdf, 792, 175))
+        elements.append(fig_to_rl_image(fig_ttime, 792, 195))
+        elements.append(Spacer(1, 8))
 
-    # 2. ACWR Stagionale
+        # --- GRAFICO 3: TRAINING LOAD ---
+        y_tl = [w['tl'] for w in weekly_data]
+        fig_tl = go.Figure()
+        fig_tl.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_tl, mode='lines+markers',
+            line=dict(color='#6366f1', width=2.5, shape='spline', smoothing=0.65),
+            marker=dict(size=5, color='#6366f1', line=dict(color='#ffffff', width=1.5)),
+            fill='tozeroy', fillcolor='rgba(99, 102, 241, 0.12)'
+        ))
+        if avg_tl_w > 0:
+            fig_tl.add_hline(y=avg_tl_w, line_dash="dash", line_color="#64748b", line_width=1.2,
+                             annotation_text=f"Media: {avg_tl_w:,.0f} TL",
+                             annotation_position="top right", annotation_font_size=8, annotation_font_color="#64748b")
+        max_y_tl = max(max(y_tl or [100.0]), avg_tl_w) * 1.25
+        apply_pdf_chart_styling(
+            fig_tl, max_y_tl,
+            f"TRAINING LOAD SETTIMANALE  —  Media: {avg_tl_w:,.0f} TL  |  Picco: {peak_tl_w:,.0f} TL",
+            y_title="Training Load"
+        )
+        elements.append(fig_to_rl_image(fig_tl, 792, 195))
+
+    # -------------------------------------------------------------------------
+    # 2. ACWR STAGIONALE
+    # -------------------------------------------------------------------------
     if sottoarea in ["Tutte", "ACWR_Stagionale"]:
-        if sottoarea == "Tutte": elements.append(PageBreak())
-        elements.append(Paragraph("ACWR STAGIONALE (RAPPORTO CARICO ACUTO:CRONICO %)", sec_style))
+        if sottoarea == "Tutte":
+            elements.append(PageBreak())
+        elements.append(Paragraph("2. ACWR STAGIONALE (ACUTE:CHRONIC WORKLOAD RATIO)", sec_style))
 
         df_full = df_ath if df_ath is not None and not df_ath.empty else df_s
-        rows_ac = [["SETT.", "PERIODO", "CARICO ACUTO 7g", "CARICO CRONICO 28g", "ACWR (%)", "ZONA FISIOLOGICA"]]
-
-        x_acwr_lbl = []
-        y_acwr_val = []
+        y_acwr_7d = []
+        y_acute_2d = []
 
         for w_st in all_mondays:
             w_en = w_st + timedelta(days=6)
-            w_num = pd.to_datetime(w_st).isocalendar()[1]
-            w_short = f"{w_st.strftime('%d/%m')}"
-            w_lbl = f"{w_st.strftime('%d/%m')}-{w_en.strftime('%d/%m')}"
+            w_end_str = w_en.strftime("%d/%m/%Y")
+            acwr_7 = acwr_pre_match(df_full, giocatore, w_end_str, giorni=7, col='Training Load', include_target=True, burn_in_mask=True)
+            acwr_2 = acwr_pre_match(df_full, giocatore, w_end_str, giorni=2, col='Training Load', include_target=True, burn_in_mask=True)
+            y_acwr_7d.append(acwr_7)
+            y_acute_2d.append(acwr_2)
 
-            tot_w = float(df_s[(df_s['Date_obj'] >= pd.to_datetime(w_st)) & (df_s['Date_obj'] <= pd.to_datetime(w_en))]['Training Load'].sum()) if not df_s.empty else 0.0
+        valid_7 = [v for v in y_acwr_7d if v is not None and not pd.isna(v)]
+        last_acwr_val = valid_7[-1] if valid_7 else 0.0
+        n_sweet = sum(1 for v in valid_7 if 80 <= v <= 125)
+        pct_sweet = (n_sweet / len(valid_7) * 100) if valid_7 else 0.0
+        n_overload = sum(1 for v in valid_7 if v > 150)
 
-            b_end = pd.to_datetime(w_st) - timedelta(days=1)
-            b_start = b_end - timedelta(days=27)
-            df_base = df_full[(df_full['Date_obj'] >= pd.to_datetime(b_start)) & (df_full['Date_obj'] <= pd.to_datetime(b_end))] if not df_full.empty else pd.DataFrame()
-            blocchi = calcola_blocchi_baseline(df_full, b_end, 7.0)
-            ch_w = float(df_base['Training Load'].sum()) / blocchi if not df_base.empty and blocchi > 0 else 0.0
-
-            if ch_w > 0: acwr_pct = round(tot_w / ch_w * 100.0, 1)
-            elif tot_w > 0: acwr_pct = 100.0
-            else: acwr_pct = 0.0
-
-            if tot_w > 0 or ch_w > 0:
-                if acwr_pct < 80: z_lbl = "Sotto-carico (<80%)"
-                elif acwr_pct <= 130: z_lbl = "Sweet Spot (80-130%)"
-                elif acwr_pct <= 150: z_lbl = "Attenzione (130-150%)"
-                else: z_lbl = "Allarme (>150%)"
-            else:
-                z_lbl = "Riposo / N.D."
-
-            x_acwr_lbl.append(w_short)
-            y_acwr_val.append(acwr_pct)
-
-            rows_ac.append([
-                f"W{w_num:02d}", w_lbl, f"{tot_w:,.0f}", f"{ch_w:,.0f}",
-                f"{acwr_pct:.0f}%" if (tot_w > 0 or ch_w > 0) else "-", z_lbl
-            ])
-
-        t_ac_table = Table(rows_ac, colWidths=[65, 120, 150, 150, 110, 197])
-        t_ac_style = [
+        # Tabella KPI ACWR
+        t_acwr_kpi = Table([
+            ["ULTIMO ACWR 7G", "TEMPO IN SWEET SPOT (80-125%)", "SETTIMANE SOVRACCARICO (>150%)", "STATO ATTUALE"],
+            [f"{last_acwr_val:.1f}%", f"{pct_sweet:.0f}% ({n_sweet}/{len(valid_7)})", str(n_overload),
+             "OTTIMALE" if 80 <= last_acwr_val <= 125 else ("ATTENZIONE" if last_acwr_val <= 150 else "ALLARME OVERLOAD")]
+        ], colWidths=[180, 220, 200, 192])
+        t_acwr_kpi.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 2.5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]
-        for r_i, r_val in enumerate(y_acwr_val, start=1):
-            if r_val > 0:
-                if 80 <= r_val <= 130: bg_z = '#dcfce7'
-                elif r_val < 80: bg_z = '#e0f2fe'
-                elif r_val <= 150: bg_z = '#fef3c7'
-                else: bg_z = '#fee2e2'
-                t_ac_style.append(('BACKGROUND', (4, r_i), (5, r_i), colors.HexColor(bg_z)))
-
-        t_ac_table.setStyle(TableStyle(t_ac_style))
-        elements.append(t_ac_table)
+            ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f8fafc')),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        elements.append(t_acwr_kpi)
         elements.append(Spacer(1, 8))
 
-        fig_acwr_pdf = go.Figure()
-        fig_acwr_pdf.add_hrect(y0=80, y1=130, fillcolor="rgba(34, 197, 94, 0.10)", line_width=0,
-                               annotation_text="Sweet Spot (80% - 130%)", annotation_position="top left",
-                               annotation_font_size=9, annotation_font_color="#15803d")
-        fig_acwr_pdf.add_hline(y=150, line_dash="dash", line_color="#ef4444", line_width=1.5,
-                               annotation_text="Soglia Pericolo (> 150%)", annotation_position="top left",
-                               annotation_font_size=9, annotation_font_color="#b91c1c")
-        fig_acwr_pdf.add_hline(y=100, line_dash="dot", line_color="#0284c7", line_width=1.2,
-                               annotation_text="Baseline (100%)", annotation_position="bottom left",
-                               annotation_font_size=9, annotation_font_color="#0284c7")
-        fig_acwr_pdf.add_trace(go.Scatter(
-            x=x_acwr_lbl, y=y_acwr_val, mode='lines+markers', name='ACWR %',
-            line=dict(color='#0284c7', width=2.5, shape='spline'), marker=dict(size=6, color='#0284c7')
-        ))
-        max_acwr_y = max(max(y_acwr_val or [150.0]), 160.0) * 1.15
-        fig_acwr_pdf.update_layout(
-            title="Curva ACWR Consolidata Settimana per Settimana",
-            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
-            margin=dict(l=30, r=30, t=35, b=25), yaxis=dict(range=[0, max_acwr_y], dtick=25, ticksuffix="%")
-        )
-        elements.append(fig_to_rl_image(fig_acwr_pdf, 792, 175))
+        # Grafico Executive ACWR con 4 zone fisiologiche
+        all_acwr_vals = [v for v in (y_acwr_7d + y_acute_2d) if v is not None and not pd.isna(v)]
+        max_ac_y = max(max(all_acwr_vals or [150.0]) * 1.15, 180.0)
 
-    # 3. Monotonia Stagionale
+        fig_acwr = go.Figure()
+        # 4 fasce fisiologiche orizzontali
+        fig_acwr.add_hrect(y0=0, y1=80, fillcolor="rgba(14, 165, 233, 0.08)", line_width=0,
+                           annotation_text="Scarico (<80%)", annotation_position="bottom right", annotation_font_size=7.5, annotation_font_color="#0284c7")
+        fig_acwr.add_hrect(y0=80, y1=125, fillcolor="rgba(16, 185, 129, 0.12)", line_width=0,
+                           annotation_text="Sweet Spot (80-125%)", annotation_position="bottom right", annotation_font_size=7.5, annotation_font_color="#059669")
+        fig_acwr.add_hrect(y0=125, y1=150, fillcolor="rgba(245, 158, 11, 0.10)", line_width=0,
+                           annotation_text="Attenzione (125-150%)", annotation_position="bottom right", annotation_font_size=7.5, annotation_font_color="#d97706")
+        fig_acwr.add_hrect(y0=150, y1=max_ac_y, fillcolor="rgba(239, 68, 68, 0.12)", line_width=0,
+                           annotation_text="Danger Zone (>150%)", annotation_position="bottom right", annotation_font_size=7.5, annotation_font_color="#dc2626")
+        fig_acwr.add_hline(y=100, line_dash="dash", line_color="#64748b", line_width=1.2,
+                           annotation_text="Baseline 100%", annotation_position="bottom left", annotation_font_size=7.5, annotation_font_color="#475569")
+
+        # Colori marker 7D in base alla zona
+        colors_7d = []
+        for v in y_acwr_7d:
+            if v is None or pd.isna(v): colors_7d.append("#94a3b8")
+            elif v < 80: colors_7d.append("#0ea5e9")
+            elif v <= 125: colors_7d.append("#10b981")
+            elif v <= 150: colors_7d.append("#f59e0b")
+            else: colors_7d.append("#ef4444")
+
+        fig_acwr.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_acwr_7d, mode='lines+markers', name='ACWR 7 Giorni',
+            line=dict(color='#0284c7', width=2.8, shape='spline', smoothing=0.65),
+            marker=dict(size=6, color=colors_7d, line=dict(color='#ffffff', width=1.5)),
+            connectgaps=True
+        ))
+        fig_acwr.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_acute_2d, mode='lines+markers', name='Acute Readiness 2 Giorni',
+            line=dict(color='#f97316', width=2.0, shape='spline', smoothing=0.6),
+            marker=dict(symbol='diamond', size=5, color='#f97316', line=dict(color='#ffffff', width=1)),
+            connectgaps=True
+        ))
+        apply_pdf_chart_styling(
+            fig_acwr, max_ac_y,
+            "ACWR STAGIONALE (RAPPORTO ACUTO 2G : CRONICO 7G) CON FASCE DI RISCHIO FISIOLOGICO",
+            y_title="ACWR %", height=220
+        )
+        elements.append(fig_to_rl_image(fig_acwr, 792, 220))
+
+    # -------------------------------------------------------------------------
+    # 3. MONOTONIA STAGIONALE
+    # -------------------------------------------------------------------------
     if sottoarea in ["Tutte", "Monotonia_Stagionale"]:
-        if sottoarea == "Tutte": elements.append(PageBreak())
-        elements.append(Paragraph("MONOTONIA STAGIONALE (INDICE DI FOSTER — TL HIGH)", sec_style))
-        rows_mo = [["SETT.", "PERIODO", "TL HIGH TOTALE", "MEDIA GIORNALIERA", "DEV. STANDARD", "MONOTONIA FOSTER", "VALUTAZIONE"]]
+        if sottoarea == "Tutte":
+            elements.append(PageBreak())
+        elements.append(Paragraph("3. MONOTONIA STAGIONALE (INDICE DI FOSTER: μ / σ)", sec_style))
 
-        x_mo_lbl = []
-        y_mo_val = []
+        y_mono_tlh = []
+        y_mono_tl = []
 
-        col_tlh = 'TL_High' if 'TL_High' in df_s.columns else 'Training Load'
         for w_st in all_mondays:
-            w_en = w_st + timedelta(days=6)
-            w_num = pd.to_datetime(w_st).isocalendar()[1]
-            w_short = f"{w_st.strftime('%d/%m')}"
-            w_lbl = f"{w_st.strftime('%d/%m')}-{w_en.strftime('%d/%m')}"
+            df_w = df_s[df_s['Week_Start_Date'] == w_st]
+            # Giorni per TL High
+            tlh_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['TL_High'].sum()) if not df_w.empty and 'TL_High' in df_w.columns else 0.0 for d in range(7)]
+            tl_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['Training Load'].sum()) if not df_w.empty and 'Training Load' in df_w.columns else 0.0 for d in range(7)]
 
-            tlh_days = []
-            for d_idx in range(7):
-                d_t = w_st + timedelta(days=d_idx)
-                df_d = df_s[df_s['Date_obj'].dt.date == d_t]
-                val_d = float(df_d[col_tlh].sum()) if not df_d.empty else 0.0
-                tlh_days.append(val_d)
+            tot_tlh = sum(tlh_days)
+            std_tlh = float(np.std(tlh_days, ddof=1)) if len(tlh_days) > 1 else 0.0
+            mean_tlh = tot_tlh / 7.0
+            m_tlh = round(mean_tlh / std_tlh, 2) if std_tlh > 0 else (3.5 if tot_tlh > 0 else 0.0)
 
-            tot_tlh_w = sum(tlh_days)
-            mean_tlh_w = tot_tlh_w / 7.0
-            std_tlh_w = float(np.std(tlh_days, ddof=1)) if len(tlh_days) > 1 else 0.0
+            tot_tl = sum(tl_days)
+            std_tl = float(np.std(tl_days, ddof=1)) if len(tl_days) > 1 else 0.0
+            mean_tl = tot_tl / 7.0
+            m_tl = round(mean_tl / std_tl, 2) if std_tl > 0 else (3.5 if tot_tl > 0 else 0.0)
 
-            if std_tlh_w > 0: mono_val = round(mean_tlh_w / std_tlh_w, 2)
-            elif tot_tlh_w > 0: mono_val = 3.50
-            else: mono_val = 0.0
+            y_mono_tlh.append(m_tlh)
+            y_mono_tl.append(m_tl)
 
-            if tot_tlh_w > 0:
-                if mono_val < 1.5: mo_eval = "Ottimale (< 1.5)"
-                elif mono_val <= 2.0: mo_eval = "Moderata (1.5 - 2.0)"
-                else: mo_eval = "Carico Monotono / Rischio (> 2.0)"
-            else:
-                mo_eval = "Riposo / Scarico"
+        valid_m = [v for v in y_mono_tlh if v > 0]
+        last_m = valid_m[-1] if valid_m else 0.0
+        avg_m = sum(valid_m) / len(valid_m) if valid_m else 0.0
+        n_alarm_m = sum(1 for v in valid_m if v >= 2.0)
 
-            x_mo_lbl.append(w_short)
-            y_mo_val.append(mono_val)
-
-            rows_mo.append([
-                f"W{w_num:02d}", w_lbl, f"{tot_tlh_w:,.0f}", f"{mean_tlh_w:.1f}", f"{std_tlh_w:.1f}",
-                f"{mono_val:.2f}" if tot_tlh_w > 0 else "-", mo_eval
-            ])
-
-        t_mo_table = Table(rows_mo, colWidths=[65, 120, 120, 120, 110, 110, 147])
-        t_mo_style = [
+        # Tabella KPI Monotonia
+        t_mono_kpi = Table([
+            ["ULTIMA MONOTONIA (TL HIGH)", "MEDIA STAGIONALE", "SOGLIA ALLARME FOSTER", "SETTIMANE A RISCHIO (≥ 2.0)"],
+            [f"{last_m:.2f}", f"{avg_m:.2f}", "2.00", f"{n_alarm_m} su {len(valid_m)} settimane"]
+        ], colWidths=[190, 190, 200, 212])
+        t_mono_kpi.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 2.5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]
-        for r_i, r_val in enumerate(y_mo_val, start=1):
-            if r_val > 0:
-                bg_m = '#dcfce7' if r_val < 1.5 else ('#fef3c7' if r_val <= 2.0 else '#fee2e2')
-                t_mo_style.append(('BACKGROUND', (5, r_i), (6, r_i), colors.HexColor(bg_m)))
-
-        t_mo_table.setStyle(TableStyle(t_mo_style))
-        elements.append(t_mo_table)
+            ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f8fafc')),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        elements.append(t_mono_kpi)
         elements.append(Spacer(1, 8))
 
-        fig_mo_pdf = go.Figure()
-        fig_mo_pdf.add_hrect(y0=0, y1=1.5, fillcolor="rgba(34, 197, 94, 0.10)", line_width=0,
-                             annotation_text="Ottimale (< 1.5)", annotation_position="top left",
-                             annotation_font_size=9, annotation_font_color="#15803d")
-        fig_mo_pdf.add_hline(y=2.0, line_dash="dash", line_color="#ef4444", line_width=1.5,
-                             annotation_text="Soglia Allarme Monotonia (> 2.0)", annotation_position="top left",
-                             annotation_font_size=9, annotation_font_color="#b91c1c")
-        fig_mo_pdf.add_trace(go.Scatter(
-            x=x_mo_lbl, y=y_mo_val, mode='lines+markers', name='Monotonia Foster',
-            line=dict(color='#ef4444', width=2.5, shape='spline'), marker=dict(size=6, color='#ef4444')
-        ))
-        max_mo_y = max(max(y_mo_val or [2.0]), 2.5) * 1.15
-        fig_mo_pdf.update_layout(
-            title="Indice di Monotonia Settimana per Settimana (Foster)",
-            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
-            margin=dict(l=30, r=30, t=35, b=25), yaxis=dict(range=[0, max_mo_y], dtick=0.5)
+        # Grafico Executive Monotonia
+        max_y_mo = max(max((y_mono_tlh + y_mono_tl) or [2.5]), 3.5)
+        fig_mono = go.Figure()
+        # Fascia ottimale verde (<2.0)
+        fig_mono.add_shape(
+            type="rect", x0=-0.5, x1=len(x_axis_labels) - 0.5, y0=0, y1=2.0,
+            fillcolor="rgba(16, 185, 129, 0.08)", line=dict(width=0), layer="below"
         )
-        elements.append(fig_to_rl_image(fig_mo_pdf, 792, 175))
+        # Linea allarme tratteggiata rossa 2.0
+        fig_mono.add_shape(
+            type="line", x0=-0.5, x1=len(x_axis_labels) - 0.5, y0=2.0, y1=2.0,
+            line=dict(color="#ef4444", width=2, dash="dash"), layer="above"
+        )
+        fig_mono.add_annotation(
+            x=0.01, y=2.0, xref="paper", yref="y", text="SOGLIA ALLARME FOSTER (2.0)",
+            showarrow=False, font=dict(color="#b91c1c", size=8), bgcolor="rgba(254, 226, 226, 0.9)"
+        )
+        colors_mo = ["#ef4444" if v >= 2.0 else "#10b981" for v in y_mono_tlh]
+        fig_mono.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_mono_tlh, mode='lines+markers', name='Monotonia TL High (Intensità)',
+            line=dict(color='#ef4444', width=2.8, shape='spline', smoothing=0.3),
+            marker=dict(size=6, color=colors_mo, line=dict(color='#ffffff', width=1.5))
+        ))
+        fig_mono.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_mono_tl, mode='lines+markers', name='Monotonia TL Volume',
+            line=dict(color='#0284c7', width=2.0, shape='spline', smoothing=0.3, dash='dot'),
+            marker=dict(size=5, color='#0284c7', line=dict(color='#ffffff', width=1))
+        ))
+        apply_pdf_chart_styling(
+            fig_mono, max_y_mo,
+            "MONOTONIA STAGIONALE (INDICE DI FOSTER — METRICA PRIMARIA TL HIGH)",
+            y_title="Indice Monotonia (μ / σ)", height=220
+        )
+        elements.append(fig_to_rl_image(fig_mono, 792, 220))
 
-    # 4. Strain Stagionale
+    # -------------------------------------------------------------------------
+    # 4. STRAIN STAGIONALE
+    # -------------------------------------------------------------------------
     if sottoarea in ["Tutte", "Strain_Stagionale"]:
-        if sottoarea == "Tutte": elements.append(PageBreak())
-        elements.append(Paragraph("STRAIN STAGIONALE (INDICE DI TENSIONE / STRESS — FOSTER)", sec_style))
-        rows_sn = [["SETT.", "PERIODO", "CARICO SETT.", "MONOTONIA", "TRAINING STRAIN", "BASELINE INDIV.", "VALUTAZIONE"]]
+        if sottoarea == "Tutte":
+            elements.append(PageBreak())
+        elements.append(Paragraph("4. STRAIN STAGIONALE (STRESS PSICOFISICO: CARICO × MONOTONIA)", sec_style))
 
-        x_sn_lbl = []
-        y_sn_val = []
-
-        calc_strains = []
-        for w_st in all_mondays:
-            df_w = df_s[df_s['Week_Start_Date'] == w_st]
-            tl_w = float(df_w['TL_High'].sum()) if not df_w.empty and 'TL_High' in df_w.columns else 0.0
-            tlh_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['TL_High'].sum()) if not df_w.empty else 0.0 for d in range(7)]
-            std_d = float(np.std(tlh_days, ddof=1)) if len(tlh_days) > 1 else 0.0
-            mean_d = tl_w / 7.0
-            m_val = mean_d / std_d if std_d > 0 else (3.5 if tl_w > 0 else 0.0)
-            st_val = tl_w * m_val
-            if st_val > 0: calc_strains.append(st_val)
-
-        ath_baseline_strain = float(np.mean(calc_strains)) if calc_strains else 1500.0
-        ath_warn_strain = ath_baseline_strain * 1.5
+        y_strain_tlh = []
+        y_strain_tl = []
 
         for w_st in all_mondays:
-            w_en = w_st + timedelta(days=6)
-            w_num = pd.to_datetime(w_st).isocalendar()[1]
-            w_short = f"{w_st.strftime('%d/%m')}"
-            w_lbl = f"{w_st.strftime('%d/%m')}-{w_en.strftime('%d/%m')}"
             df_w = df_s[df_s['Week_Start_Date'] == w_st]
+            tlh_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['TL_High'].sum()) if not df_w.empty and 'TL_High' in df_w.columns else 0.0 for d in range(7)]
+            tl_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['Training Load'].sum()) if not df_w.empty and 'Training Load' in df_w.columns else 0.0 for d in range(7)]
 
-            tl_w = float(df_w['TL_High'].sum()) if not df_w.empty and 'TL_High' in df_w.columns else 0.0
-            tlh_days = [float(df_w[df_w['Date_obj'].dt.date == (w_st + timedelta(days=d))]['TL_High'].sum()) if not df_w.empty else 0.0 for d in range(7)]
-            std_d = float(np.std(tlh_days, ddof=1)) if len(tlh_days) > 1 else 0.0
-            mean_d = tl_w / 7.0
-            m_val = mean_d / std_d if std_d > 0 else (3.5 if tl_w > 0 else 0.0)
-            sn_val = round(tl_w * m_val, 1)
+            tot_tlh = sum(tlh_days)
+            std_tlh = float(np.std(tlh_days, ddof=1)) if len(tlh_days) > 1 else 0.0
+            mean_tlh = tot_tlh / 7.0
+            m_tlh = round(mean_tlh / std_tlh, 2) if std_tlh > 0 else (3.5 if tot_tlh > 0 else 0.0)
+            sn_tlh = round(tot_tlh * m_tlh, 1)
 
-            if sn_val > 0:
-                if sn_val < ath_baseline_strain: sn_eval = "Sotto Baseline"
-                elif sn_val <= ath_warn_strain: sn_eval = "Ottimale / Gestibile"
-                else: sn_eval = "Picco Critico (+50% Allarme)"
-            else:
-                sn_eval = "Riposo / Scarico"
+            tot_tl = sum(tl_days)
+            std_tl = float(np.std(tl_days, ddof=1)) if len(tl_days) > 1 else 0.0
+            mean_tl = tot_tl / 7.0
+            m_tl = round(mean_tl / std_tl, 2) if std_tl > 0 else (3.5 if tot_tl > 0 else 0.0)
+            sn_tl = round(tot_tl * m_tl, 1)
 
-            x_sn_lbl.append(w_short)
-            y_sn_val.append(sn_val)
+            y_strain_tlh.append(sn_tlh)
+            y_strain_tl.append(sn_tl)
 
-            rows_sn.append([
-                f"W{w_num:02d}", w_lbl, f"{tl_w:,.0f}", f"{m_val:.2f}", f"{sn_val:,.0f}",
-                f"{ath_baseline_strain:,.0f}", sn_eval
-            ])
+        valid_sn = [v for v in y_strain_tlh if v > 0]
+        last_sn = valid_sn[-1] if valid_sn else 0.0
+        avg_sn = sum(valid_sn) / len(valid_sn) if valid_sn else 1500.0
+        thresh_alarm_sn = avg_sn * 1.5
+        peak_sn = max(valid_sn) if valid_sn else 0.0
+        n_crit_sn = sum(1 for v in valid_sn if v > thresh_alarm_sn)
 
-        t_sn_table = Table(rows_sn, colWidths=[65, 120, 110, 95, 120, 120, 162])
-        t_sn_style = [
+        # Tabella KPI Strain
+        t_strain_kpi = Table([
+            ["ULTIMO STRAIN TL HIGH", "BASELINE MEDIA STAGIONALE", "SOGLIA ALLARME PICCO (+50%)", "PICCO MASSIMO STAGIONALE", "SETTIMANE ALLERTA"],
+            [f"{last_sn:,.0f} AU", f"{avg_sn:,.0f} AU", f"{thresh_alarm_sn:,.0f} AU", f"{peak_sn:,.0f} AU", f"{n_crit_sn} settimane"]
+        ], colWidths=[150, 160, 170, 160, 152])
+        t_strain_kpi.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 2.5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ]
-        for r_i, r_val in enumerate(y_sn_val, start=1):
-            if r_val > 0:
-                bg_s = '#dcfce7' if r_val <= ath_warn_strain else '#fee2e2'
-                t_sn_style.append(('BACKGROUND', (4, r_i), (6, r_i), colors.HexColor(bg_s)))
-
-        t_sn_table.setStyle(TableStyle(t_sn_style))
-        elements.append(t_sn_table)
+            ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f8fafc')),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        elements.append(t_strain_kpi)
         elements.append(Spacer(1, 8))
 
-        fig_sn_pdf = go.Figure()
-        fig_sn_pdf.add_hline(y=ath_baseline_strain, line_dash="dot", line_color="#0284c7", line_width=1.2,
-                             annotation_text=f"Baseline Individuale ({ath_baseline_strain:,.0f} AU)", annotation_position="bottom left",
-                             annotation_font_size=9, annotation_font_color="#0284c7")
-        fig_sn_pdf.add_hline(y=ath_warn_strain, line_dash="dash", line_color="#ef4444", line_width=1.5,
-                             annotation_text=f"Soglia Allarme +50% ({ath_warn_strain:,.0f} AU)", annotation_position="top left",
-                             annotation_font_size=9, annotation_font_color="#b91c1c")
-        fig_sn_pdf.add_trace(go.Scatter(
-            x=x_sn_lbl, y=y_sn_val, mode='lines+markers', name='Training Strain',
-            line=dict(color='#f59e0b', width=2.5, shape='spline'), marker=dict(size=6, color='#f59e0b')
-        ))
-        max_sn_y = max(max(y_sn_val or [1500.0]), ath_warn_strain) * 1.15
-        fig_sn_pdf.update_layout(
-            title="Training Strain Settimana per Settimana (Foster)",
-            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
-            margin=dict(l=30, r=30, t=35, b=25), yaxis=dict(range=[0, max_sn_y])
+        # Grafico Executive Strain
+        max_y_sn = max(max(y_strain_tlh or [1000.0]), thresh_alarm_sn) * 1.25
+        fig_sn = go.Figure()
+        fig_sn.add_shape(
+            type="rect", x0=-0.5, x1=len(x_axis_labels) - 0.5, y0=0, y1=thresh_alarm_sn,
+            fillcolor="rgba(16, 185, 129, 0.07)", line=dict(width=0), layer="below"
         )
-        elements.append(fig_to_rl_image(fig_sn_pdf, 792, 175))
+        fig_sn.add_shape(
+            type="line", x0=-0.5, x1=len(x_axis_labels) - 0.5, y0=avg_sn, y1=avg_sn,
+            line=dict(color="#0ea5e9", width=1.5, dash="dot"), layer="above"
+        )
+        fig_sn.add_shape(
+            type="line", x0=-0.5, x1=len(x_axis_labels) - 0.5, y0=thresh_alarm_sn, y1=thresh_alarm_sn,
+            line=dict(color="#ef4444", width=2, dash="dash"), layer="above"
+        )
+        fig_sn.add_annotation(
+            x=0.01, y=thresh_alarm_sn, xref="paper", yref="y", text=f"SOGLIA ALLARME PICCO (+50%): {thresh_alarm_sn:,.0f} AU",
+            showarrow=False, font=dict(color="#b91c1c", size=8), bgcolor="rgba(254, 226, 226, 0.9)"
+        )
+        colors_sn = ["#ef4444" if v > thresh_alarm_sn else "#10b981" for v in y_strain_tlh]
+        fig_sn.add_trace(go.Scatter(
+            x=x_axis_labels, y=y_strain_tlh, mode='lines+markers', name='Strain TL High (Intensità)',
+            line=dict(color='#f59e0b', width=2.8, shape='spline', smoothing=0.3),
+            marker=dict(size=6, color=colors_sn, line=dict(color='#ffffff', width=1.5))
+        ))
+        apply_pdf_chart_styling(
+            fig_sn, max_y_sn,
+            "TRAINING STRAIN STAGIONALE (CARICO TL HIGH × MONOTONIA) CON SOGLIE DI PICCO CRITICO",
+            y_title="Strain [AU]", height=220
+        )
+        elements.append(fig_to_rl_image(fig_sn, 792, 220))
 
     build_pdf_con_footer(doc, elements)
     return buffer.getvalue()

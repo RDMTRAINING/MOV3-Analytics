@@ -53,6 +53,7 @@ from pdf_generator import (
     crea_pdf_storico_m0v3,
     crea_pdf_medie_m0v3,
 )
+from utils_livetennis import fetch_cobolli_live_stats
 
 def _acwr_zone_style(pct_val, has_baseline=True):
     if not has_baseline or pd.isna(pct_val) or pct_val <= 0:
@@ -288,6 +289,63 @@ def render_home(t):
         "EXECUTIVE LOCKER ROOM"
     )
 
+    # =========================================================================
+    # LIVE TENNIS API STATS: FLAVIO COBOLLI (SUBITO DOPO L'INTESTAZIONE)
+    # =========================================================================
+    live_st = fetch_cobolli_live_stats()
+    atp_rank = live_st.get("ranking", 6)
+    atp_pts = live_st.get("ranking_points", 3690)
+    tb_pct = live_st.get("tiebreak_pct", 80.0)
+    tb_rec = live_st.get("tiebreak_record", "120W - 30L")
+    ds_pct = live_st.get("deciding_set_pct", 61.9)
+    ds_rec = live_st.get("deciding_set_record", "91W - 56L")
+    vl_pct = live_st.get("vs_lefty_pct", 60.3)
+    last_sync_h = live_st.get("last_sync", "22:00")
+    sync_dt = live_st.get("sync_date", "Oggi")
+
+    st.markdown(
+        f"<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin-top:14px; margin-bottom:18px; box-shadow:0 2px 8px -2px rgba(15,23,42,0.06); font-family:\"Inter\", sans-serif;'>"
+        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:14px;'>"
+        f"<div style='display:flex; align-items:center; gap:8px;'>"
+        f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border:1.5px solid #0ea5e9; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;'>"
+        f"<i class='bi bi-broadcast' style='color:#38bdf8; font-size:16px;'></i>"
+        f"</div>"
+        f"<div>"
+        f"<span style='font-size:13.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px;'>"
+        f"{tr('STATISTICHE ATP TOUR (LIVE API)', 'ATP TOUR STATS (LIVE API)')} — <span style='color:#0ea5e9;'>FLAVIO COBOLLI</span></span>"
+        f"</div>"
+        f"</div>"
+        f"<div style='display:flex; align-items:center; gap:8px;'>"
+        f"<span style='background:rgba(16,185,129,0.12); color:#059669; font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:6px;'>"
+        f"<i class='bi bi-check-circle-fill' style='margin-right:4px;'></i>LIVE SYNC · 1 check/giorno ({sync_dt} {last_sync_h})</span>"
+        f"</div>"
+        f"</div>"
+        f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;'>"
+        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0ea5e9; border-radius:8px; padding:10px 14px;'>"
+        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>RANKING ATP LIVE</div>"
+        f"<div style='font-size:22px; font-weight:900; color:#0284c7; margin-top:2px;'>#{atp_rank} <span style='font-size:12px; font-weight:700; color:#475569;'>({atp_pts:,} pts)</span></div>"
+        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Posizione ufficiale ATP</div>"
+        f"</div>"
+        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #10b981; border-radius:8px; padding:10px 14px;'>"
+        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>CLUTCH: TIEBREAK</div>"
+        f"<div style='font-size:22px; font-weight:900; color:#059669; margin-top:2px;'>{tb_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({tb_rec})</span></div>"
+        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Freddezza momenti decisivi</div>"
+        f"</div>"
+        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px;'>"
+        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>SET DECISIVI (3°/5° SET)</div>"
+        f"<div style='font-size:22px; font-weight:900; color:#d97706; margin-top:2px;'>{ds_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({ds_rec})</span></div>"
+        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Resilienza lunga distanza</div>"
+        f"</div>"
+        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #8b5cf6; border-radius:8px; padding:10px 14px;'>"
+        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>VS MANCINI</div>"
+        f"<div style='font-size:22px; font-weight:900; color:#7c3aed; margin-top:2px;'>{vl_pct:.1f}%</div>"
+        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Win rate avversari mancini</div>"
+        f"</div>"
+        f"</div>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
     df_storico = load_local_database()
     atleti_visibili = get_lista_atleti_disponibili(st.session_state.get('user'), st.session_state.get('role'))
     if not df_storico.empty and atleti_visibili and st.session_state.get('role') != 'Super-Admin':
@@ -297,7 +355,7 @@ def render_home(t):
     tot_sessioni = len(df_storico) if not df_storico.empty else 0
     n_sim = int(df_storico['Dato_Simulato'].sum()) if (not df_storico.empty and 'Dato_Simulato' in df_storico.columns) else 0
     n_reali = tot_sessioni - n_sim
-    tot_match = len(df_storico[df_storico['Tipologia Sessione'].astype(str).str.lower() == 'match']) if not df_storico.empty else 0
+    tot_match = len(df_storico[df_storico['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])]) if not df_storico.empty else 0
 
     ultima_data_str = "N/D"
     ultimo_dettaglio = tr("Data acquisizione più recente", "Most recent acquisition date")

@@ -76,7 +76,7 @@ def render_storico_match(t):
         df_storico = df_storico[df_storico['Players'].isin(atleti_consentiti)]
 
     # Prendiamo solo i Match (escludendo le simulazioni se vogliamo solo dati reali)
-    df_match = df_storico[(df_storico['Tipologia Sessione'].astype(str).str.lower() == 'match') & (df_storico['Dato_Simulato'] == False)].copy()
+    df_match = df_storico[(df_storico['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])) & (df_storico['Dato_Simulato'] == False)].copy()
     if df_match.empty: st.warning(t['am_no_match']); return
 
     giocatori_disponibili = df_match['Players'].dropna().unique().tolist()

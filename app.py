@@ -47,12 +47,14 @@ try:
         render_trend_settimanale,
         render_trend_stagionale,
         render_storico_match,
+        render_statistiche_match,
     )
 except ImportError:
     from views.home import render_home
     from views.profilo import render_profilo
     from views.admin import render_admin
     from views.caricamento_dati import render_caricamento_dati
+    from views.statistiche_match import render_statistiche_match
     from views.generatore_dati import render_generatore_dati
     from views.gestione_file import render_gestione_file
     from views.medie import render_medie
@@ -999,6 +1001,7 @@ def main():
             (tr("Trend Settimanale", "Weekly Trend"), "Trend Settimanale", "calendar-week"),
             (tr("Trend Stagionale", "Seasonal Trend"), "Trend Stagionale", "calendar-range"),
             (tr("Storico Match", "Match History"), "Storico Match", "graph-up-arrow"),
+            (tr("Statistiche Match", "Match Statistics"), "Statistiche Match", "card-checklist"),
             (tr("Medie & Confronti", "Averages & H2H"), "Medie", "bar-chart-line"),
             (tr("Carico Interno", "Internal Load"), "Carico Interno", "heart-pulse"),
             (tr("Test & Valutazioni", "Tests & Assessments"), "Test & Valutazioni", "clipboard2-pulse"),
@@ -1237,7 +1240,7 @@ def main():
     if DEV_MODE:
         importlib.reload(pdf_generator)
 
-    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)"]:
+    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)", "Statistiche Match"]:
         st.warning(tr("Non disponi dei permessi per accedere a questa sezione. Contatta l'amministratore.", "You do not have permissions to access this section. Contact the administrator."))
         st.stop()
 
@@ -1312,6 +1315,10 @@ def main():
         import views.storico_match
         _load_view(views.storico_match)
         views.storico_match.render_storico_match(t)
+    elif active_page == "Statistiche Match":
+        import views.statistiche_match
+        _load_view(views.statistiche_match)
+        views.statistiche_match.render_statistiche_match(t)
     elif active_page == "Manuale Report":
         import views.manuale_report
         _load_view(views.manuale_report)
