@@ -90,14 +90,30 @@ def render_gestione_file(t):
         filtro_utente = lbl_tutti_utenti
         f_col_a, f_col_t, f_col_o = st.columns(3)
 
+    df_scoped_ath = df_base_perm.copy()
+    if filtro_utente != lbl_tutti_utenti:
+        df_scoped_ath = df_scoped_ath[df_scoped_ath['Uploader_Email'] == filtro_utente]
+
     with f_col_a:
-        atleti_in_db = sorted([str(p) for p in df_base_perm['Players'].dropna().unique() if str(p).strip()])
-        filtro_atleta = st.selectbox(tr("Atleta:", "Athlete:"), [lbl_tutti_atleti] + atleti_in_db, key="gf_flt_ath")
+        atleti_in_db = sorted([str(p) for p in df_scoped_ath['Players'].dropna().unique() if str(p).strip()])
+        opts_atleti = [lbl_tutti_atleti] + atleti_in_db
+        if st.session_state.get('gf_flt_ath') not in opts_atleti:
+            st.session_state['gf_flt_ath'] = lbl_tutti_atleti
+        filtro_atleta = st.selectbox(tr("Atleta:", "Athlete:"), opts_atleti, key="gf_flt_ath")
+
+    # Scoped dataframe for Tipologia Sessione based on current filtro_utente AND filtro_atleta
+    df_scoped_tipi = df_scoped_ath.copy()
+    if filtro_atleta != lbl_tutti_atleti:
+        df_scoped_tipi = df_scoped_tipi[df_scoped_tipi['Players'] == filtro_atleta]
+
     with f_col_t:
         canonical_rank = {name.lower(): idx for idx, name in enumerate(CANONICAL_TIPOLOGIE_SESSIONE)}
-        raw_tipi = [str(tp) for tp in df_base_perm['Tipologia Sessione'].dropna().unique() if str(tp).strip()]
+        raw_tipi = [str(tp) for tp in df_scoped_tipi['Tipologia Sessione'].dropna().unique() if str(tp).strip()]
         tipi_in_db = sorted(raw_tipi, key=lambda x: (canonical_rank.get(x.lower(), 99), x))
-        filtro_tipo = st.selectbox(tr("Tipologia Sessione:", "Session Type:"), [lbl_tutte_tipologie] + tipi_in_db, key="gf_flt_type")
+        opts_tipi = [lbl_tutte_tipologie] + tipi_in_db
+        if st.session_state.get('gf_flt_type') not in opts_tipi:
+            st.session_state['gf_flt_type'] = lbl_tutte_tipologie
+        filtro_tipo = st.selectbox(tr("Tipologia Sessione:", "Session Type:"), opts_tipi, key="gf_flt_type")
     with f_col_o:
         opt_orig = [
             tr("Tutte (Reali + Simulate)", "All (Real + Simulated)"),
@@ -135,7 +151,7 @@ def render_gestione_file(t):
         nm_s = str(row_s.get('Session', 'N/D'))
         tp_s = str(row_s.get('Tipologia Sessione', 'N/D'))
         am_s = str(row_s.get('Ambiente', 'Outdoor'))
-        sim_tag = " | SIMULATO" if bool(row_s.get('Dato_Simulato', False)) else ""
+        sim_tag = " | SIMULATO" if bool(row_s.get('Dato_Simulato', False)) else " | REALE"
         lbl_univoca = f"{dt_s} — {pl_s} — {nm_s} [{tp_s} | {am_s}{sim_tag}] (ID #{idx_row})"
         mappa_sessioni_idx[lbl_univoca] = idx_row
 
@@ -163,6 +179,7 @@ def render_gestione_file(t):
         curr_amb = str(riga_attuale.get('Ambiente', 'Outdoor')) if pd.notna(riga_attuale.get('Ambiente')) else 'Outdoor'
         curr_tipo = str(riga_attuale.get('Tipologia Sessione', 'Match')) if pd.notna(riga_attuale.get('Tipologia Sessione')) else 'Match'
         curr_sparring = int(float(riga_attuale.get('Minuti Sparring', 0))) if pd.notna(riga_attuale.get('Minuti Sparring')) else 0
+        curr_simulato = bool(riga_attuale.get('Dato_Simulato', False))
 
         opzioni_atleti_mod = list(dict.fromkeys((atleti_consentiti or []) + atleti_in_db + ([curr_player] if curr_player else [])))
         idx_player = opzioni_atleti_mod.index(curr_player) if curr_player in opzioni_atleti_mod else 0
@@ -178,6 +195,14 @@ def render_gestione_file(t):
                 new_player = st.selectbox(tr("Atleta Assegnato", "Assigned Athlete"), opzioni_atleti_mod, index=idx_player)
                 new_date = st.date_input(tr("Data Sessione", "Session Date"), value=curr_date_obj)
                 new_name = st.text_input(tr("Nome Sessione", "Session Name"), value=curr_name)
+                opt_reale = tr("Reale (Sensore GPS)", "Real (GPS Sensor)")
+                opt_sim = tr("Simulato (Senza GPS)", "Simulated (No GPS)")
+                new_origine_sel = st.radio(
+                    tr("Stato Origine Dato", "Data Origin Status"),
+                    [opt_reale, opt_sim],
+                    index=1 if curr_simulato else 0,
+                    horizontal=True
+                )
             with c2:
                 opzioni_campo = ["Hard", "Clay", "Grass"]
                 if curr_campo not in opzioni_campo:
@@ -192,15 +217,28 @@ def render_gestione_file(t):
                 new_sparring = st.number_input(tr("Minuti Sparring", "Sparring Minutes"), min_value=0, step=1, value=int(curr_sparring))
 
             if st.form_submit_button(tr("Salva Nuove Info", "Save New Info"), type="primary"):
+                is_sim_final = (new_origine_sel == opt_sim)
                 tipo_finale = new_tipo_custom.strip() if new_tipo_custom.strip() else new_tipo_sel
+
+                nome_pulito = new_name.strip() if new_name.strip() else curr_name
+                if not is_sim_final and nome_pulito.endswith('*'):
+                    nome_pulito = nome_pulito.rstrip('*').strip()
+
                 df_storico.loc[idx_target, 'Players'] = new_player
                 df_storico.loc[idx_target, 'Date'] = new_date.strftime("%d/%m/%Y")
-                df_storico.loc[idx_target, 'Session'] = new_name.strip() if new_name.strip() else curr_name
+                df_storico.loc[idx_target, 'Session'] = nome_pulito
                 df_storico.loc[idx_target, 'Minuti'] = round(float(new_minuti), 1)
                 df_storico.loc[idx_target, 'Tipologia Campo'] = new_campo
                 df_storico.loc[idx_target, 'Ambiente'] = new_amb
                 df_storico.loc[idx_target, 'Tipologia Sessione'] = tipo_finale
                 df_storico.loc[idx_target, 'Minuti Sparring'] = int(new_sparring)
+                df_storico.loc[idx_target, 'Dato_Simulato'] = bool(is_sim_final)
+
+                # Se convertito da simulato a reale, sanifica File_Name se era del simulatore
+                if not is_sim_final:
+                    curr_fn = str(df_storico.loc[idx_target, 'File_Name']).strip()
+                    if curr_fn in ('Generato_dal_Sistema_M0V3', '', 'nan', 'None'):
+                        df_storico.loc[idx_target, 'File_Name'] = f"Sessione_{new_player}_{new_date.strftime('%Y%m%d')}.csv"
 
                 # Se cambiato in Indoor, azzera le colonne GPS satellitari per coerenza fisica
                 if str(new_amb).strip().lower() == "indoor":
