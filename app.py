@@ -804,8 +804,15 @@ def main():
         """.replace("__TOKEN__", str(rt))
         components.html(cookie_js, height=0)
 
-    if not ensure_valid_session():
-        st.rerun()
+    if not ensure_valid_session() or not st.session_state.get('user'):
+        st.session_state['user'] = None
+        st.session_state['role'] = None
+        st.session_state['refresh_token'] = None
+        auth_module()
+        return
+
+    user_obj = st.session_state.get('user')
+    user_id = getattr(user_obj, 'id', None) if user_obj else None
 
     if not st.session_state.get('privacy_accettata', False):
         st.title("Aggiornamento Privacy e Condizioni d'Uso")
@@ -821,9 +828,11 @@ def main():
                 )
         accetta = st.checkbox("Dichiaro di aver letto e accetto integralmente l'Informativa.")
         if st.button("Accetta e Continua", type="primary", disabled=not accetta):
-            supabase.table('profili').update({"privacy_accettata": True}).eq('id', st.session_state['user'].id).execute()
+            if user_id:
+                supabase.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
             st.session_state['privacy_accettata'] = True
             st.rerun()
+            return
         return
 
     if 'current_page' not in st.session_state: st.session_state.current_page = "Home"
@@ -941,18 +950,25 @@ def main():
         
         t = LANG[st.session_state['lang']]
 
+        user_obj = st.session_state.get('user')
+        if not user_obj:
+            auth_module()
+            return
+
+        user_email = getattr(user_obj, 'email', '') or (user_obj.get('email', '') if isinstance(user_obj, dict) else '')
+        curr_role = st.session_state.get('role', 'Staff')
+        curr_uid = getattr(user_obj, 'id', '') or (user_obj.get('id', '') if isinstance(user_obj, dict) else '')
+
         st.markdown(f"""
         <div style='background-color: rgba(255,255,255,0.06); padding: 12px; border-radius: 8px; margin-top: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); color: #e6f1ff; font-family: "Inter", sans-serif;'>
             <div style='font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;'>{t['user']}</div>
-            <div style='font-weight: 700; font-size: 13px; margin-bottom: 6px; word-break: break-all;'>{st.session_state['user'].email}</div>
+            <div style='font-weight: 700; font-size: 13px; margin-bottom: 6px; word-break: break-all;'>{user_email}</div>
             <div style='font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;'>{t['role']}</div>
-            <div style='font-weight: 700; font-size: 13px; color: #38bdf8 !important;'>{st.session_state['role']}</div>
+            <div style='font-weight: 700; font-size: 13px; color: #38bdf8 !important;'>{curr_role}</div>
         </div>
         """, unsafe_allow_html=True)
 
         # Recupero permessi moduli per visibilità menu personalizzata (RLS / Admin)
-        curr_uid = st.session_state['user'].id
-        curr_role = st.session_state.get('role', 'Staff')
 
         if curr_role == 'Super-Admin':
             permessi_utente_set = None  # Super-Admin vede tutte le aree e pagine
@@ -1212,7 +1228,9 @@ def main():
 
     # Banner stato giornaliero Wellness/sRPE per Atleta su Desktop
     if st.session_state.get('role') == 'Atleta' and active_page != "Diario Atleta":
-        atl_info = get_atleta_dettagli_per_utente(st.session_state['user'].id)
+        u_obj = st.session_state.get('user')
+        u_id = getattr(u_obj, 'id', None) if u_obj else None
+        atl_info = get_atleta_dettagli_per_utente(u_id) if u_id else None
         if atl_info:
             oggi_d = datetime.date.today()
             oggi_iso = oggi_d.strftime('%Y-%m-%d')
