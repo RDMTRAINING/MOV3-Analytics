@@ -125,12 +125,19 @@ def render_analisi_match(t):
         for s_k in sessioni_disponibili
     }
 
+    tipo_map_match = {
+        s_k: str(df_match_ply[df_match_ply['Session'] == s_k]['Tipologia Sessione'].iloc[0]).strip()
+        for s_k in sessioni_disponibili
+    }
+
     def _format_match_item(s_k):
         d_str = date_map_match.get(s_k, '')
+        tipo_k = tipo_map_match.get(s_k, 'Match').title()
+        badge_tipo = " [Doppio]" if "doppio" in tipo_k.lower() else " [Singolo]"
         s_tag = " [SIMULATO]" if sim_map_match.get(s_k, False) else ""
         if s_k.startswith(d_str.replace('/', '_')) or s_k.startswith(d_str):
-            return f"{s_k}{s_tag}"
-        return f"{d_str} — {s_k}{s_tag}" if d_str else f"{s_k}{s_tag}"
+            return f"{s_k}{badge_tipo}{s_tag}"
+        return f"{d_str} — {s_k}{badge_tipo}{s_tag}" if d_str else f"{s_k}{badge_tipo}{s_tag}"
 
     with col_f1: 
         sessione_selezionata = st.selectbox(
@@ -156,23 +163,28 @@ def render_analisi_match(t):
             key="widget_surface_match"
         )
 
-    # Striscia Compatta Identità Atleta MOV3 con tag match
-    sim_tag = f"[{tr('SIMULATO', 'SIMULATED')}]" if sim_map_match.get(sessione_selezionata, False) else ""
-    lbl_m_tag = f"{tr('Match', 'Match')}: {sessione_selezionata} {sim_tag}".strip()
-    extra_badges_m = [lbl_m_tag]
-    if filtro_superficie != lbl_all_sup:
-        extra_badges_m.append(f"{tr('Filtro Medie', 'Avg Filter')}: {filtro_superficie}")
-    render_athlete_hero_strip(giocatore_selezionato, df_atleta=df_match_ply, extra_badges=extra_badges_m)
-    
     dati_sessione = df_match_ply[df_match_ply['Session'] == sessione_selezionata]
     if dati_sessione.empty: st.error(t['am_no_data_ply']); return
         
     dati_sessione = dati_sessione.iloc[0].fillna(0)
     is_sim_match = bool(dati_sessione.get('Dato_Simulato', False))
+    tipo_sess_corrente = str(dati_sessione.get('Tipologia Sessione', 'Match')).strip().lower()
+    is_match_doppio = ('doppio' in tipo_sess_corrente)
+    lbl_disciplina = "Match Doppio" if is_match_doppio else "Match Singolo"
 
-    df_match_reale = df_match_ply[df_match_ply['Dato_Simulato'] == False].copy()
-    if df_match_reale.empty:
-        df_match_reale = df_match_ply.copy()
+    # CONFRONTO COERENTE: Se la sessione e' Doppio confronta con media Match Doppio (Reali);
+    # se e' Singolo confronta con media Match Singolo (Reali)
+    df_match_reale_tipo = df_match_ply[
+        (df_match_ply['Dato_Simulato'] == False) &
+        (df_match_ply['Tipologia Sessione'].astype(str).str.strip().str.lower() == tipo_sess_corrente)
+    ].copy()
+
+    if df_match_reale_tipo.empty:
+        df_match_reale = df_match_ply[df_match_ply['Tipologia Sessione'].astype(str).str.strip().str.lower() == tipo_sess_corrente].copy()
+        if df_match_reale.empty:
+            df_match_reale = df_match_ply.copy()
+    else:
+        df_match_reale = df_match_reale_tipo
 
     col_num_std = [c for c in COLONNE_STANDARD if c not in ["Date", "Session", "Players"]]
     for c_s in col_num_std:
@@ -191,6 +203,17 @@ def render_analisi_match(t):
     
     medie_storiche = df_match_reale_ref.mean(numeric_only=True).fillna(0)
     medie_storiche_gps = df_match_gps.mean(numeric_only=True).fillna(0) if not df_match_gps.empty else pd.Series(0.0, index=medie_storiche.index)
+
+    # Striscia Compatta Identità Atleta MOV3 con tag match e confronto media coerente
+    sim_tag = f"[{tr('SIMULATO', 'SIMULATED')}]" if sim_map_match.get(sessione_selezionata, False) else ""
+    lbl_m_tag = f"{lbl_disciplina}: {sessione_selezionata} {sim_tag}".strip()
+    extra_badges_m = [
+        lbl_m_tag,
+        f"{tr('Confronto', 'Benchmark')}: Media {lbl_disciplina} (Reale, N={len(df_match_reale_ref)})"
+    ]
+    if filtro_superficie != lbl_all_sup:
+        extra_badges_m.append(f"{tr('Filtro Superficie', 'Surface Filter')}: {filtro_superficie}")
+    render_athlete_hero_strip(giocatore_selezionato, df_atleta=df_match_ply, extra_badges=extra_badges_m)
     
     campo = dati_sessione.get('Tipologia Campo', 'N/D')
     ambiente = dati_sessione.get('Ambiente', 'N/D')
@@ -205,6 +228,7 @@ def render_analisi_match(t):
         st.warning(t['am_sim_alert'])
 
     meta_items_match = [
+        (tr("Disciplina", "Discipline"), lbl_disciplina),
         (tr("Superficie", "Surface"), campo),
         (tr("Ambiente", "Environment"), ambiente),
         ("Sparring", f"{sparring} min"),
