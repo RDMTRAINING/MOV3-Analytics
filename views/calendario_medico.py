@@ -1157,7 +1157,7 @@ def render_calendario_medico(t):
 
         for p in periods:
             dt_x0 = datetime.datetime.combine(p['start_date'], datetime.time(0, 0)) - datetime.timedelta(hours=12)
-            dt_x1 = datetime.datetime.combine(p['end_date'], datetime.time(23, 59, 59)) + datetime.timedelta(hours=12)
+            dt_x1 = datetime.datetime.combine(p['end_date'], datetime.time(0, 0)) + datetime.timedelta(hours=12)
             
             if p['status'] == 'INDISPONIBILE':
                 fig_corr.add_vrect(
