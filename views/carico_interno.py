@@ -89,6 +89,7 @@ def render_carico_interno(t):
         index=1,
         key="sel_periodo_carico_interno"
     )
+    label_periodo_sel = str(periodo_sel)
 
     # Striscia Compatta Identità Atleta MOV3 con tag periodo
     lbl_per_tag = f"{tr('Finestra', 'Window')}: {periodo_sel}"
