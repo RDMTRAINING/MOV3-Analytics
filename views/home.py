@@ -289,62 +289,224 @@ def render_home(t):
         "EXECUTIVE LOCKER ROOM"
     )
 
-    # =========================================================================
-    # LIVE TENNIS API STATS: FLAVIO COBOLLI (SUBITO DOPO L'INTESTAZIONE)
-    # =========================================================================
-    live_st = fetch_cobolli_live_stats()
-    atp_rank = live_st.get("ranking", 6)
-    atp_pts = live_st.get("ranking_points", 3690)
-    tb_pct = live_st.get("tiebreak_pct", 80.0)
-    tb_rec = live_st.get("tiebreak_record", "120W - 30L")
-    ds_pct = live_st.get("deciding_set_pct", 61.9)
-    ds_rec = live_st.get("deciding_set_record", "91W - 56L")
-    vl_pct = live_st.get("vs_lefty_pct", 60.3)
-    last_sync_h = live_st.get("last_sync", "22:00")
-    sync_dt = live_st.get("sync_date", "Oggi")
+    df_storico = load_local_database()
+    atleti_visibili = get_lista_atleti_disponibili(st.session_state.get('user'), st.session_state.get('role'))
+    if not df_storico.empty and atleti_visibili and st.session_state.get('role') != 'Super-Admin':
+        df_storico = df_storico[df_storico['Players'].isin(atleti_visibili)]
 
-    st.markdown(
-        f"<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin-top:14px; margin-bottom:18px; box-shadow:0 2px 8px -2px rgba(15,23,42,0.06); font-family:\"Inter\", sans-serif;'>"
-        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:14px;'>"
-        f"<div style='display:flex; align-items:center; gap:8px;'>"
-        f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border:1.5px solid #0ea5e9; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;'>"
-        f"<i class='bi bi-broadcast' style='color:#38bdf8; font-size:16px;'></i>"
-        f"</div>"
-        f"<div>"
-        f"<span style='font-size:13.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px;'>"
-        f"{tr('STATISTICHE ATP TOUR (LIVE API)', 'ATP TOUR STATS (LIVE API)')} — <span style='color:#0ea5e9;'>FLAVIO COBOLLI</span></span>"
-        f"</div>"
-        f"</div>"
-        f"<div style='display:flex; align-items:center; gap:8px;'>"
-        f"<span style='background:rgba(16,185,129,0.12); color:#059669; font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:6px;'>"
-        f"<i class='bi bi-check-circle-fill' style='margin-right:4px;'></i>LIVE SYNC · 1 check/giorno ({sync_dt} {last_sync_h})</span>"
-        f"</div>"
-        f"</div>"
-        f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;'>"
-        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0ea5e9; border-radius:8px; padding:10px 14px;'>"
-        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>RANKING ATP LIVE</div>"
-        f"<div style='font-size:22px; font-weight:900; color:#0284c7; margin-top:2px;'>#{atp_rank} <span style='font-size:12px; font-weight:700; color:#475569;'>({atp_pts:,} pts)</span></div>"
-        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Posizione ufficiale ATP</div>"
-        f"</div>"
-        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #10b981; border-radius:8px; padding:10px 14px;'>"
-        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>CLUTCH: TIEBREAK</div>"
-        f"<div style='font-size:22px; font-weight:900; color:#059669; margin-top:2px;'>{tb_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({tb_rec})</span></div>"
-        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Freddezza momenti decisivi</div>"
-        f"</div>"
-        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px;'>"
-        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>SET DECISIVI (3°/5° SET)</div>"
-        f"<div style='font-size:22px; font-weight:900; color:#d97706; margin-top:2px;'>{ds_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({ds_rec})</span></div>"
-        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Resilienza lunga distanza</div>"
-        f"</div>"
-        f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #8b5cf6; border-radius:8px; padding:10px 14px;'>"
-        f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>VS MANCINI</div>"
-        f"<div style='font-size:22px; font-weight:900; color:#7c3aed; margin-top:2px;'>{vl_pct:.1f}%</div>"
-        f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Win rate avversari mancini</div>"
-        f"</div>"
-        f"</div>"
-        f"</div>",
-        unsafe_allow_html=True
-    )
+    ath_home_sel = st.session_state.get('selected_athlete')
+    if not ath_home_sel or (atleti_visibili and ath_home_sel not in atleti_visibili):
+        ath_home_sel = atleti_visibili[0] if atleti_visibili else "Flavio Cobolli"
+
+    if not df_storico.empty and 'Date' in df_storico.columns:
+        df_storico['Date_obj'] = pd.to_datetime(df_storico['Date'], format='%d/%m/%Y', errors='coerce')
+
+    # =========================================================================
+    # SEZIONE FOCUS GIOCATORE: HERO CARD, CLINICA & IDONEITÀ (STILE MOV3)
+    # COLLOCATA ALL'INIZIO DELLA PAGINA SUBITO SOTTO EXECUTIVE LOCKER ROOM
+    # =========================================================================
+    if ath_home_sel:
+        # Header Bar Focus Atleta
+        c_hdr_tit, c_hdr_sel = st.columns([1.6, 1.4])
+        with c_hdr_tit:
+            lbl_tit_focus = tr("FOCUS ATLETA & MONITORAGGIO INDIVIDUALE", "ATHLETE FOCUS & INDIVIDUAL MONITORING")
+            lbl_sub_focus = tr("Scheda completa, stato clinico e carichi rolling dell'atleta attivo selezionato nel menu laterale.", "Complete profile, clinical status, and rolling loads for the active athlete selected in the sidebar.")
+            st.markdown(
+                f"<div style='display:flex; align-items:center; gap:12px; padding:4px 0;'>"
+                f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border:1.5px solid #0ea5e9; width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 10px rgba(14,165,233,0.2);'>"
+                f"<i class='bi bi-person-bounding-box' style='color:#38bdf8; font-size:22px;'></i>"
+                f"</div>"
+                f"<div>"
+                f"<div style='font-size:14.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px;'>{lbl_tit_focus}</div>"
+                f"<div style='font-size:12px; color:#64748b; margin-top:2px;'>{lbl_sub_focus}</div>"
+                f"</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        with c_hdr_sel:
+            lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
+            st.markdown(
+                f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
+                f"<div style='background:rgba(14,165,233,0.08); border:1.5px solid #0ea5e9; border-radius:10px; padding:6px 14px; display:inline-flex; align-items:center; gap:8px;'>"
+                f"<i class='bi bi-person-fill' style='color:#0284c7; font-size:16px;'></i>"
+                f"<div style='text-align:right;'>"
+                f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_act_ath}</div>"
+                f"<div style='font-size:14.5px; font-weight:900; color:#0f172a;'>{ath_home_sel}</div>"
+                f"</div>"
+                f"</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        # Calcolo Iniziali Atleta per Avatar Monogramma
+        parts = [p for p in str(ath_home_sel).strip().split() if p]
+        if len(parts) >= 2:
+            ath_initials = f"{parts[0][0]}{parts[1][0]}".upper()
+        elif len(parts) == 1 and len(parts[0]) > 0:
+            ath_initials = parts[0][:2].upper()
+        else:
+            ath_initials = "AT"
+
+        # Recupero Dati e Statistiche dell'Atleta
+        df_ath_sel = df_storico[df_storico['Players'] == ath_home_sel] if not df_storico.empty else pd.DataFrame()
+        info_st = _calcola_stato_clinico_atleta(ath_home_sel, df_ath_sel)
+        info_fis = _calcola_ultimo_trattamento_atleta(ath_home_sel)
+
+        num_sessioni_tot = len(df_ath_sel)
+        data_ultima_sess = "-"
+        diff_gg_sess = "-"
+        nome_ultima_sess = "-"
+        if not df_ath_sel.empty and 'Date_obj' in df_ath_sel.columns:
+            df_ath_sorted = df_ath_sel.dropna(subset=['Date_obj']).sort_values('Date_obj', ascending=False)
+            if not df_ath_sorted.empty:
+                r_last = df_ath_sorted.iloc[0]
+                dt_last = r_last['Date_obj']
+                data_ultima_sess = dt_last.strftime("%d/%m/%Y")
+                diff_days = (datetime.date.today() - dt_last.date()).days
+                if diff_days == 0:
+                    diff_gg_sess = tr("Oggi", "Today")
+                elif diff_days == 1:
+                    diff_gg_sess = tr("Ieri", "Yesterday")
+                elif diff_days > 1:
+                    diff_gg_sess = f"{diff_days} {tr('gg fa', 'd ago')}"
+                else:
+                    diff_gg_sess = data_ultima_sess
+                tit_s = str(r_last.get('Session_Title', ''))
+                typ_s = str(r_last.get('Activity Type', ''))
+                nome_ultima_sess = tit_s if tit_s else (typ_s if typ_s else tr("Sessione Registrata", "Recorded Session"))
+
+        lbl_atleta_attivo = tr("M0V3 ATLETA ATTIVO", "M0V3 ACTIVE ATHLETE")
+        lbl_ult_sess = tr("Ultima Sessione:", "Latest Session:")
+        lbl_sess_nel_db = tr("sessioni nel database", "sessions in database")
+        lbl_stat_clin = tr("STATO CLINICO & IDONEITÀ OPERATIVA", "CLINICAL STATUS & OPERATIONAL READINESS")
+        lbl_ult_fis = tr("ULTIMO TRATTAMENTO FISIOTERAPICO", "LATEST PHYSIOTHERAPY SESSION")
+        lbl_area_fis = tr("Area Fisioterapica", "Physiotherapy Area")
+
+        color_st = info_st['color']
+        icon_st = info_st.get('icon', 'bi-shield-check')
+        badge_st = info_st['badge']
+        tag_st = info_st['tag']
+        sub_st = info_st['sub']
+
+        color_fis = info_fis['color']
+        titolo_fis = info_fis['titolo']
+        sub_fis = info_fis['sub']
+
+        # GRANDE HERO CARD ATLETA (Alta Evidenza Visiva & Dettaglio Immediato)
+        hero_card_html = (
+            f"<div style='background:white; border:1px solid #e2e8f0; border-left:6px solid #0ea5e9; border-radius:14px; "
+            f"padding:22px 24px; box-shadow:0 4px 16px -2px rgba(15,23,42,0.06); margin-top:14px; margin-bottom:20px; font-family:\"Inter\", -apple-system, sans-serif;'>"
+            f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-bottom:1px solid #f1f5f9; padding-bottom:18px;'>"
+            f"<div style='display:flex; align-items:center; gap:18px;'>"
+            f"<div style='width:62px; height:62px; border-radius:14px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "
+            f"border:2.5px solid #0ea5e9; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:24px; "
+            f"font-weight:900; box-shadow:0 4px 14px rgba(14,165,233,0.30); flex-shrink:0; letter-spacing:0.5px;'>{ath_initials}</div>"
+            f"<div>"
+            f"<div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap;'>"
+            f"<span style='font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-0.6px; line-height:1.15; text-transform:uppercase;'>{ath_home_sel}</span>"
+            f"<span style='background:rgba(14,165,233,0.12); color:#0284c7; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(14,165,233,0.3); text-transform:uppercase;'>"
+            f"<i class='bi bi-person-badge-fill' style='margin-right:4px;'></i>{lbl_atleta_attivo}</span>"
+            f"</div>"
+            f"<div style='color:#64748b; font-size:12.5px; margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;'>"
+            f"<span><i class='bi bi-calendar3' style='color:#0ea5e9; margin-right:4px;'></i>{lbl_ult_sess} <b>{data_ultima_sess}</b> ({diff_gg_sess} · {nome_ultima_sess})</span>"
+            f"<span style='color:#cbd5e1;'>&bull;</span>"
+            f"<span><i class='bi bi-database' style='color:#0ea5e9; margin-right:4px;'></i><b>{num_sessioni_tot}</b> {lbl_sess_nel_db}</span>"
+            f"</div>"
+            f"</div>"
+            f"</div>"
+            f"<div>"
+            f"<div style='background:{color_st}15; color:{color_st}; border:2px solid {color_st}60; font-size:14.5px; font-weight:900; padding:8px 18px; border-radius:10px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 8px {color_st}20;'>"
+            f"<i class='bi {icon_st}' style='font-size:18px;'></i>"
+            f"<span>{badge_st} &middot; {tag_st}</span>"
+            f"</div>"
+            f"</div>"
+            f"</div>"
+            f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px;'>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:15px 18px; border-left:4px solid {color_st};'>"
+            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
+            f"<span style='font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>"
+            f"<i class='bi bi-heart-pulse-fill' style='color:#0ea5e9; margin-right:5px;'></i>{lbl_stat_clin}</span>"
+            f"<span style='font-size:11px; font-weight:800; color:{color_st}; background:{color_st}18; padding:2px 8px; border-radius:6px;'>{tag_st}</span>"
+            f"</div>"
+            f"<div style='font-size:19px; font-weight:900; color:{color_st}; display:flex; align-items:center; gap:8px;'>"
+            f"<i class='bi {icon_st}'></i>{badge_st}</div>"
+            f"<div style='font-size:12px; color:#475569; margin-top:5px; line-height:1.4;'>{sub_st}</div>"
+            f"</div>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:15px 18px; border-left:4px solid {color_fis};'>"
+            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
+            f"<span style='font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>"
+            f"<i class='bi bi-bandaid-fill' style='color:#0ea5e9; margin-right:5px;'></i>{lbl_ult_fis}</span>"
+            f"<span style='font-size:11px; font-weight:800; color:{color_fis}; background:{color_fis}18; padding:2px 8px; border-radius:6px;'>{lbl_area_fis}</span>"
+            f"</div>"
+            f"<div style='font-size:19px; font-weight:900; color:#0f172a; display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>"
+            f"<i class='bi bi-bandaid-fill' style='color:{color_fis}; font-size:17px;'></i>"
+            f"<span style='overflow:hidden; text-overflow:ellipsis;'>{titolo_fis}</span>"
+            f"</div>"
+            f"<div style='font-size:12px; color:#475569; margin-top:5px; line-height:1.4;'>{sub_fis}</div>"
+            f"</div>"
+            f"</div>"
+            f"</div>"
+        )
+        st.markdown(hero_card_html, unsafe_allow_html=True)
+
+    # =========================================================================
+    # LIVE TENNIS API STATS: FLAVIO COBOLLI
+    # =========================================================================
+    if 'cobolli' in str(ath_home_sel).lower() or any('cobolli' in str(a).lower() for a in atleti_visibili):
+        live_st = fetch_cobolli_live_stats()
+        atp_rank = live_st.get("ranking", 6)
+        atp_pts = live_st.get("ranking_points", 3690)
+        tb_pct = live_st.get("tiebreak_pct", 80.0)
+        tb_rec = live_st.get("tiebreak_record", "120W - 30L")
+        ds_pct = live_st.get("deciding_set_pct", 61.9)
+        ds_rec = live_st.get("deciding_set_record", "91W - 56L")
+        vl_pct = live_st.get("vs_lefty_pct", 60.3)
+        last_sync_h = live_st.get("last_sync", "22:00")
+        sync_dt = live_st.get("sync_date", "Oggi")
+
+        st.markdown(
+            f"<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin-top:4px; margin-bottom:18px; box-shadow:0 2px 8px -2px rgba(15,23,42,0.06); font-family:\"Inter\", sans-serif;'>"
+            f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:14px;'>"
+            f"<div style='display:flex; align-items:center; gap:8px;'>"
+            f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border:1.5px solid #0ea5e9; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;'>"
+            f"<i class='bi bi-broadcast' style='color:#38bdf8; font-size:16px;'></i>"
+            f"</div>"
+            f"<div>"
+            f"<span style='font-size:13.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px;'>"
+            f"{tr('STATISTICHE ATP TOUR (LIVE API)', 'ATP TOUR STATS (LIVE API)')} — <span style='color:#0ea5e9;'>FLAVIO COBOLLI</span></span>"
+            f"</div>"
+            f"</div>"
+            f"<div style='display:flex; align-items:center; gap:8px;'>"
+            f"<span style='background:rgba(16,185,129,0.12); color:#059669; font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:6px;'>"
+            f"<i class='bi bi-check-circle-fill' style='margin-right:4px;'></i>LIVE SYNC · 1 check/giorno ({sync_dt} {last_sync_h})</span>"
+            f"</div>"
+            f"</div>"
+            f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;'>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0ea5e9; border-radius:8px; padding:10px 14px;'>"
+            f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>RANKING ATP LIVE</div>"
+            f"<div style='font-size:22px; font-weight:900; color:#0284c7; margin-top:2px;'>#{atp_rank} <span style='font-size:12px; font-weight:700; color:#475569;'>({atp_pts:,} pts)</span></div>"
+            f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Posizione ufficiale ATP</div>"
+            f"</div>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #10b981; border-radius:8px; padding:10px 14px;'>"
+            f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>CLUTCH: TIEBREAK</div>"
+            f"<div style='font-size:22px; font-weight:900; color:#059669; margin-top:2px;'>{tb_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({tb_rec})</span></div>"
+            f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Freddezza momenti decisivi</div>"
+            f"</div>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px;'>"
+            f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>SET DECISIVI (3°/5° SET)</div>"
+            f"<div style='font-size:22px; font-weight:900; color:#d97706; margin-top:2px;'>{ds_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#64748b;'>({ds_rec})</span></div>"
+            f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Resilienza lunga distanza</div>"
+            f"</div>"
+            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #8b5cf6; border-radius:8px; padding:10px 14px;'>"
+            f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;'>VS MANCINI</div>"
+            f"<div style='font-size:22px; font-weight:900; color:#7c3aed; margin-top:2px;'>{vl_pct:.1f}%</div>"
+            f"<div style='font-size:11px; color:#64748b; margin-top:3px;'>Win rate avversari mancini</div>"
+            f"</div>"
+            f"</div>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
 
     df_storico = load_local_database()
     atleti_visibili = get_lista_atleti_disponibili(st.session_state.get('user'), st.session_state.get('role'))
@@ -605,159 +767,6 @@ def render_home(t):
         st.info(tr("Carica il primo file CSV per attivare il monitoraggio del roster.", "Upload your first CSV file to activate roster monitoring."))
     else:
         st.markdown(roster_box_html, unsafe_allow_html=True)
-
-        # =====================================================================
-        # SEZIONE FOCUS GIOCATORE: HERO CARD, CLINICA & CARICHI (STILE MOV3)
-        # =====================================================================
-        st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
-
-        # Header Bar Focus Atleta
-        c_hdr_tit, c_hdr_sel = st.columns([1.6, 1.4])
-        with c_hdr_tit:
-            lbl_tit_focus = tr("FOCUS ATLETA & MONITORAGGIO INDIVIDUALE", "ATHLETE FOCUS & INDIVIDUAL MONITORING")
-            lbl_sub_focus = tr("Scheda completa, stato clinico e carichi rolling dell'atleta attivo selezionato nel menu laterale.", "Complete profile, clinical status, and rolling loads for the active athlete selected in the sidebar.")
-            st.markdown(
-                f"<div style='display:flex; align-items:center; gap:12px; padding:4px 0;'>"
-                f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border:1.5px solid #0ea5e9; width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 10px rgba(14,165,233,0.2);'>"
-                f"<i class='bi bi-person-bounding-box' style='color:#38bdf8; font-size:22px;'></i>"
-                f"</div>"
-                f"<div>"
-                f"<div style='font-size:14.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px;'>{lbl_tit_focus}</div>"
-                f"<div style='font-size:12px; color:#64748b; margin-top:2px;'>{lbl_sub_focus}</div>"
-                f"</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-
-        ath_home_sel = st.session_state.get('selected_athlete')
-        if not ath_home_sel or (atleti_visibili and ath_home_sel not in atleti_visibili):
-            ath_home_sel = atleti_visibili[0] if atleti_visibili else "prova uno"
-
-        with c_hdr_sel:
-            lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
-            st.markdown(
-                f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
-                f"<div style='background:rgba(14,165,233,0.08); border:1.5px solid #0ea5e9; border-radius:10px; padding:6px 14px; display:inline-flex; align-items:center; gap:8px;'>"
-                f"<i class='bi bi-person-fill' style='color:#0284c7; font-size:16px;'></i>"
-                f"<div style='text-align:right;'>"
-                f"<div style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_act_ath}</div>"
-                f"<div style='font-size:14.5px; font-weight:900; color:#0f172a;'>{ath_home_sel}</div>"
-                f"</div>"
-                f"</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-
-        # Calcolo Iniziali Atleta per Avatar Monogramma
-        parts = [p for p in str(ath_home_sel).strip().split() if p]
-        if len(parts) >= 2:
-            ath_initials = f"{parts[0][0]}{parts[1][0]}".upper()
-        elif len(parts) == 1 and len(parts[0]) > 0:
-            ath_initials = parts[0][:2].upper()
-        else:
-            ath_initials = "AT"
-
-        # Recupero Dati e Statistiche dell'Atleta
-        df_ath_sel = df_storico[df_storico['Players'] == ath_home_sel] if not df_storico.empty else pd.DataFrame()
-        info_st = _calcola_stato_clinico_atleta(ath_home_sel, df_ath_sel)
-        info_fis = _calcola_ultimo_trattamento_atleta(ath_home_sel)
-
-        num_sessioni_tot = len(df_ath_sel)
-        data_ultima_sess = "-"
-        diff_gg_sess = "-"
-        nome_ultima_sess = "-"
-        if not df_ath_sel.empty and 'Date_obj' in df_ath_sel.columns:
-            df_ath_sorted = df_ath_sel.dropna(subset=['Date_obj']).sort_values('Date_obj', ascending=False)
-            if not df_ath_sorted.empty:
-                r_last = df_ath_sorted.iloc[0]
-                dt_last = r_last['Date_obj']
-                data_ultima_sess = dt_last.strftime("%d/%m/%Y")
-                diff_days = (datetime.date.today() - dt_last.date()).days
-                if diff_days == 0:
-                    diff_gg_sess = tr("Oggi", "Today")
-                elif diff_days == 1:
-                    diff_gg_sess = tr("Ieri", "Yesterday")
-                elif diff_days > 1:
-                    diff_gg_sess = f"{diff_days} {tr('gg fa', 'd ago')}"
-                else:
-                    diff_gg_sess = data_ultima_sess
-                tit_s = str(r_last.get('Session_Title', ''))
-                typ_s = str(r_last.get('Activity Type', ''))
-                nome_ultima_sess = tit_s if tit_s else (typ_s if typ_s else tr("Sessione Registrata", "Recorded Session"))
-
-        lbl_atleta_attivo = tr("M0V3 ATLETA ATTIVO", "M0V3 ACTIVE ATHLETE")
-        lbl_ult_sess = tr("Ultima Sessione:", "Latest Session:")
-        lbl_sess_nel_db = tr("sessioni nel database", "sessions in database")
-        lbl_stat_clin = tr("STATO CLINICO & IDONEITÀ OPERATIVA", "CLINICAL STATUS & OPERATIONAL READINESS")
-        lbl_ult_fis = tr("ULTIMO TRATTAMENTO FISIOTERAPICO", "LATEST PHYSIOTHERAPY SESSION")
-        lbl_area_fis = tr("Area Fisioterapica", "Physiotherapy Area")
-
-        color_st = info_st['color']
-        icon_st = info_st.get('icon', 'bi-shield-check')
-        badge_st = info_st['badge']
-        tag_st = info_st['tag']
-        sub_st = info_st['sub']
-
-        color_fis = info_fis['color']
-        titolo_fis = info_fis['titolo']
-        sub_fis = info_fis['sub']
-
-        # GRANDE HERO CARD ATLETA (Alta Evidenza Visiva & Dettaglio Immediato)
-        hero_card_html = (
-            f"<div style='background:white; border:1px solid #e2e8f0; border-left:6px solid #0ea5e9; border-radius:14px; "
-            f"padding:22px 24px; box-shadow:0 4px 16px -2px rgba(15,23,42,0.06); margin-top:14px; margin-bottom:20px; font-family:\"Inter\", -apple-system, sans-serif;'>"
-            f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-bottom:1px solid #f1f5f9; padding-bottom:18px;'>"
-            f"<div style='display:flex; align-items:center; gap:18px;'>"
-            f"<div style='width:62px; height:62px; border-radius:14px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "
-            f"border:2.5px solid #0ea5e9; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:24px; "
-            f"font-weight:900; box-shadow:0 4px 14px rgba(14,165,233,0.30); flex-shrink:0; letter-spacing:0.5px;'>{ath_initials}</div>"
-            f"<div>"
-            f"<div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap;'>"
-            f"<span style='font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-0.6px; line-height:1.15; text-transform:uppercase;'>{ath_home_sel}</span>"
-            f"<span style='background:rgba(14,165,233,0.12); color:#0284c7; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(14,165,233,0.3); text-transform:uppercase;'>"
-            f"<i class='bi bi-person-badge-fill' style='margin-right:4px;'></i>{lbl_atleta_attivo}</span>"
-            f"</div>"
-            f"<div style='color:#64748b; font-size:12.5px; margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;'>"
-            f"<span><i class='bi bi-calendar3' style='color:#0ea5e9; margin-right:4px;'></i>{lbl_ult_sess} <b>{data_ultima_sess}</b> ({diff_gg_sess} · {nome_ultima_sess})</span>"
-            f"<span style='color:#cbd5e1;'>&bull;</span>"
-            f"<span><i class='bi bi-database' style='color:#0ea5e9; margin-right:4px;'></i><b>{num_sessioni_tot}</b> {lbl_sess_nel_db}</span>"
-            f"</div>"
-            f"</div>"
-            f"</div>"
-            f"<div>"
-            f"<div style='background:{color_st}15; color:{color_st}; border:2px solid {color_st}60; font-size:14.5px; font-weight:900; padding:8px 18px; border-radius:10px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 8px {color_st}20;'>"
-            f"<i class='bi {icon_st}' style='font-size:18px;'></i>"
-            f"<span>{badge_st} &middot; {tag_st}</span>"
-            f"</div>"
-            f"</div>"
-            f"</div>"
-            f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px;'>"
-            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:15px 18px; border-left:4px solid {color_st};'>"
-            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
-            f"<span style='font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>"
-            f"<i class='bi bi-heart-pulse-fill' style='color:#0ea5e9; margin-right:5px;'></i>{lbl_stat_clin}</span>"
-            f"<span style='font-size:11px; font-weight:800; color:{color_st}; background:{color_st}18; padding:2px 8px; border-radius:6px;'>{tag_st}</span>"
-            f"</div>"
-            f"<div style='font-size:19px; font-weight:900; color:{color_st}; display:flex; align-items:center; gap:8px;'>"
-            f"<i class='bi {icon_st}'></i>{badge_st}</div>"
-            f"<div style='font-size:12px; color:#475569; margin-top:5px; line-height:1.4;'>{sub_st}</div>"
-            f"</div>"
-            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:15px 18px; border-left:4px solid {color_fis};'>"
-            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
-            f"<span style='font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>"
-            f"<i class='bi bi-bandaid-fill' style='color:#0ea5e9; margin-right:5px;'></i>{lbl_ult_fis}</span>"
-            f"<span style='font-size:11px; font-weight:800; color:{color_fis}; background:{color_fis}18; padding:2px 8px; border-radius:6px;'>{lbl_area_fis}</span>"
-            f"</div>"
-            f"<div style='font-size:19px; font-weight:900; color:#0f172a; display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>"
-            f"<i class='bi bi-bandaid-fill' style='color:{color_fis}; font-size:17px;'></i>"
-            f"<span style='overflow:hidden; text-overflow:ellipsis;'>{titolo_fis}</span>"
-            f"</div>"
-            f"<div style='font-size:12px; color:#475569; margin-top:5px; line-height:1.4;'>{sub_fis}</div>"
-            f"</div>"
-            f"</div>"
-            f"</div>"
-        )
-        st.markdown(hero_card_html, unsafe_allow_html=True)
 
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
