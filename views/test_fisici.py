@@ -1390,38 +1390,57 @@ def render_test_fisici(t):
                             ), unsafe_allow_html=True)
 
                     # Sezione Indici Spalla (se presenti)
-                    if spalla_ratios.get('trom_dx') is not None or spalla_ratios.get('er_ir_ratio_dx') is not None:
+                    if spalla_ratios.get('trom_dx') is not None or spalla_ratios.get('er_ir_ratio_dx') is not None or spalla_ratios.get('trom_sx') is not None or spalla_ratios.get('er_ir_ratio_sx') is not None:
                         c_sp1, c_sp2, c_sp3 = st.columns(3)
                         with c_sp1:
                             t_dx = spalla_ratios.get('trom_dx')
                             t_sx = spalla_ratios.get('trom_sx')
-                            diff_trom = spalla_ratios.get('trom_diff', 0)
-                            t_str = f"Dx: {t_dx}° | Sx: {t_sx}°" if (t_dx and t_sx) else f"{t_dx or t_sx}°"
+                            diff_trom = spalla_ratios.get('trom_diff')
+                            if t_dx is not None and t_sx is not None:
+                                t_str = f"Dx: {t_dx}° | Sx: {t_sx}°"
+                            elif t_dx is not None:
+                                t_str = f"Dx: {t_dx}°"
+                            elif t_sx is not None:
+                                t_str = f"Sx: {t_sx}°"
+                            else:
+                                t_str = "N/D"
+
+                            if diff_trom is not None:
+                                sub_trom = f"Diff: {diff_trom:.1f}° {'Simmetrico' if diff_trom <= 5 else 'GIRD Warning'}"
+                                col_trom = "#10b981" if diff_trom <= 5 else "#f59e0b"
+                            else:
+                                sub_trom = tr("ROM Unilaterale o dato parziale", "Unilateral ROM or partial data")
+                                col_trom = "#0ea5e9"
+
                             st.markdown(card_kpi(
                                 "TROM (Total ROM: IR + ER)",
                                 t_str,
-                                f"Diff: {diff_trom:.1f}° {'Simmetrico' if diff_trom<=5 else 'GIRD Warning'}",
-                                "#0ea5e9"
+                                sub_trom,
+                                col_trom
                             ), unsafe_allow_html=True)
                         with c_sp2:
                             ratio_dx = spalla_ratios.get('er_ir_ratio_dx')
-                            r_dx_str = f"{ratio_dx:.1f}%" if ratio_dx else "N/D"
-                            is_target = (ratio_dx >= 65.0 and ratio_dx <= 75.0) if ratio_dx else False
+                            r_dx_str = f"{ratio_dx:.1f}%" if ratio_dx is not None else "N/D"
+                            is_target = (ratio_dx >= 65.0 and ratio_dx <= 75.0) if ratio_dx is not None else False
+                            sub_dx = f"Target fisiologico: 65-75% {'Ottimale' if is_target else 'Attenzione'}" if ratio_dx is not None else tr("Dato non disponibile", "Data not available")
+                            col_dx = ("#10b981" if is_target else "#f59e0b") if ratio_dx is not None else "#94a3b8"
                             st.markdown(card_kpi(
                                 "Ratio Forza ER / IR (Arto Dx)",
                                 r_dx_str,
-                                f"Target fisiologico: 65-75% {'Ottimale' if is_target else 'Attenzione'}",
-                                "#10b981" if is_target else "#f59e0b"
+                                sub_dx,
+                                col_dx
                             ), unsafe_allow_html=True)
                         with c_sp3:
                             ratio_sx = spalla_ratios.get('er_ir_ratio_sx')
-                            r_sx_str = f"{ratio_sx:.1f}%" if ratio_sx else "N/D"
-                            is_target_sx = (ratio_sx >= 65.0 and ratio_sx <= 75.0) if ratio_sx else False
+                            r_sx_str = f"{ratio_sx:.1f}%" if ratio_sx is not None else "N/D"
+                            is_target_sx = (ratio_sx >= 65.0 and ratio_sx <= 75.0) if ratio_sx is not None else False
+                            sub_sx = f"Target fisiologico: 65-75% {'Ottimale' if is_target_sx else 'Attenzione'}" if ratio_sx is not None else tr("Dato non disponibile", "Data not available")
+                            col_sx = ("#10b981" if is_target_sx else "#f59e0b") if ratio_sx is not None else "#94a3b8"
                             st.markdown(card_kpi(
                                 "Ratio Forza ER / IR (Arto Sx)",
                                 r_sx_str,
-                                f"Target fisiologico: 65-75% {'Ottimale' if is_target_sx else 'Attenzione'}",
-                                "#10b981" if is_target_sx else "#f59e0b"
+                                sub_sx,
+                                col_sx
                             ), unsafe_allow_html=True)
     
     # =========================================================================
