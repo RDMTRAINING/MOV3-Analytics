@@ -1139,4 +1139,168 @@ def render_scientific_methodology_box(topic_key, title=None, subtitle=None, defa
             st.markdown(biblio_html, unsafe_allow_html=True)
 
 
+# =========================================================================
+# MODULO: PALESTRA & PREPARAZIONE FISICA (70/30 SPLIT & TASSONOMIA BIOMECCANICA)
+# =========================================================================
+
+# 2.1 Stimoli Fisiologici — Palestra (Gym) (8 Voci)
+STIMOLI_GYM = [
+    ("Forza Massimale / Sub-Massimale", "Max / Sub-Max Strength"),
+    ("Allenamento a Medio Carico", "Medium Load Training"),
+    ("Movimenti Complessi e Specifici", "Complex & Tennis-Specific Movements"),
+    ("Forza Eccentrica / Inerziale / Tendinea", "Eccentric / Inertial / Tendon Strength"),
+    ("Potenza Esplosiva / Balistico / VBT", "Explosive Power / Ballistic / VBT"),
+    ("Ipertrofia Funzionale / Forza Resistente", "Functional Hypertrophy / Strength Endurance"),
+    ("Prevenzione Articolare / Stabilità & Core", "Joint Prehab / Stability & Core"),
+    ("Mobilità, Stretching & Decompressione", "Mobility, Stretching & Decompression"),
+]
+
+# 2.2 Stimoli Fisiologici — Preparazione Fisica (Prep. Fisica) (5 Voci)
+STIMOLI_PREP_FISICA = [
+    ("Velocità Lineare & Accelerazione (Sprint)", "Linear Speed & Acceleration"),
+    ("Agilità, Frenate & Cambi di Direzione (COD)", "Agility, Braking & COD"),
+    ("Potenza Aerobica / HIIT Intermittente", "Aerobic Power / HIIT Intermittent"),
+    ("Capacità Aerobica / Fondo Continuo", "Aerobic Capacity / Continuous Tempo"),
+    ("Footwork Specifico, Rapidità & Coordinazione", "Specific Footwork, Quickness & Coordination"),
+]
+
+# 2.3 Focus Distrettuale / Catena Cinetica (7 Voci)
+DISTRETTI_CATENE_CINETICHE = [
+    ("Lower Body — Catena Anteriore (Quad / Ginocchio)", "Lower Body — Anterior Chain (Quad / Knee)"),
+    ("Lower Body — Catena Posteriore (Glutei / Hamstring)", "Lower Body — Posterior Chain (Glute / Hamstring)"),
+    ("Lower Body — Piede / Caviglia / Polpaccio & Adduttori", "Lower Body — Foot / Ankle / Calf & Adductors"),
+    ("Upper Body — Spinta & Tirata Globale", "Upper Body — Push & Pull Global"),
+    ("Upper Body — Specifico Spalla / Cuffia & Gomito", "Upper Body — Shoulder / Cuff & Elbow Specific"),
+    ("Core, Tronco & Catene Rotazionali", "Core, Trunk & Rotational Chains"),
+    ("Total Body / Sistemico Globale", "Total Body / Systemic Global"),
+]
+
+# Mapping Catena Cinetica -> Distretti Anatomici del Registro Medico/Fisio
+CATENA_TO_DISTRETTI_CLINICI = {
+    "Lower Body — Catena Anteriore (Quad / Ginocchio)": [
+        "Quadricipite", "Quadricipite (Anteriore Coscia)", "Ginocchio", "Anca / Inguine"
+    ],
+    "Lower Body — Catena Posteriore (Glutei / Hamstring)": [
+        "Ischiocrurali", "Ischiocrurali (Posteriore Coscia)", "Gluteo", "Rachide Lombare / Bacino"
+    ],
+    "Lower Body — Piede / Caviglia / Polpaccio & Adduttori": [
+        "Polpaccio / Gastrocnemio", "Tendine d'Achille", "Caviglia", "Piede / Fascia Plantare", "Adduttori"
+    ],
+    "Upper Body — Spinta & Tirata Globale": [
+        "Spalla", "Gomito", "Polso / Mano", "Tronco / Costato"
+    ],
+    "Upper Body — Specifico Spalla / Cuffia & Gomito": [
+        "Spalla", "Cervicale", "Gomito", "Polso / Mano"
+    ],
+    "Core, Tronco & Catene Rotazionali": [
+        "Tronco / Costato", "Rachide Lombare / Bacino"
+    ],
+    "Total Body / Sistemico Globale": [
+        "Nessuno / Sistemico", "Tutti / Sistemico"
+    ]
+}
+
+# 2.4 Macro-Famiglie Biomeccaniche & Palette Colori
+# Rosso/Corallo: Eccentrica, Frenate, COD
+# Blu M0V3: Forza Massimale, Medio Carico, Specifici, Potenza/VBT, Velocità Lineare
+# Ambra/Viola: Ipertrofia, HIIT, Footwork
+# Smeraldo: Prevenzione, Core, Mobilità, Fondo
+MACRO_FAMIGLIE_BIOMECCANICHE = {
+    # Famiglia Rosso / Corallo
+    "Forza Eccentrica / Inerziale / Tendinea": {
+        "famiglia": "rosso",
+        "label": "Eccentrico / Tendineo",
+        "colore_primario": "#ef4444",
+        "colore_secondario": "#f87171"
+    },
+    "Agilità, Frenate & Cambi di Direzione (COD)": {
+        "famiglia": "rosso",
+        "label": "Agilità / Decelerazioni COD",
+        "colore_primario": "#ef4444",
+        "colore_secondario": "#f87171"
+    },
+    # Famiglia Blu M0V3
+    "Forza Massimale / Sub-Massimale": {
+        "famiglia": "blu",
+        "label": "Forza Massimale",
+        "colore_primario": "#0284c7",
+        "colore_secondario": "#38bdf8"
+    },
+    "Allenamento a Medio Carico": {
+        "famiglia": "blu",
+        "label": "Medio Carico",
+        "colore_primario": "#0284c7",
+        "colore_secondario": "#38bdf8"
+    },
+    "Movimenti Complessi e Specifici": {
+        "famiglia": "blu",
+        "label": "Movimenti Complessi",
+        "colore_primario": "#0284c7",
+        "colore_secondario": "#38bdf8"
+    },
+    "Potenza Esplosiva / Balistico / VBT": {
+        "famiglia": "blu",
+        "label": "Potenza Esplosiva / VBT",
+        "colore_primario": "#0284c7",
+        "colore_secondario": "#38bdf8"
+    },
+    "Velocità Lineare & Accelerazione (Sprint)": {
+        "famiglia": "blu",
+        "label": "Velocità Lineare / Sprint",
+        "colore_primario": "#0284c7",
+        "colore_secondario": "#38bdf8"
+    },
+    # Famiglia Ambra / Viola
+    "Ipertrofia Funzionale / Forza Resistente": {
+        "famiglia": "ambra",
+        "label": "Ipertrofia / Resistente",
+        "colore_primario": "#d97706",
+        "colore_secondario": "#fbbf24"
+    },
+    "Potenza Aerobica / HIIT Intermittente": {
+        "famiglia": "viola",
+        "label": "Potenza Aerobica / HIIT",
+        "colore_primario": "#8b5cf6",
+        "colore_secondario": "#a78bfa"
+    },
+    "Footwork Specifico, Rapidità & Coordinazione": {
+        "famiglia": "ambra",
+        "label": "Footwork & Rapidità",
+        "colore_primario": "#d97706",
+        "colore_secondario": "#fbbf24"
+    },
+    # Famiglia Smeraldo
+    "Prevenzione Articolare / Stabilità & Core": {
+        "famiglia": "smeraldo",
+        "label": "Prevenzione Articolare / Core",
+        "colore_primario": "#10b981",
+        "colore_secondario": "#34d399"
+    },
+    "Mobilità, Stretching & Decompressione": {
+        "famiglia": "smeraldo",
+        "label": "Mobilità & Stretching",
+        "colore_primario": "#10b981",
+        "colore_secondario": "#34d399"
+    },
+    "Capacità Aerobica / Fondo Continuo": {
+        "famiglia": "smeraldo",
+        "label": "Capacità Aerobica / Fondo",
+        "colore_primario": "#10b981",
+        "colore_secondario": "#34d399"
+    }
+}
+
+def get_stimolo_color(stimolo_nome, is_secondary=False):
+    """Restituisce il colore esadecimale appropriato per lo stimolo biomeccanico."""
+    info = MACRO_FAMIGLIE_BIOMECCANICHE.get(stimolo_nome)
+    if info:
+        return info["colore_secondario"] if is_secondary else info["colore_primario"]
+    return "#94a3b8" if is_secondary else "#64748b"
+
+def get_catena_clinici(catena_nome):
+    """Restituisce i distretti clinici mappati sulla catena cinetica specificata."""
+    return CATENA_TO_DISTRETTI_CLINICI.get(catena_nome, ["Nessuno / Sistemico"])
+
+
+
 

@@ -1765,10 +1765,131 @@ def get_rpe_sessioni(atleta_id, data_str):
         return []
 
 
-def upsert_rpe_sessione(payload):
-    """Inserisce o aggiorna uno slot di sessione sRPE."""
+def upsert_rpe_sessione(payload, autore='atleta'):
+    """Inserisce o aggiorna uno slot di sessione sRPE con riconciliazione e logica 70/30."""
+    return calcola_e_salva_slot_rpe(payload, autore=autore)
+
+
+def calcola_e_salva_slot_rpe(payload, autore='atleta'):
+    """
+    Riconcilia le durate (Atleta vs Staff) e salva la seduta sRPE con profilazione
+    70/30 (Palestra & Preparazione Fisica).
+    
+    Regola Riconciliazione Tempo:
+    - Se sia Atleta che Staff hanno inserito una durata > 0, durata_minuti = (durata_atleta_min + durata_staff_min) / 2.0
+    - Altrimenti durata_minuti = unico valore disponibile.
+    - Se l'autore è l'atleta, preserva durata_staff_min esistente.
+    - Se l'autore è lo staff, preserva durata_atleta_min esistente.
+    """
+    atleta_id = payload.get("atleta_id")
+    data_str = str(payload.get("data", ""))[:10]
+    slot = int(payload.get("slot", 1))
+
+    # Cerca record esistente per questo slot
+    existing_row = {}
     try:
-        res = supabase.table('rpe_sessioni').upsert(payload, on_conflict='atleta_id, data, slot').execute()
+        res = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id).eq('data', data_str).eq('slot', slot).execute()
+        if res.data and len(res.data) > 0:
+            existing_row = res.data[0]
+    except Exception:
+        pass
+
+    # Durata Atleta & Durata Staff
+    if autore == 'atleta':
+        dur_atleta = payload.get('durata_atleta_min')
+        if dur_atleta is None:
+            dur_atleta = payload.get('durata_minuti')
+        dur_staff = existing_row.get('durata_staff_min')
+    else:  # 'staff'
+        dur_staff = payload.get('durata_staff_min')
+        if dur_staff is None:
+            dur_staff = payload.get('durata_minuti')
+        dur_atleta = existing_row.get('durata_atleta_min')
+
+    try:
+        f_atleta = float(dur_atleta) if dur_atleta is not None and float(dur_atleta) > 0 else None
+    except Exception:
+        f_atleta = None
+
+    try:
+        f_staff = float(dur_staff) if dur_staff is not None and float(dur_staff) > 0 else None
+    except Exception:
+        f_staff = None
+
+    # Calcolo durata consolidata
+    if f_atleta is not None and f_staff is not None:
+        durata_effettiva = round((f_atleta + f_staff) / 2.0, 1)
+    elif f_atleta is not None:
+        durata_effettiva = round(f_atleta, 1)
+    elif f_staff is not None:
+        durata_effettiva = round(f_staff, 1)
+    else:
+        durata_effettiva = round(float(payload.get('durata_minuti', 60) or 60), 1)
+
+    # RPE: atleta ha la priorità, staff opzionale
+    rpe_atleta = payload.get('rpe') if autore == 'atleta' else existing_row.get('rpe')
+    rpe_staff = payload.get('rpe_staff') if autore == 'staff' else existing_row.get('rpe_staff')
+    if autore == 'staff' and payload.get('rpe') is not None and rpe_atleta is None:
+        rpe_staff = payload.get('rpe')
+
+    rpe_effettivo = rpe_atleta if (rpe_atleta is not None and rpe_atleta != "") else (rpe_staff if rpe_staff is not None else payload.get('rpe', 5))
+    try:
+        rpe_num = int(round(float(rpe_effettivo)))
+    except Exception:
+        rpe_num = 5
+
+    durata_db = int(round(durata_effettiva))
+
+    # Carico Interno AU
+    carico_interno = int(round(durata_effettiva * rpe_num))
+
+    # Split 70/30
+    stimolo_prim = payload.get('stimolo_primario') or existing_row.get('stimolo_primario')
+    distretto_prim = payload.get('distretto_primario') or existing_row.get('distretto_primario')
+    stimolo_sec = payload.get('stimolo_secondario') or existing_row.get('stimolo_secondario')
+    distretto_sec = payload.get('distretto_secondario') or existing_row.get('distretto_secondario')
+
+    peso_prim = payload.get('peso_primario_pct') or existing_row.get('peso_primario_pct')
+    if stimolo_sec and not peso_prim:
+        peso_prim = 70
+    elif not peso_prim:
+        peso_prim = 100
+    try:
+        peso_prim = int(peso_prim)
+    except Exception:
+        peso_prim = 100
+
+    stress_ecc = payload.get('stress_eccentrico_atteso') or existing_row.get('stress_eccentrico_atteso', 'Moderato')
+    tipo = payload.get('tipologia') or existing_row.get('tipologia', 'Tennis')
+
+    db_payload = {
+        "atleta_id": atleta_id,
+        "data": data_str,
+        "slot": slot,
+        "tipologia": tipo,
+        "durata_minuti": durata_db,
+        "rpe": rpe_num,
+        "carico_interno": carico_interno,
+        "durata_atleta_min": f_atleta,
+        "durata_staff_min": f_staff,
+        "rpe_staff": float(rpe_staff) if rpe_staff is not None else None,
+        "stimolo_primario": stimolo_prim,
+        "distretto_primario": distretto_prim,
+        "peso_primario_pct": peso_prim,
+        "stimolo_secondario": stimolo_sec,
+        "distretto_secondario": distretto_sec,
+        "stress_eccentrico_atteso": stress_ecc
+    }
+    if payload.get("profilo_id"):
+        db_payload["profilo_id"] = payload["profilo_id"]
+    if payload.get("note") is not None:
+        db_payload["note"] = payload["note"]
+    elif existing_row.get("note"):
+        db_payload["note"] = existing_row["note"]
+
+    # Salva su Supabase con fallback se le nuove colonne non sono ancora create
+    try:
+        res = supabase.table('rpe_sessioni').upsert(db_payload, on_conflict='atleta_id, data, slot').execute()
         try:
             get_rpe_sessioni.clear()
             get_athlete_master_calendar.clear()
@@ -1776,7 +1897,30 @@ def upsert_rpe_sessione(payload):
             pass
         return True, res.data
     except Exception as e:
-        return False, str(e)
+        err_msg = str(e)
+        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
+            basic_payload = {
+                "atleta_id": atleta_id,
+                "data": data_str,
+                "slot": slot,
+                "tipologia": tipo,
+                "durata_minuti": durata_db,
+                "rpe": rpe_num
+            }
+            if payload.get("profilo_id"): basic_payload["profilo_id"] = payload["profilo_id"]
+            if db_payload.get("note"): basic_payload["note"] = db_payload["note"]
+            try:
+                res_fallback = supabase.table('rpe_sessioni').upsert(basic_payload, on_conflict='atleta_id, data, slot').execute()
+                try:
+                    get_rpe_sessioni.clear()
+                    get_athlete_master_calendar.clear()
+                except Exception:
+                    pass
+                return True, res_fallback.data
+            except Exception as e2:
+                return False, str(e2)
+        return False, err_msg
+
 
 
 def delete_rpe_sessione(session_id):
@@ -3124,15 +3268,41 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
                         carico = float(r.get('carico_interno', 0) or (minuti * rpe_v))
                         tipo = r.get('tipologia') or r.get('tipo') or "Attività"
                         slot_n = int(r.get('slot', len(d_dict["srpe_slots"]) + 1) or 1)
+                        
+                        peso_prim_pct = int(r.get('peso_primario_pct') or 100)
+                        peso_prim_factor = peso_prim_pct / 100.0
+                        carico_primario = round(carico * peso_prim_factor, 1)
+                        carico_secondario = round(carico * (1.0 - peso_prim_factor), 1)
+
                         d_dict["srpe_slots"].append({
+                            "id": r.get('id'),
                             "slot": slot_n,
                             "tipo": tipo,
                             "minuti": minuti,
+                            "durata_minuti": minuti,
+                            "durata_atleta_min": r.get('durata_atleta_min'),
+                            "durata_staff_min": r.get('durata_staff_min'),
                             "rpe": rpe_v,
-                            "carico": carico
+                            "rpe_staff": r.get('rpe_staff'),
+                            "carico": carico,
+                            "stimolo_primario": r.get('stimolo_primario'),
+                            "distretto_primario": r.get('distretto_primario'),
+                            "peso_primario_pct": peso_prim_pct,
+                            "carico_primario": carico_primario,
+                            "stimolo_secondario": r.get('stimolo_secondario'),
+                            "distretto_secondario": r.get('distretto_secondario'),
+                            "carico_secondario": carico_secondario,
+                            "stress_eccentrico_atteso": r.get('stress_eccentrico_atteso', 'Moderato'),
+                            "note": r.get('note', '')
                         })
                         d_dict["srpe_minuti"] += minuti
                         d_dict["srpe_carico"] += carico
+
+                        if tipo in ('Gym', 'Preparazione Fisica'):
+                            d_dict["has_gym_prep"] = True
+                            d_dict["gym_prep_carico"] = d_dict.get("gym_prep_carico", 0.0) + carico
+                        elif tipo == 'Tennis':
+                            d_dict["tennis_srpe_carico"] = d_dict.get("tennis_srpe_carico", 0.0) + carico
 
                     # 2. Schema alternativo con colonne piatte (slot1_..., slot2_...)
                     if r.get('slot1_tipo') or r.get('slot1_durata_minuti'):

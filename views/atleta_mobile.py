@@ -3,7 +3,10 @@ import urllib.parse
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from config import LOGO_CIRCULAR_PATH, LOGO_PATH, tr, LANG
+from config import (
+    LOGO_CIRCULAR_PATH, LOGO_PATH, tr, LANG,
+    STIMOLI_GYM, STIMOLI_PREP_FISICA, DISTRETTI_CATENE_CINETICHE
+)
 from utils import (
     supabase,
     load_local_database,
@@ -12,6 +15,7 @@ from utils import (
     upsert_wellness_mattutino,
     get_rpe_sessioni,
     upsert_rpe_sessione,
+    calcola_e_salva_slot_rpe,
     delete_rpe_sessione,
     check_stato_giornaliero_atleta,
     get_sessioni_test,
@@ -856,6 +860,18 @@ def render_atleta_mobile(t=None):
                 key=k_s1_dur
             )
 
+            # Riconciliazione tempo con Staff se presente
+            if slot1_data and slot1_data.get('durata_staff_min') and float(slot1_data['durata_staff_min']) > 0:
+                f_staff1 = float(slot1_data['durata_staff_min'])
+                f_atl1 = float(s1_durata)
+                if abs(f_staff1 - f_atl1) > 0:
+                    med1 = round((f_staff1 + f_atl1) / 2.0, 1)
+                    st.markdown(
+                        f"<div style='background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:6px; padding:4px 8px; margin:4px 0 8px 0; font-size:11px; color:#b45309; font-weight:700;'>"
+                        f"<i class='bi bi-info-circle'></i> {tr('Riconciliazione Durata:', 'Duration Reconciliation:')} Staff={f_staff1:.0f}m | Atleta={f_atl1:.0f}m &rarr; {tr('Media Consolidata', 'Consolidated Mean')} = {med1} min</div>",
+                        unsafe_allow_html=True
+                    )
+
             s1_rpe = st.slider(
                 tr("Intensita RPE Seduta 1 (Scala Borg 0-10)", "Session 1 RPE Intensity (Borg Scale 0-10)"),
                 0, 10,
@@ -863,6 +879,78 @@ def render_atleta_mobile(t=None):
                 key=k_s1_rpe
             )
             st.caption(f"{tr('Intensita percepita:', 'Perceived intensity:')} **{_desc_rpe(s1_rpe)}**")
+
+            # Profilazione Biomeccanica 70/30 (Palestra & Prep. Fisica)
+            is_en_lang = st.session_state.get('lang', 'IT') == 'EN'
+            s1_stim1, s1_dist1, s1_peso, s1_stim2, s1_dist2, s1_stress = None, None, 100, None, None, 'Moderato'
+            if s1_tipo in ("Gym", "Preparazione Fisica"):
+                st.markdown(
+                    f"<div style='background:rgba(14,165,233,0.06); border:1px solid rgba(14,165,233,0.25); border-radius:8px; padding:10px 12px; margin:8px 0 12px 0;'>"
+                    f"<div style='font-size:11.5px; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;'>"
+                    f"<i class='bi bi-layers-half'></i> {tr('Profilo Biomeccanico (Modello 70/30)', 'Biomechanical Profile (70/30 Model)')}"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                l_stim1 = STIMOLI_GYM if s1_tipo == "Gym" else STIMOLI_PREP_FISICA
+                st_lbls1 = [s[1] if is_en_lang else s[0] for s in l_stim1]
+                cat_lbls1 = [c[1] if is_en_lang else c[0] for c in DISTRETTI_CATENE_CINETICHE]
+
+                idx_s1 = 0
+                if slot1_data and slot1_data.get('stimolo_primario'):
+                    for i_s, stm in enumerate(l_stim1):
+                        if slot1_data['stimolo_primario'] in stm:
+                            idx_s1 = i_s; break
+                idx_d1 = 0
+                if slot1_data and slot1_data.get('distretto_primario'):
+                    for i_d, ctn in enumerate(DISTRETTI_CATENE_CINETICHE):
+                        if slot1_data['distretto_primario'] in ctn:
+                            idx_d1 = i_d; break
+
+                c_s1_a, c_s1_b = st.columns(2)
+                with c_s1_a:
+                    s1_stim_sel = st.selectbox(tr("Stimolo Preponderante (70%)", "Primary Stimulus (70%)"), st_lbls1, index=idx_s1, key="s1_stim_sel")
+                with c_s1_b:
+                    s1_dist_sel = st.selectbox(tr("Catena Cinetica Primaria", "Primary Kinetic Chain"), cat_lbls1, index=idx_d1, key="s1_dist_sel")
+                s1_stim1 = l_stim1[st_lbls1.index(s1_stim_sel)][0]
+                s1_dist1 = DISTRETTI_CATENE_CINETICHE[cat_lbls1.index(s1_dist_sel)][0]
+
+                chk_s1_sec = st.checkbox(
+                    tr("Aggiungi Blocco Complementare (30% split)", "Add Complementary Block (30% split)"),
+                    value=bool(slot1_data and slot1_data.get('stimolo_secondario')),
+                    key="chk_s1_sec"
+                )
+                if chk_s1_sec:
+                    s1_peso = 70
+                    idx_s1_sec = 0
+                    if slot1_data and slot1_data.get('stimolo_secondario'):
+                        for i_s, stm in enumerate(l_stim1):
+                            if slot1_data['stimolo_secondario'] in stm:
+                                idx_s1_sec = i_s; break
+                    idx_d1_sec = 1 if len(cat_lbls1) > 1 else 0
+                    if slot1_data and slot1_data.get('distretto_secondario'):
+                        for i_d, ctn in enumerate(DISTRETTI_CATENE_CINETICHE):
+                            if slot1_data['distretto_secondario'] in ctn:
+                                idx_d1_sec = i_d; break
+
+                    c_s1_sec_a, c_s1_sec_b = st.columns(2)
+                    with c_s1_sec_a:
+                        s1_stim2_sel = st.selectbox(tr("Stimolo Complementare (30%)", "Complementary Stimulus (30%)"), st_lbls1, index=idx_s1_sec, key="s1_stim2_sel")
+                    with c_s1_sec_b:
+                        s1_dist2_sel = st.selectbox(tr("Catena Complementare", "Complementary Chain"), cat_lbls1, index=idx_d1_sec, key="s1_dist2_sel")
+                    s1_stim2 = l_stim1[st_lbls1.index(s1_stim2_sel)][0]
+                    s1_dist2 = DISTRETTI_CATENE_CINETICHE[cat_lbls1.index(s1_dist2_sel)][0]
+
+                # Stress Eccentrico
+                opz_str = [("Basso", "Low"), ("Moderato", "Moderate"), ("Elevato", "High")]
+                idx_str1 = 1
+                curr_str1 = slot1_data.get('stress_eccentrico_atteso', 'Moderato') if slot1_data else 'Moderato'
+                for i_st, stp in enumerate(opz_str):
+                    if curr_str1 in stp:
+                        idx_str1 = i_st; break
+                str_lbls1 = [s[1] if is_en_lang else s[0] for s in opz_str]
+                s1_str_sel = st.selectbox(tr("Stress Eccentrico / Frenate", "Expected Eccentric Stress"), str_lbls1, index=idx_str1, key="s1_str_sel")
+                s1_stress = opz_str[str_lbls1.index(s1_str_sel)][0]
+                st.markdown("</div>", unsafe_allow_html=True)
 
             s1_tl = int(s1_durata) * int(s1_rpe)
             st.markdown(f"""
@@ -882,9 +970,16 @@ def render_atleta_mobile(t=None):
                         "slot": 1,
                         "tipologia": s1_tipo,
                         "durata_minuti": int(s1_durata),
-                        "rpe": int(s1_rpe)
+                        "durata_atleta_min": int(s1_durata),
+                        "rpe": int(s1_rpe),
+                        "stimolo_primario": s1_stim1,
+                        "distretto_primario": s1_dist1,
+                        "peso_primario_pct": s1_peso,
+                        "stimolo_secondario": s1_stim2,
+                        "distretto_secondario": s1_dist2,
+                        "stress_eccentrico_atteso": s1_stress
                     }
-                    ok, res = upsert_rpe_sessione(payload1)
+                    ok, res = calcola_e_salva_slot_rpe(payload1, autore='atleta')
                     if ok:
                         st.success(tr("Seduta 1 registrata!", "Session 1 saved!"))
                         st.rerun()
@@ -930,6 +1025,18 @@ def render_atleta_mobile(t=None):
                     key=k_s2_dur
                 )
 
+                # Riconciliazione tempo con Staff se presente per Slot 2
+                if slot2_data and slot2_data.get('durata_staff_min') and float(slot2_data['durata_staff_min']) > 0:
+                    f_staff2 = float(slot2_data['durata_staff_min'])
+                    f_atl2 = float(s2_durata)
+                    if abs(f_staff2 - f_atl2) > 0:
+                        med2 = round((f_staff2 + f_atl2) / 2.0, 1)
+                        st.markdown(
+                            f"<div style='background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:6px; padding:4px 8px; margin:4px 0 8px 0; font-size:11px; color:#b45309; font-weight:700;'>"
+                            f"<i class='bi bi-info-circle'></i> {tr('Riconciliazione Durata:', 'Duration Reconciliation:')} Staff={f_staff2:.0f}m | Atleta={f_atl2:.0f}m &rarr; {tr('Media Consolidata', 'Consolidated Mean')} = {med2} min</div>",
+                            unsafe_allow_html=True
+                        )
+
                 s2_rpe = st.slider(
                     tr("Intensita RPE Seduta 2 (Scala Borg 0-10)", "Session 2 RPE Intensity (Borg Scale 0-10)"),
                     0, 10,
@@ -937,6 +1044,76 @@ def render_atleta_mobile(t=None):
                     key=k_s2_rpe
                 )
                 st.caption(f"{tr('Intensita percepita:', 'Perceived intensity:')} **{_desc_rpe(s2_rpe)}**")
+
+                # Profilazione Biomeccanica 70/30 (Palestra & Prep. Fisica) - Slot 2
+                s2_stim1, s2_dist1, s2_peso, s2_stim2, s2_dist2, s2_stress = None, None, 100, None, None, 'Moderato'
+                if s2_tipo in ("Gym", "Preparazione Fisica"):
+                    st.markdown(
+                        f"<div style='background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:10px 12px; margin:8px 0 12px 0;'>"
+                        f"<div style='font-size:11.5px; font-weight:800; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;'>"
+                        f"<i class='bi bi-layers-half'></i> {tr('Profilo Biomeccanico Seduta 2 (Modello 70/30)', 'Biomechanical Profile Session 2 (70/30 Model)')}"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                    l_stim2 = STIMOLI_GYM if s2_tipo == "Gym" else STIMOLI_PREP_FISICA
+                    st_lbls2 = [s[1] if is_en_lang else s[0] for s in l_stim2]
+                    cat_lbls2 = [c[1] if is_en_lang else c[0] for c in DISTRETTI_CATENE_CINETICHE]
+
+                    idx_s2 = 0
+                    if slot2_data and slot2_data.get('stimolo_primario'):
+                        for i_s, stm in enumerate(l_stim2):
+                            if slot2_data['stimolo_primario'] in stm:
+                                idx_s2 = i_s; break
+                    idx_d2 = 0
+                    if slot2_data and slot2_data.get('distretto_primario'):
+                        for i_d, ctn in enumerate(DISTRETTI_CATENE_CINETICHE):
+                            if slot2_data['distretto_primario'] in ctn:
+                                idx_d2 = i_d; break
+
+                    c_s2_a, c_s2_b = st.columns(2)
+                    with c_s2_a:
+                        s2_stim_sel = st.selectbox(tr("Stimolo Preponderante (70%)", "Primary Stimulus (70%)"), st_lbls2, index=idx_s2, key="s2_stim_sel")
+                    with c_s2_b:
+                        s2_dist_sel = st.selectbox(tr("Catena Cinetica Primaria", "Primary Kinetic Chain"), cat_lbls2, index=idx_d2, key="s2_dist_sel")
+                    s2_stim1 = l_stim2[st_lbls2.index(s2_stim_sel)][0]
+                    s2_dist1 = DISTRETTI_CATENE_CINETICHE[cat_lbls2.index(s2_dist_sel)][0]
+
+                    chk_s2_sec = st.checkbox(
+                        tr("Aggiungi Blocco Complementare (30% split)", "Add Complementary Block (30% split)"),
+                        value=bool(slot2_data and slot2_data.get('stimolo_secondario')),
+                        key="chk_s2_sec"
+                    )
+                    if chk_s2_sec:
+                        s2_peso = 70
+                        idx_s2_sec = 0
+                        if slot2_data and slot2_data.get('stimolo_secondario'):
+                            for i_s, stm in enumerate(l_stim2):
+                                if slot2_data['stimolo_secondario'] in stm:
+                                    idx_s2_sec = i_s
+                                    break
+                        idx_d2_sec = 1 if len(cat_lbls2) > 1 else 0
+                        if slot2_data and slot2_data.get('distretto_secondario'):
+                            for i_d, ctn in enumerate(DISTRETTI_CATENE_CINETICHE):
+                                if slot2_data['distretto_secondario'] in ctn:
+                                    idx_d2_sec = i_d; break
+
+                        c_s2_sec_a, c_s2_sec_b = st.columns(2)
+                        with c_s2_sec_a:
+                            s2_stim2_sel = st.selectbox(tr("Stimolo Complementare (30%)", "Complementary Stimulus (30%)"), st_lbls2, index=idx_s2_sec, key="s2_stim2_sel")
+                        with c_s2_sec_b:
+                            s2_dist2_sel = st.selectbox(tr("Catena Complementare", "Complementary Chain"), cat_lbls2, index=idx_d2_sec, key="s2_dist2_sel")
+                        s2_stim2 = l_stim2[st_lbls2.index(s2_stim2_sel)][0]
+                        s2_dist2 = DISTRETTI_CATENE_CINETICHE[cat_lbls2.index(s2_dist2_sel)][0]
+
+                    # Stress Eccentrico
+                    idx_str2 = 1
+                    curr_str2 = slot2_data.get('stress_eccentrico_atteso', 'Moderato') if slot2_data else 'Moderato'
+                    for i_st, stp in enumerate(opz_str):
+                        if curr_str2 in stp:
+                            idx_str2 = i_st; break
+                    s2_str_sel = st.selectbox(tr("Stress Eccentrico / Frenate", "Expected Eccentric Stress"), str_lbls1, index=idx_str2, key="s2_str_sel")
+                    s2_stress = opz_str[str_lbls1.index(s2_str_sel)][0]
+                    st.markdown("</div>", unsafe_allow_html=True)
 
                 s2_tl = int(s2_durata) * int(s2_rpe)
                 st.markdown(f"""
@@ -956,9 +1133,16 @@ def render_atleta_mobile(t=None):
                             "slot": 2,
                             "tipologia": s2_tipo,
                             "durata_minuti": int(s2_durata),
-                            "rpe": int(s2_rpe)
+                            "durata_atleta_min": int(s2_durata),
+                            "rpe": int(s2_rpe),
+                            "stimolo_primario": s2_stim1,
+                            "distretto_primario": s2_dist1,
+                            "peso_primario_pct": s2_peso,
+                            "stimolo_secondario": s2_stim2,
+                            "distretto_secondario": s2_dist2,
+                            "stress_eccentrico_atteso": s2_stress
                         }
-                        ok, res = upsert_rpe_sessione(payload2)
+                        ok, res = calcola_e_salva_slot_rpe(payload2, autore='atleta')
                         if ok:
                             st.success(tr("Seduta 2 registrata!", "Session 2 saved!"))
                             st.rerun()

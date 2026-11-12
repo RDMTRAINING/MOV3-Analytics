@@ -202,3 +202,21 @@ USING (
         WHERE profilo_id = auth.uid() AND atleta_id = rpe_sessioni.atleta_id
     )
 );
+
+-- =====================================================================
+-- 6. MIGRAZIONE: MODULO "PALESTRA & PREPARAZIONE FISICA" (70/30 SPLIT)
+-- E RICONCILIAZIONE TEMPO ATLETA / STAFF
+-- =====================================================================
+-- Esegui questo blocco per estendere rpe_sessioni con il supporto
+-- alle durate separate atleta/staff e alla profilazione biomeccanica 70/30.
+
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS durata_atleta_min NUMERIC;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS durata_staff_min NUMERIC;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS rpe_staff NUMERIC;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS stimolo_primario TEXT;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS distretto_primario TEXT;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS peso_primario_pct INTEGER DEFAULT 100;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS stimolo_secondario TEXT;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS distretto_secondario TEXT;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS stress_eccentrico_atteso TEXT DEFAULT 'Moderato';
+

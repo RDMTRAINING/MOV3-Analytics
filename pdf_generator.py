@@ -2826,7 +2826,16 @@ def crea_pdf_calendario_medico(atleta_nome, month, year, master_calendar, kpis):
         if d_val.get('srpe_presente'):
             srpe_g = int(round(d_val.get('srpe_carico', 0)))
             no_gps_tag = " (NO-GPS)" if d_val.get('solo_carico_interno') else ""
-            srpe_txt = f"Carico: <b>{srpe_g}</b>{no_gps_tag}"
+            srpe_lines = [f"Tot: <b>{srpe_g} AU</b>{no_gps_tag}"]
+            for sl in d_val.get('srpe_slots', []):
+                t_sl = _clean_text_for_pdf(sl.get('tipo', ''))
+                c_sl = int(round(sl.get('carico', 0)))
+                s_prim = _clean_text_for_pdf(sl.get('stimolo_primario', ''))
+                if t_sl in ('Gym', 'Preparazione Fisica') and s_prim:
+                    srpe_lines.append(f"• {t_sl}: {c_sl} AU ({s_prim[:14]})")
+                elif t_sl:
+                    srpe_lines.append(f"• {t_sl}: {c_sl} AU")
+            srpe_txt = "<br/>".join(srpe_lines[:3])
         else:
             srpe_txt = "-"
 
