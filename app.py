@@ -29,10 +29,19 @@ from utils import (
 DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"
 
 def _load_view(mod):
+    if DEV_MODE:
+        try:
+            import config
+            import utils
+            importlib.reload(config)
+            importlib.reload(utils)
+        except Exception:
+            pass
     try:
         importlib.reload(mod)
-    except Exception:
-        pass
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
     return mod
 
 try:
