@@ -735,7 +735,7 @@ CATALOGO_REPORT = {
 }
 
 PAGINE_OPERATIVE = [
-    {"chiave": "Carico Interno", "nome": "Carico Interno (sRPE & Wellness)", "icona": "heart-pulse"},
+    {"chiave": "Carico Interno", "nome": "Analisi Wellness-RPE-GPS", "icona": "heart-pulse"},
     {"chiave": "M0V3 Tennis Test", "nome": "M0V3 Tennis Test (Neuro-Mechanical Profiling)", "icona": "lightning-charge-fill"},
     {"chiave": "Caricamento Dati", "nome": "Caricamento Dati (Ingestion CSV/GPS)", "icona": "cloud-arrow-up"},
     {"chiave": "Generatore Dati (No GPS)", "nome": "Generatore Dati (Simulazione No GPS)", "icona": "sliders"},
@@ -754,7 +754,9 @@ AREA_TO_PAGINA = {
     "Medie": "Medie",
     "Test Fisici & Neuromuscolari": "Test & Valutazioni",
     "Calendario & Area Medica": "Calendario & Area Medica",
-    "Inserimento Sessioni Extra Tennis": "Calendario & Area Medica"
+    "Inserimento Sessioni Extra Tennis": "Calendario & Area Medica",
+    "Medico & Extra Tennis": "Calendario & Area Medica",
+    "Analisi Wellness-RPE-GPS": "Carico Interno"
 }
 
 COLONNE_STANDARD = [

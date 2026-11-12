@@ -1,4 +1,5 @@
 import datetime
+from datetime import date, timedelta
 import calendar
 import pandas as pd
 import numpy as np
@@ -286,10 +287,15 @@ def _get_atleti_dict(user=None, is_admin=False, is_coach=True):
     if is_admin or is_coach or not dict_atleti:
         df_local = load_local_database()
         if not df_local.empty and 'Players' in df_local.columns:
+            norm_map = {k.strip().lower(): k for k in dict_atleti.keys()}
             for p in sorted(df_local['Players'].dropna().unique()):
                 p_str = str(p).strip()
-                if p_str and p_str not in dict_atleti:
-                    dict_atleti[p_str] = f"mock-{p_str}"
+                if p_str:
+                    p_low = p_str.lower()
+                    if p_low in norm_map:
+                        dict_atleti[p_str] = dict_atleti[norm_map[p_low]]
+                    elif p_str not in dict_atleti:
+                        dict_atleti[p_str] = f"mock-{p_str}"
 
     if not dict_atleti:
         dict_atleti["Atleta Demo"] = "mock-atleta-demo"
@@ -368,9 +374,10 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
             unsafe_allow_html=True
         )
 
-    # Striscia Compatta Identità Atleta MOV3 con tag mese
-    lbl_m_tag = f"{tr('Mese Visualizzato', 'Viewing Month')}: {nome_mese_str} {anno_corrente}"
-    render_athlete_hero_strip(atleta_sel, extra_badges=[lbl_m_tag])
+    # Striscia Compatta Identità Atleta MOV3 con tag mese (solo se richiesta)
+    if show_hero_strip:
+        lbl_m_tag = f"{tr('Mese Visualizzato', 'Viewing Month')}: {nome_mese_str} {anno_corrente}"
+        render_athlete_hero_strip(atleta_sel, extra_badges=[lbl_m_tag])
 
     # -------------------------------------------------------------------------
     # 3. RECUPERO MASTER TIMELINE MENSILE
@@ -391,30 +398,31 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
     tot_trattamenti = sum(1 for d in master_calendar.values() if d['has_trattamento'])
     pct_disp = (giorni_disponibile / tot_giorni * 100) if tot_giorni > 0 else 100.0
 
-    # Action Bar con Export PDF
-    slug_atl = slugify_name(atleta_sel)
-    kpis_dict = {
-        'pct_disp': pct_disp,
-        'giorni_disponibile': giorni_disponibile,
-        'giorni_limitato': giorni_limitato,
-        'giorni_stop': giorni_stop,
-        'tot_trattamenti': tot_trattamenti,
-        'giorni_viaggio': giorni_viaggio,
-        'tot_giorni': tot_giorni
-    }
-    opzioni_pdf = {"calendario": tr("Master Timeline & Diario Clinico (PDF)", "Master Timeline & Clinical Diary (PDF)")}
-    render_action_bar(
-        meta_items=[
-            (tr("Atleta Selezionato", "Selected Athlete"), atleta_sel),
-            (tr("Periodo Mese", "Month Period"), f"{nome_mese_str} {anno_corrente}"),
-            (tr("Disponibilità Piena", "Full Availability"), f"{pct_disp:.0f}%"),
-            (tr("Trattamenti Fisio", "Physio Treatments"), f"{tot_trattamenti}"),
-        ],
-        pdf_options=opzioni_pdf,
-        pdf_key=f"pdf_cal_med_{slug_atl}_{anno_corrente}_{mese_corrente}",
-        generate_fn=lambda _: crea_pdf_calendario_medico(atleta_sel, mese_corrente, anno_corrente, master_calendar, kpis_dict),
-        filename_fn=lambda _: f"M0V3_Area_Medica_{slug_atl}_{anno_corrente}_{mese_corrente:02d}.pdf"
-    )
+    # Action Bar con Export PDF (solo se in pagina dedicata)
+    if show_hero_strip:
+        slug_atl = slugify_name(atleta_sel)
+        kpis_dict = {
+            'pct_disp': pct_disp,
+            'giorni_disponibile': giorni_disponibile,
+            'giorni_limitato': giorni_limitato,
+            'giorni_stop': giorni_stop,
+            'tot_trattamenti': tot_trattamenti,
+            'giorni_viaggio': giorni_viaggio,
+            'tot_giorni': tot_giorni
+        }
+        opzioni_pdf = {"calendario": tr("Master Timeline & Diario Clinico (PDF)", "Master Timeline & Clinical Diary (PDF)")}
+        render_action_bar(
+            meta_items=[
+                (tr("Atleta Selezionato", "Selected Athlete"), atleta_sel),
+                (tr("Periodo Mese", "Month Period"), f"{nome_mese_str} {anno_corrente}"),
+                (tr("Disponibilità Piena", "Full Availability"), f"{pct_disp:.0f}%"),
+                (tr("Trattamenti Fisio", "Physio Treatments"), f"{tot_trattamenti}"),
+            ],
+            pdf_options=opzioni_pdf,
+            pdf_key=f"pdf_cal_med_{slug_atl}_{anno_corrente}_{mese_corrente}",
+            generate_fn=lambda _: crea_pdf_calendario_medico(atleta_sel, mese_corrente, anno_corrente, master_calendar, kpis_dict),
+            filename_fn=lambda _: f"M0V3_Area_Medica_{slug_atl}_{anno_corrente}_{mese_corrente:02d}.pdf"
+        )
 
     # -------------------------------------------------------------------------
     # 4. BARRA KPI EXECUTIVE MENSILE (5 Card con Bootstrap Icons)
@@ -1840,7 +1848,7 @@ def render_allenamenti_gym_fisico(t, atleta_sel=None, atleta_id_sel=None, key_pr
         with c_f1:
             data_staff_input = st.date_input(
                 tr("Data Seduta", "Session Date"),
-                value=date.today(),
+                value=datetime.date.today(),
                 key=f"{key_prefix}_staff_date"
             )
         with c_f2:
@@ -2024,10 +2032,10 @@ def render_calendario_medico(t):
 
     # Header Istituzionale M0V3
     render_page_header(
-        tr("Inserimento Sessioni Extra Tennis", "Extra-Tennis Session Entry"),
+        tr("Medico & Extra Tennis", "Medical & Extra-Tennis"),
         tr("Registro clinico/fisioterapico, infortuni e inserimento sedute GYM / Preparazione Fisica", 
            "Clinical/physio registry, injury tracking, and GYM / Athletic preparation entries"),
-        "EXTRA-TENNIS SESSIONS & CLINICAL REGISTRY"
+        "MEDICAL & EXTRA-TENNIS SESSIONS"
     )
 
     dict_atleti = _get_atleti_dict(user, is_admin, is_coach)

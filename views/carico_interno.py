@@ -34,10 +34,10 @@ def render_carico_interno(t):
     role = st.session_state.get('role', 'Staff')
 
     render_page_header(
-        tr("Carico Interno & Wellness", "Internal Load & Wellness"),
-        tr("Monitoraggio del carico soggettivo (sRPE), incrocio con dati GPS e stato biologico dell'atleta.",
-           "Subjective load monitoring (sRPE), GPS cross-referencing and athlete biological status."),
-        "INTERNAL LOAD & RECOVERY MONITOR"
+        tr("Analisi Wellness-RPE-GPS", "Wellness-RPE-GPS Analysis"),
+        tr("Monitoraggio integrato di Wellness mattutino, carico soggettivo (sRPE), telemetria GPS e correlazione clinica.",
+           "Integrated monitoring of morning Wellness, subjective load (sRPE), GPS telemetry and clinical correlation."),
+        "WELLNESS · RPE · GPS INTEGRATED ANALYTICS"
     )
 
     # 1. Parco Atleti Visibili
@@ -170,11 +170,18 @@ def render_carico_interno(t):
 
     avg_wellness = "N/D"
     if not df_w.empty:
+        cols_req = ['sonno_qualita', 'umore', 'fatica', 'stress', 'doms']
+        for c in cols_req:
+            if c not in df_w.columns:
+                df_w[c] = 5.0
+            else:
+                df_w[c] = pd.to_numeric(df_w[c], errors='coerce').fillna(5.0)
         # Score wellness medio
         s_pos = df_w['sonno_qualita'] + df_w['umore']
         s_neg = (11 - df_w['fatica']) + (11 - df_w['stress']) + (11 - df_w['doms'])
         df_w['score_tot'] = (s_pos + s_neg) / 5.0
-        avg_wellness = f"{df_w['score_tot'].mean():.1f}/10"
+        if not df_w['score_tot'].dropna().empty:
+            avg_wellness = f"{df_w['score_tot'].mean():.1f}/10"
 
     eff_val = (tot_tl_gps / tot_srpe) if tot_srpe > 0 else 0.0
 
@@ -595,6 +602,8 @@ def render_carico_interno(t):
                         f"- **sRPE alto + GPS ridotto + Wellness basso**: Fatica cumulativa o stress non assorbito. L'atleta spende molta energia biologica per produrre poco lavoro meccanico.\n"
                         f"- **GPS elevato + sRPE contenuto + Wellness alto**: Stato di grazia e massima assimilazione del carico."
                     )
+            st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+            render_scientific_methodology_box('carico_interno')
 
     # -------------------------------------------------------------
     # TAB 2: WELLNESS & RISPOSTA BIOLOGICA
@@ -672,6 +681,3 @@ def render_carico_interno(t):
     # -------------------------------------------------------------
     elif active_ci_tab == lbl_ci_3:
         render_correlazione_clinica(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="ci_corr")
-
-    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-    render_scientific_methodology_box('carico_interno')

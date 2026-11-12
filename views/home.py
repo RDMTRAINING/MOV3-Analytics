@@ -550,52 +550,6 @@ def render_home(t):
                     if 80 <= acwr_pct <= 125:
                         n_optimal += 1
 
-    # --- FILA 1: KPI CARDS GLOBALI ---
-    k1, k2, k3, k4 = st.columns(4)
-
-    with k1:
-        st.markdown(
-            card_kpi(
-                tr("Atleti in Roster", "Roster Athletes"),
-                f"<span style='font-size:26px; font-weight:900; color:#0f172a;'>{tot_atleti}</span> "
-                f"<span style='font-size:12px; font-weight:700; color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:10px; margin-left:4px;'>{n_optimal} Optimal</span>",
-                f"{n_optimal} di {tot_atleti} in Optimal Zone (80-125%)",
-                "#0284c7"
-            ),
-            unsafe_allow_html=True
-        )
-    with k2:
-        st.markdown(
-            card_kpi(
-                tr("Sessioni Totali", "Total Sessions"),
-                f"<span style='font-size:26px; font-weight:900; color:#0f172a;'>{tot_sessioni}</span>",
-                f"<b>{n_reali}</b> {tr('Reali', 'Real')} · <b>{n_sim}</b> {tr('Simulate', 'Simulated')}",
-                "#10b981"
-            ),
-            unsafe_allow_html=True
-        )
-    with k3:
-        st.markdown(
-            card_kpi(
-                tr("Match Analizzati", "Analyzed Matches"),
-                f"<span style='font-size:26px; font-weight:900; color:#0f172a;'>{tot_match}</span>",
-                tr("Prestazioni ufficiali in gara", "Official match performances"),
-                "#f59e0b"
-            ),
-            unsafe_allow_html=True
-        )
-    with k4:
-        st.markdown(
-            card_kpi(
-                tr("Ultimo Upload", "Latest Upload"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{ultima_data_str}</span>",
-                ultimo_dettaglio,
-                "#8b5cf6"
-            ),
-            unsafe_allow_html=True
-        )
-
-    st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
     # =========================================================================
     # CALENDARIO & MASTER TIMELINE INTEGRATA (FOCUS ATLETA)
     # =========================================================================
