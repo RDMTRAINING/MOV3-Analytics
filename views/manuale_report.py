@@ -1042,6 +1042,412 @@ MANUALE_ANALISI = [
             "Foster, C. (1998). Monitoring training in athletes with reference to overtraining syndrome. MSSE, 30(7), 1164-1168.",
             "Impellizzeri, F. M. et al. (2019). Internal and external training load: 15 years on. IJSPP, 14(2), 250-253."
         ]
+    },
+
+    # ---------------------------------------------------------------------
+    # 7. STATISTICHE MATCH (7 Moduli)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Evoluzione Metri per Punto & Costo Vivo (TL High / pt)",
+        "nome_it": "Evoluzione Metri per Punto & Costo Vivo (TL High / pt)",
+        "area": "Statistiche Match",
+        "icona": "bi-speedometer2",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Calcola la quota chilometrica e il dispendio energetico ad alta intensità (Training Load High) normalizzati per ogni singolo punto giocato."
+        ),
+        "a_cosa_serve": (
+            "Quantifica l'efficienza cinetica ed energetica del tennista punto per punto, evidenziando se la tattica adottata comporta uno spreco di metri o se il giocatore chiude i punti con ridotto costo vivo."
+        ),
+        "azioni_consentite": [
+            "Filtro Match e Atleta",
+            "Grafico comparativo punto per punto",
+            "Benchmark vs media storica di categoria",
+            "Esportazione Report PDF"
+        ],
+        "bibliografia": [
+            "Reid, M. et al. (2016). Tracking devices in tennis: application to training and competition. IJSPP, 11(5), 675-680.",
+            "Kovacs, M. S. (2007). Tennis physiology: training the competitive athlete. Sports Medicine, 37(3), 189-198."
+        ]
+    },
+    {
+        "nome": "Densità Scambi & Azioni Int. IMU >2\" (ogni 10 pt)",
+        "nome_it": "Densità Meccanica degli Scambi (Azioni >2\" ogni 10 Punti)",
+        "area": "Statistiche Match",
+        "icona": "bi-lightning-charge",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Misura la frequenza di eventi inerziali triassiali ad alta intensità (scatti, cambi di direzione >2 secondi) calcolata su blocchi di 10 punti giocati."
+        ),
+        "a_cosa_serve": (
+            "Identifica i momenti di massima densità neuromuscolare della gara e la capacità dell'atleta di sostenere ripetute sollecitazioni eccentriche sotto fatica cumulativa."
+        ),
+        "azioni_consentite": [
+            "Visualizzazione timeline a blocchi di punti",
+            "Ispezione soglie inerziali >2s e >3s",
+            "Confronto set per set"
+        ],
+        "bibliografia": [
+            "Boyd, L. J. et al. (2011). Accelerometer-based player load in elite sports. IJSPP, 6(3), 311-326."
+        ]
+    },
+    {
+        "nome": "Scorporo Servizio vs Risposta (Densità & Impatto Eccentrico)",
+        "nome_it": "Scorporo Tattico: Turni di Servizio vs Turni di Risposta",
+        "area": "Statistiche Match",
+        "icona": "bi-arrow-left-right",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Disaccoppia il volume di corsa, il carico metabolico High e le frenate eccentriche registrate nei game al servizio rispetto a quelli in risposta."
+        ),
+        "a_cosa_serve": (
+            "Identifica in quale fase di gioco si concentra il maggior logorio articolare, orientando la gestione tattica e la programmazione del recupero post-gara."
+        ),
+        "azioni_consentite": [
+            "Confronto affiancato Servizio vs Risposta",
+            "Metriche di frenata eccentrica e accelerazione",
+            "Esportazione Referto comparativo"
+        ],
+        "bibliografia": [
+            "Fernandez-Fernandez, J. et al. (2009). Physiological demands of tennis. Sports Medicine, 39(8), 603-626."
+        ]
+    },
+    {
+        "nome": "Benchmark Prestativo: Vittorie vs Sconfitte",
+        "nome_it": "Profilo Fisico Comparativo: Match Vinti vs Match Persi",
+        "area": "Statistiche Match",
+        "icona": "bi-award-fill",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Confronta i parametri cinematici, volumetrici e di intensità registrati negli incontri vinti rispetto a quelli persi sulla medesima superficie o periodo."
+        ),
+        "a_cosa_serve": (
+            "Definisce i requisiti fisici minimi (work rate, metri/minuto, volume High) associati al successo competitivo per lo specifico atleta."
+        ),
+        "azioni_consentite": [
+            "Filtro Superficie (Terra, Cemento, Erba)",
+            "Radar comparativo Vittorie vs Sconfitte",
+            "Calcolo scostamento percentuale statistico"
+        ],
+        "bibliografia": [
+            "Hornery, D. J. et al. (2007). Movement patterns and physiological demands in elite tennis. Sports Medicine, 37(6), 475-498."
+        ]
+    },
+    {
+        "nome": "Correlazione Metri/Punto vs Rendimento Tecnico",
+        "nome_it": "Correlazione Metri/Punto vs Rendimento Tecnico",
+        "area": "Statistiche Match",
+        "icona": "bi-graph-up",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Incrocia la mobilità orizzontale al metro con i dati tecnici ufficiali di match (percentuale prime palle, punti vinti alla risposta, errori gratuiti)."
+        ),
+        "a_cosa_serve": (
+            "Valuta se un elevato impegno chilometrico sia effettivamente produttivo o se indichi una posizione arretrata e difensiva che disperde energie."
+        ),
+        "azioni_consentite": [
+            "Scatter plot con retta di regressione",
+            "Coefficiente di correlazione Pearson/Spearman",
+            "Filtro per categoria di avversario"
+        ],
+        "bibliografia": [
+            "Reid, M. et al. (2016). Tracking devices in tennis. IJSPP."
+        ]
+    },
+    {
+        "nome": "Impatto dell'Efficienza al Servizio sul Costo Fisico",
+        "nome_it": "Efficienza al Servizio e Risparmio di Carico Meccanico",
+        "area": "Statistiche Match",
+        "icona": "bi-shield-shaded",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Quantifica la riduzione di Training Load, metri percorsi ed eventi inerziali favorita da elevate percentuali di punti rapidi (ace, punti diretti su prima palla)."
+        ),
+        "a_cosa_serve": (
+            "Dimostra allo staff l'effetto protettivo di un servizio incisivo sulla conservazione delle energie muscolari durante tornei plurisettimanali."
+        ),
+        "azioni_consentite": [
+            "Analisi multivariata servizio/carico",
+            "Simulazione scenari di efficienza",
+            "Esportazione grafico"
+        ],
+        "bibliografia": [
+            "Kovacs, M. S. et al. (2014). Elite tennis serve biomechanics and conditioning. BJSM, 48(Suppl 1), i43-i48."
+        ]
+    },
+    {
+        "nome": "Archivio Match Ufficiali & Abbinamento Telemetria GPS",
+        "nome_it": "Archivio Gare & Sincronizzazione Telemetria GPS",
+        "area": "Statistiche Match",
+        "icona": "bi-archive",
+        "colore": "#6366f1",
+        "cosa_analizza": (
+            "Registro storico cronologico dei match ufficiali con integrazione e verifica dell'avvenuto abbinamento con i file GPS/IMU."
+        ),
+        "a_cosa_serve": (
+            "Fornisce un'anagrafica centralizzata delle competizioni, assicurando che nessuna prestazione ufficiale rimanga priva di dati telemetrici correlati."
+        ),
+        "azioni_consentite": [
+            "Ricerca per data, torneo, avversario",
+            "Abbinamento rapido sessione GPS a match",
+            "Verifica stato sincronizzazione telemetria"
+        ],
+        "bibliografia": [
+            "M0V3 Enterprise Telemetry Synchronization Engine."
+        ]
+    },
+
+    # ---------------------------------------------------------------------
+    # 8. ANALISI WELLNESS-RPE-GPS (3 Moduli)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Incrocio GPS vs sRPE",
+        "nome_it": "Decoupling Ratio: Carico Esterno GPS vs Carico Interno sRPE",
+        "area": "Analisi Wellness-RPE-GPS",
+        "icona": "bi-heart-pulse-fill",
+        "colore": "#ec4899",
+        "cosa_analizza": (
+            "Confronta il carico meccanico esterno oggettivo (Training Load, Player Load, Distanza GPS) con il carico biologico interno soggettivo (sRPE Foster = RPE CR-10 x Durata min) e calcola l'Indice di Efficienza e il disaccoppiamento biologico (Decoupling I:E Ratio)."
+        ),
+        "a_cosa_serve": (
+            "Rappresenta il gold standard per rilevare tempestivamente stati di sovrallenamento o fatica non funzionale: un aumento del carico interno percepito a parità di output GPS evidenzia che l'atleta richiede un dispendio biologico eccessivo per mantenere le prestazioni, richiedendo scarico precauzionale."
+        ),
+        "azioni_consentite": [
+            "Filtro finestra temporale (7, 14, 28, 60 giorni o tutto lo storico)",
+            "Scelta metrica GPS (Indice di Volume, Intensità, TL, Distanza)",
+            "Overlay trend Wellness mattutino totale",
+            "Esportazione Dossier Clinico-Atletico PDF"
+        ],
+        "bibliografia": [
+            "Foster, C. et al. (2001). A new approach to monitoring exercise training. JSCR, 15(1), 109-115.",
+            "Impellizzeri, F. M. et al. (2019). Internal and external training load: 15 years on. IJSPP, 14(2), 250-253.",
+            "Halson, S. L. (2014). Monitoring training load to understand fatigue in athletes. Sports Medicine, 44(Suppl 2), S139-S147."
+        ]
+    },
+    {
+        "nome": "Trend Risposta Biologica (Wellness)",
+        "nome_it": "Monitoraggio Profilo Wellness Mattutino (Protocollo Hooper-Mackinnon)",
+        "area": "Analisi Wellness-RPE-GPS",
+        "icona": "bi-emoji-smile",
+        "colore": "#ec4899",
+        "cosa_analizza": (
+            "Monitora longitudinalmente i 5 domini neuro-fisiologici del benessere quotidiano raccolti al risveglio: Qualità del Sonno, Fatica Generale, Indolenzimento Muscolare (DOMS), Livello di Stress e Umore Generale (scala validata 1-5 / 1-10)."
+        ),
+        "a_cosa_serve": (
+            "Fornisce una diagnosi preventiva dello stato di prontezza (Readiness) e di recupero prima dell'inizio delle sedute. Un calo marcato dello score o picchi di indolenzimento muscolare consentono di riprogrammare i volumi giornalieri prima della comparsa di lesioni."
+        ),
+        "azioni_consentite": [
+            "Visualizzazione radar a 5 domini",
+            "Grafico spline temporale con trendline",
+            "Evidenziazione giorni critici con allerta sonno/DOMS",
+            "Confronto con media personale stagionale"
+        ],
+        "bibliografia": [
+            "Hooper, S. L. & Mackinnon, L. T. (1995). Monitoring overtraining in athletes. Sports Medicine, 20(5), 321-327.",
+            "Meeusen, R. et al. (2013). Prevention, diagnosis, and treatment of the overtraining syndrome. MSSE, 45(1), 186-205."
+        ]
+    },
+    {
+        "nome": "Analisi Incrociata",
+        "nome_it": "Analisi Incrociata: Carichi Fisici vs Eventi Clinico-Sanitari",
+        "area": "Analisi Wellness-RPE-GPS",
+        "icona": "bi-clipboard2-pulse",
+        "colore": "#ec4899",
+        "cosa_analizza": (
+            "Sovrappone in una timeline unificata il volume di lavoro fisico (GPS & sRPE) con l'insorgenza di eventi clinici registrati dallo staff medico (infortuni muscolari, tendinopatie, trattamenti fisioterapici, farmaci, stop precauzionali)."
+        ),
+        "a_cosa_serve": (
+            "Permette a preparatori e medici di verificare con evidenze oggettive se determinati picchi di carico (spikes acuti o carichi cronici anomali) abbiano preceduto l'evento lesivo, calibrando le soglie di tolleranza individuali."
+        ),
+        "azioni_consentite": [
+            "Timeline interattiva con marcatori evento clinico",
+            "Filtro per distretto anatomico",
+            "Correlazione temporale spike acuto vs data evento",
+            "Esportazione Report Incrociato PDF"
+        ],
+        "bibliografia": [
+            "Gabbett, T. J. (2016). The training—injury prevention paradox: should athletes be training smarter and harder? BJSM, 50(5), 273-280.",
+            "Windt, J. & Gabbett, T. J. (2017). How do training and competition workloads relate to injury? BJSM, 51(5), 428-435."
+        ]
+    },
+
+    # ---------------------------------------------------------------------
+    # 9. MEDICO & EXTRA TENNIS (2 Moduli)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Inserimento & Gestione Registro",
+        "nome_it": "Cartella Clinica, Registro Sanitario & Trattamenti Fisioterapici",
+        "area": "Medico & Extra Tennis",
+        "icona": "bi-hospital",
+        "colore": "#14b8a6",
+        "cosa_analizza": (
+            "Gestisce l'archivio clinico e fisioterapico completo: tipologia evento (Infortunio, Valutazione, Trattamento Fisioterapico, Prescrizione Farmacologica), distretto anatomico, diagnosi specialistica, farmaci somministrati e note di decorso."
+        ),
+        "a_cosa_serve": (
+            "Garantisce continuità terapeutica e tracciabilità sanitaria GDPR-compliant. Consente allo staff medico di registrare trattamenti sul campo e duplicare protocolli per sedute continuative con un click."
+        ),
+        "azioni_consentite": [
+            "Inserimento rapido nuovo evento o trattamento",
+            "Duplicazione guidata trattamento a date successive",
+            "Filtro storico per atleta e distretto anatomico",
+            "Eliminazione o modifica schede con tracciamento audit"
+        ],
+        "bibliografia": [
+            "Fuller, C. W. et al. (2006). Consensus statement on injury definitions in sport. BJSM, 40(3), 193-201.",
+            "Pluim, B. M. et al. (2009). Tennis injuries: occurrence, aetiology, and prevention. BJSM, 40(5), 415-423."
+        ]
+    },
+    {
+        "nome": "Allenamenti GYM e Fisico",
+        "nome_it": "Registro Sessioni Extra-Tennis (GYM, Palestra & Carichi Gymaware VBT)",
+        "area": "Medico & Extra Tennis",
+        "icona": "bi-bicycle",
+        "colore": "#14b8a6",
+        "cosa_analizza": (
+            "Registra tutte le sedute atletiche extra-campo (forza massimale, potenza con encoder Velocity-Based Training Gymaware, sedute di mobilità, lavoro cardiovascolare a secco o bicicletta)."
+        ),
+        "a_cosa_serve": (
+            "Impedisce il sottodimensionamento del carico complessivo: quantifica la fatica neuromuscolare e lo stress articolare generato dal lavoro a secco e in palestra, integrandolo nel bilancio sRPE complessivo."
+        ),
+        "azioni_consentite": [
+            "Inserimento data, tipologia seduta, durata, sRPE e RPE sessione",
+            "Audit e consultazione dello storico sedute extra-tennis",
+            "Integrazione automatica nel database sRPE dell'atleta"
+        ],
+        "bibliografia": [
+            "Suchomel, T. J. et al. (2016). The importance of muscular strength in athletic performance. Sports Medicine, 46(10), 1419-1449.",
+            "Weakley, J. et al. (2021). Velocity-based training: From theory to application. Strength & Conditioning Journal, 43(2), 31-49."
+        ]
+    },
+
+    # ---------------------------------------------------------------------
+    # 10. TEST FISICI & NEUROMUSCOLARI (6 Moduli)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Panoramica Test Atleta",
+        "nome_it": "Profilo Funzionale & Batteria Valutativa Atleta",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-person-lines-fill",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Quadro sinottico delle valutazioni neuromuscolari, articolari e aerobiche sostenute dall'atleta nelle sessioni di testing (CMJ, Squat Jump, Mobilità, Sprint 5-10-20m, Navetta)."
+        ),
+        "a_cosa_serve": (
+            "Fornisce una fotografia istantanea dei punti di forza e delle carenze condizionali del tennista rispetto ai requisiti biomeccanici del tennis di vertice."
+        ),
+        "azioni_consentite": [
+            "Selettore atleta",
+            "Visualizzazione a card interattive per categoria di test",
+            "Radar neuromuscolare complessivo"
+        ],
+        "bibliografia": [
+            "Girard, O. & Millet, G. P. (2009). Neuromuscular fatigue in racquet sports. Physical Medicine and Rehabilitation Clinics, 20(1), 161-178."
+        ]
+    },
+    {
+        "nome": "Deep-Dive per Test",
+        "nome_it": "Analisi Dettagliata & Evoluzione Storica della Singola Prova",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-zoom-in",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Evoluzione longitudinale delle metriche specifiche della singola prova nel tempo (es. altezza salto CMJ in cm, potenza di picco W/kg, tempi cronometrici di scatto)."
+        ),
+        "a_cosa_serve": (
+            "Verifica l'efficacia dei cicli di preparazione atletica nel generare gli adattamenti desiderati e rileva cali prestativi improvvisi legati a sovraccarico."
+        ),
+        "azioni_consentite": [
+            "Filtro per test specifico",
+            "Grafico di progressione temporale con barre di variabilità",
+            "Tabella comparativa sessioni di test"
+        ],
+        "bibliografia": [
+            "Claudino, J. G. et al. (2017). The countermovement jump to monitor neuromuscular status: A meta-analysis. Sports Medicine, 47(7), 1353-1367."
+        ]
+    },
+    {
+        "nome": "Executive Summary & Readiness",
+        "nome_it": "Sintesi Esecutiva per Staff Tecnico & Indice di Prontezza",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-clipboard-check",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Sintesi decisionale che aggrega lo stato neuromuscolare dell'atleta evidenziando indici di asimmetria tra arti (L/R) e prontezza alla gara."
+        ),
+        "a_cosa_serve": (
+            "Offre allo staff tecnico un semaforo decisionale immediato sullo stato di forma del giocatore in vista di tornei impegnativi."
+        ),
+        "azioni_consentite": [
+            "Indicatori semaforici di readiness",
+            "Segnalazione asimmetrie bilaterali a rischio (>10%)",
+            "Esportazione Executive PDF"
+        ],
+        "bibliografia": [
+            "Bishop, C. et al. (2018). Interlimb asymmetries: Are they detrimental to performance? JSCR, 32(8), 2320-2331."
+        ]
+    },
+    {
+        "nome": "Confronti",
+        "nome_it": "Comparazioni Inter-Individuali & Benchmark di Squadra",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-people",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Confronta i risultati dei test fisici tra atleti dello stesso roster o rispetto a parametri di riferimento per categoria di età."
+        ),
+        "a_cosa_serve": (
+            "Permette di stabilire standard di riferimento interni all'accademia e stimolare l'emulazione virtuosa nel gruppo di allenamento."
+        ),
+        "azioni_consentite": [
+            "Selezione atleti a confronto",
+            "Grafici a barre comparative",
+            "Graduatorie di rendimento condizionale"
+        ],
+        "bibliografia": [
+            "Fernandez-Fernandez, J. et al. (2014). Physical characteristics of young competitive tennis players. JSCR, 28(2), 485-494."
+        ]
+    },
+    {
+        "nome": "Gestione & Inserimento Test",
+        "nome_it": "Modulo Immissione Dati & Acquisizione Misure da Campo",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-pencil-square",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Interfaccia rapida per registrare le misurazioni rilevate durante i test fisici su campo o in palestra."
+        ),
+        "a_cosa_serve": (
+            "Consente ai preparatori di inserire i valori direttamente a bordo campo da tablet o smartphone, memorizzandoli nel database centrale."
+        ),
+        "azioni_consentite": [
+            "Form dinamica con validazione range fisiologici",
+            "Salvataggio e aggiornamento istantaneo",
+            "Calcolo automatico indici derivati"
+        ],
+        "bibliografia": [
+            "M0V3 Assessment Workflow Protocol."
+        ]
+    },
+    {
+        "nome": "Costruttore Test Custom",
+        "nome_it": "Costruttore di Protocolli & Batterie di Test Personalizzate",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-tools",
+        "colore": "#f97316",
+        "cosa_analizza": (
+            "Strumento per creare nuove tipologie di test personalizzate, definendo parametri, unità di misura e soglie di riferimento."
+        ),
+        "a_cosa_serve": (
+            "Offre flessibilità a ogni staff o centro per integrare i propri test metodologici proprietari senza vincoli rigidi."
+        ),
+        "azioni_consentite": [
+            "Creazione test con campi personalizzati",
+            "Scelta unità di misura (cm, s, kg, W/kg, ecc.)",
+            "Assegnazione ad atleti e categorie"
+        ],
+        "bibliografia": [
+            "M0V3 Custom Assessment Framework."
+        ]
     }
 ]
 
@@ -1052,7 +1458,11 @@ AREE_ORDER = [
     "Trend Settimanale",
     "Trend Stagionale",
     "Storico Match",
-    "Medie"
+    "Statistiche Match",
+    "Medie",
+    "Analisi Wellness-RPE-GPS",
+    "Medico & Extra Tennis",
+    "Test Fisici & Neuromuscolari"
 ]
 
 AREA_ICONS = {
@@ -1061,7 +1471,11 @@ AREA_ICONS = {
     "Trend Settimanale": ("bi-calendar-week-fill", "#0ea5e9"),
     "Trend Stagionale": ("bi-calendar-range-fill", "#8b5cf6"),
     "Storico Match": ("bi-graph-up-arrow", "#f59e0b"),
-    "Medie": ("bi-bar-chart-steps", "#0284c7")
+    "Statistiche Match": ("bi-card-checklist", "#6366f1"),
+    "Medie": ("bi-bar-chart-steps", "#0284c7"),
+    "Analisi Wellness-RPE-GPS": ("bi-heart-pulse-fill", "#ec4899"),
+    "Medico & Extra Tennis": ("bi-calendar-plus-fill", "#14b8a6"),
+    "Test Fisici & Neuromuscolari": ("bi-clipboard2-pulse-fill", "#f97316")
 }
 
 
@@ -1070,19 +1484,17 @@ AREA_ICONS = {
 # =========================================================================
 
 def render_manuale_report(t):
+    n_tot_moduli = len(MANUALE_ANALISI)
+    n_aree = len(AREE_ORDER)
+    n_biblio = sum(len(m.get('bibliografia', [])) for m in MANUALE_ANALISI)
+
     render_page_header(
         tr("Manuale Report & Moduli Analitici", "Reports & Analytical Modules Manual"),
-        tr(
-            "Guida tecnica, metodologica e scientifica a tutti i 44 moduli di analisi abilitabili e assegnabili nel sistema M0V3 Analytics.",
-            "Technical, methodological, and scientific guide to all 44 analysis modules assignable in the M0V3 Analytics system."
-        ),
+        f"{tr('Guida tecnica, metodologica e scientifica a tutti i', 'Technical, methodological, and scientific guide to all')} {n_tot_moduli} {tr('moduli di analisi abilitabili e assegnabili nel sistema M0V3 Analytics.', 'analysis modules assignable in the M0V3 Analytics system.')}",
         tr("DOCUMENTAZIONE METODOLOGICA & SCIENTIFICA", "METHODOLOGICAL & SCIENTIFIC DOCUMENTATION")
     )
 
     # --- BANNER STATISTICO SINTETICO M0V3 ---
-    n_tot_moduli = len(MANUALE_ANALISI)
-    n_aree = len(AREE_ORDER)
-    n_biblio = sum(len(m.get('bibliografia', [])) for m in MANUALE_ANALISI)
 
     st.html(
         f"""<div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 18px 24px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-family: 'Inter', sans-serif;">

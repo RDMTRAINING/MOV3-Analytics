@@ -2060,10 +2060,27 @@ def render_calendario_medico(t):
     # Hero strip compatta
     render_athlete_hero_strip(atleta_sel)
 
-    # Tab Navigazione
+    # Tab Navigazione con controllo permessi utente
     lbl_et_1 = tr("Inserimento & Gestione Registro", "Data Entry & Registry")
     lbl_et_2 = tr("Allenamenti GYM e Fisico", "GYM & Fitness Sessions")
-    active_et_tab = render_tab_navigation([lbl_et_1, lbl_et_2], key="nav_extra_tennis")
+
+    user_perms = st.session_state.get('user_permessi_moduli')
+    tabs_disponibili_et = []
+    if st.session_state.get('role') == 'Super-Admin' or user_perms is None:
+        tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+    else:
+        et_perms = {r for (ar, r) in user_perms if ar in ['Medico & Extra Tennis', 'Calendario & Area Medica', 'Inserimento Sessioni Extra Tennis']}
+        if not et_perms:
+            tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+        else:
+            if "Inserimento & Gestione Registro" in et_perms or any("Registro" in r for r in et_perms):
+                tabs_disponibili_et.append(lbl_et_1)
+            if "Allenamenti GYM e Fisico" in et_perms or any("GYM" in r or "Fisico" in r for r in et_perms):
+                tabs_disponibili_et.append(lbl_et_2)
+            if not tabs_disponibili_et:
+                tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+
+    active_et_tab = render_tab_navigation(tabs_disponibili_et, key="nav_extra_tennis")
 
     today = datetime.date.today()
     mese_corrente = today.month

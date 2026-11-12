@@ -1082,6 +1082,10 @@ def main():
                 if pag_op['chiave'] == page_key:
                     return ('Pagine Operative', page_key) in permessi_utente_set
 
+            # Fallback per Carico Interno se salvato precedentemente nelle Pagine Operative
+            if page_key == "Carico Interno" and ('Pagine Operative', 'Carico Interno') in permessi_utente_set:
+                return True
+
             # 3. Pagine sempre disponibili (Home, Profilo, Supporto, Diario)
             return True
 

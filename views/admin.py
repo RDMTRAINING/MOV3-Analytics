@@ -768,10 +768,29 @@ def render_admin(t):
                     st.markdown(f"#### {tr('Aree Analitiche & Sottopagine Modulari', 'Analytical Areas & Modular Sub-Pages')}")
                     st.caption(tr("Abilita o disabilita intere macro-aree o singoli grafici/tab per questo utente.", "Enable or disable whole macro-areas or individual sub-pages for this user."))
 
+                    # Helper compatibilità backward con vecchi nomi aree/report
+                    def _is_module_permitted_in_saved(a_name, rep_name):
+                        if (a_name, rep_name) in permessi_attuali:
+                            return True
+                        if a_name == "Medico & Extra Tennis":
+                            for a_alt in ['Calendario & Area Medica', 'Inserimento Sessioni Extra Tennis']:
+                                if (a_alt, rep_name) in permessi_attuali:
+                                    return True
+                                if rep_name == "Inserimento & Gestione Registro" and any(a_alt == ar and "Registro" in rep for (ar, rep) in permessi_attuali):
+                                    return True
+                                if rep_name == "Allenamenti GYM e Fisico" and any(a_alt == ar and ("GYM" in rep or "Fisico" in rep) for (ar, rep) in permessi_attuali):
+                                    return True
+                        if a_name == "Analisi Wellness-RPE-GPS":
+                            if ('Carico Interno', rep_name) in permessi_attuali or ('Pagine Operative', 'Carico Interno') in permessi_attuali:
+                                return True
+                            if rep_name == "Analisi Incrociata" and any("Clinici" in rep or "Incrociata" in rep for (_, rep) in permessi_attuali):
+                                return True
+                        return False
+
                     for area, reports in CATALOGO_REPORT.items():
                         # Calcolo default se mai configurato prima
                         area_key = f"{state_prefix}area_{area}"
-                        moduli_abilitati_area = [r for r in reports if (area, r) in permessi_attuali]
+                        moduli_abilitati_area = [r for r in reports if _is_module_permitted_in_saved(area, r)]
                         
                         # Se l'utente non ha mai avuto una config salvata, abilitiamo tutto di default
                         default_area_active = True if not ha_config_salvata else (len(moduli_abilitati_area) > 0)
@@ -813,7 +832,7 @@ def render_admin(t):
                             cols_rep = st.columns(2)
                             for idx_r, report in enumerate(reports):
                                 chk_key = f"{state_prefix}chk_{area}_{report}"
-                                default_r = True if not ha_config_salvata else ((area, report) in permessi_attuali)
+                                default_r = True if not ha_config_salvata else _is_module_permitted_in_saved(area, report)
                                 if chk_key not in st.session_state:
                                     st.session_state[chk_key] = default_r
 

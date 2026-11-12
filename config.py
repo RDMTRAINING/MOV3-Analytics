@@ -709,20 +709,6 @@ CATALOGO_REPORT = {
         "Distribuzione Lavoro Roster",
         "Stress Roster 8 settimane"
     ],
-    "Test Fisici & Neuromuscolari": [
-        "Panoramica Test Atleta",
-        "Deep-Dive per Test",
-        "Executive Summary & Readiness",
-        "Confronti",
-        "Gestione & Inserimento Test",
-        "Costruttore Test Custom"
-    ],
-    "Calendario & Area Medica": [
-        "Master Calendar & Timeline Giornaliera",
-        "Registro Clinico, Trattamenti & Logistica ( Lettura / Scrittura )",
-        "Analisi Correlazione Carichi vs Eventi Clinici",
-        "Matrice Preventiva & Alert Overload"
-    ],
     "Statistiche Match": [
         "Evoluzione Metri per Punto & Costo Vivo (TL High / pt)",
         "Densità Scambi & Azioni Int. IMU >2\" (ogni 10 pt)",
@@ -731,11 +717,27 @@ CATALOGO_REPORT = {
         "Correlazione Metri/Punto vs Rendimento Tecnico",
         "Impatto dell'Efficienza al Servizio sul Costo Fisico",
         "Archivio Match Ufficiali & Abbinamento Telemetria GPS"
+    ],
+    "Analisi Wellness-RPE-GPS": [
+        "Incrocio GPS vs sRPE",
+        "Trend Risposta Biologica (Wellness)",
+        "Analisi Incrociata"
+    ],
+    "Medico & Extra Tennis": [
+        "Inserimento & Gestione Registro",
+        "Allenamenti GYM e Fisico"
+    ],
+    "Test Fisici & Neuromuscolari": [
+        "Panoramica Test Atleta",
+        "Deep-Dive per Test",
+        "Executive Summary & Readiness",
+        "Confronti",
+        "Gestione & Inserimento Test",
+        "Costruttore Test Custom"
     ]
 }
 
 PAGINE_OPERATIVE = [
-    {"chiave": "Carico Interno", "nome": "Analisi Wellness-RPE-GPS", "icona": "heart-pulse"},
     {"chiave": "M0V3 Tennis Test", "nome": "M0V3 Tennis Test (Neuro-Mechanical Profiling)", "icona": "lightning-charge-fill"},
     {"chiave": "Caricamento Dati", "nome": "Caricamento Dati (Ingestion CSV/GPS)", "icona": "cloud-arrow-up"},
     {"chiave": "Generatore Dati (No GPS)", "nome": "Generatore Dati (Simulazione No GPS)", "icona": "sliders"},
@@ -753,10 +755,11 @@ AREA_TO_PAGINA = {
     "Statistiche Match": "Statistiche Match",
     "Medie": "Medie",
     "Test Fisici & Neuromuscolari": "Test & Valutazioni",
+    "Medico & Extra Tennis": "Calendario & Area Medica",
     "Calendario & Area Medica": "Calendario & Area Medica",
     "Inserimento Sessioni Extra Tennis": "Calendario & Area Medica",
-    "Medico & Extra Tennis": "Calendario & Area Medica",
-    "Analisi Wellness-RPE-GPS": "Carico Interno"
+    "Analisi Wellness-RPE-GPS": "Carico Interno",
+    "Carico Interno": "Carico Interno",
 }
 
 COLONNE_STANDARD = [

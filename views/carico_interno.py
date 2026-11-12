@@ -267,11 +267,30 @@ def render_carico_interno(t):
                 key="btn_dl_ics_coach"
             )
 
-    # 6. Tab di Dettaglio (con navigazione persistente)
+    # 6. Tab di Dettaglio (con navigazione persistente e verifica permessi modulari)
     lbl_ci_1 = tr("Incrocio GPS vs sRPE", "GPS vs sRPE Cross-Match")
     lbl_ci_2 = tr("Trend Risposta Biologica (Wellness)", "Wellness & Biological Trend")
     lbl_ci_3 = tr("Analisi Incrociata", "Crossing Analysis")
-    active_ci_tab = render_tab_navigation([lbl_ci_1, lbl_ci_2, lbl_ci_3], key="nav_carico_interno")
+
+    user_perms = st.session_state.get('user_permessi_moduli')
+    tabs_disponibili = []
+    if st.session_state.get('role') == 'Super-Admin' or user_perms is None:
+        tabs_disponibili = [lbl_ci_1, lbl_ci_2, lbl_ci_3]
+    else:
+        ci_perms = {r for (ar, r) in user_perms if ar in ['Analisi Wellness-RPE-GPS', 'Carico Interno']}
+        if not ci_perms:
+            tabs_disponibili = [lbl_ci_1, lbl_ci_2, lbl_ci_3]
+        else:
+            if "Incrocio GPS vs sRPE" in ci_perms:
+                tabs_disponibili.append(lbl_ci_1)
+            if "Trend Risposta Biologica (Wellness)" in ci_perms:
+                tabs_disponibili.append(lbl_ci_2)
+            if "Analisi Incrociata" in ci_perms or "Analisi Correlazione Carichi vs Eventi Clinici" in ci_perms:
+                tabs_disponibili.append(lbl_ci_3)
+            if not tabs_disponibili:
+                tabs_disponibili = [lbl_ci_1, lbl_ci_2, lbl_ci_3]
+
+    active_ci_tab = render_tab_navigation(tabs_disponibili, key="nav_carico_interno")
 
     # -------------------------------------------------------------
     # TAB 1: INCROCIO GPS vs sRPE
