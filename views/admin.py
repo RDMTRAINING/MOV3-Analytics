@@ -716,6 +716,7 @@ def render_admin(t):
             unsafe_allow_html=True
         )
 
+        res_profili = supabase_admin.table('profili').select('*').order('email').execute()
         if res_profili.data:
             utente_report = st.selectbox(
                 tr("Seleziona Utente da Configurare:", "Select User to Configure:"),
