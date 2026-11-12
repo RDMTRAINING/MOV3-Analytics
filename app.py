@@ -896,14 +896,37 @@ def main():
     # ROUTING ATLETA SMARTPHONE (Mobile-First Mini WebApp)
     # -------------------------------------------------------------
     device_param = st.query_params.get("device", "").lower()
+    user_role = st.session_state.get('role')
+
     if device_param == 'desktop':
         st.session_state['view_mode'] = 'desktop'
     elif device_param == 'mobile':
-        st.session_state['view_mode'] = 'mobile'
+        if user_role not in ['Atleta'] and st.session_state.get('view_mode') != 'mobile':
+            # Utente non atleta (Coach/Admin) con vecchio query param da test: ripristina desktop
+            st.session_state['view_mode'] = 'desktop'
+            if 'device' in st.query_params:
+                del st.query_params['device']
+        else:
+            st.session_state['view_mode'] = 'mobile'
 
     is_mobile = (st.session_state.get('view_mode') == 'mobile')
 
     if is_mobile:
+        col_m1, col_m2 = st.columns([3, 1.5])
+        with col_m1:
+            st.markdown(
+                f"<div style='font-size:12px; font-weight:700; color:#64748b; padding-top:6px;'>"
+                f"<i class='bi bi-phone' style='color:#0ea5e9; margin-right:4px;'></i>"
+                f"{tr('Vista Smartphone Attiva', 'Smartphone View Active')}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+        with col_m2:
+            if st.button(tr("Passa a Desktop", "Switch to Desktop"), key="btn_quick_switch_desktop", type="secondary", use_container_width=True):
+                st.session_state['view_mode'] = 'desktop'
+                st.query_params['device'] = 'desktop'
+                st.rerun()
+
         import views.atleta_mobile
         _load_view(views.atleta_mobile)
         views.atleta_mobile.render_atleta_mobile(t)

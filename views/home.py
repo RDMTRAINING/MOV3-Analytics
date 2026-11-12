@@ -54,6 +54,7 @@ from pdf_generator import (
     crea_pdf_medie_m0v3,
 )
 from utils_livetennis import fetch_cobolli_live_stats
+from views.calendario_medico import render_master_timeline
 
 def _acwr_zone_style(pct_val, has_baseline=True):
     if not has_baseline or pd.isna(pct_val) or pct_val <= 0:
@@ -598,7 +599,6 @@ def render_home(t):
     # =========================================================================
     # CALENDARIO & MASTER TIMELINE INTEGRATA (FOCUS ATLETA)
     # =========================================================================
-    from views.calendario_medico import render_master_timeline
     render_master_timeline(t, atleta_sel=ath_home_sel, key_prefix="home_cal", show_hero_strip=False)
     st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
 

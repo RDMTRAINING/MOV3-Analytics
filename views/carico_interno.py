@@ -19,6 +19,7 @@ from utils import (
     calcola_e_salva_slot_rpe,
     delete_rpe_sessione,
 )
+from views.calendario_medico import render_correlazione_clinica
 
 
 def render_carico_interno(t):
@@ -670,7 +671,6 @@ def render_carico_interno(t):
     # TAB 3: ANALISI INCROCIATA (Correlazione Carichi vs Clinica)
     # -------------------------------------------------------------
     elif active_ci_tab == lbl_ci_3:
-        from views.calendario_medico import render_correlazione_clinica
         render_correlazione_clinica(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="ci_corr")
 
     st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)

@@ -16,5 +16,10 @@ from views.manuale_report import render_manuale_report
 from views.carico_interno import render_carico_interno
 from views.test_fisici import render_test_fisici
 from views.manuale_test import render_manuale_test
-from views.calendario_medico import render_calendario_medico
+from views.calendario_medico import (
+    render_calendario_medico,
+    render_master_timeline,
+    render_correlazione_clinica,
+    render_allenamenti_gym_fisico,
+)
 from views import atleta_mobile
