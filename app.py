@@ -86,35 +86,58 @@ add_custom_css(LOGO_CIRCULAR_PATH)
 # AUTENTICAZIONE E RICHIESTA SUPPORTO PASSWORD A M0V3
 # =========================================================================
 def auth_module():
-    # Auto-ripristino sessione persistente via localStorage/parent-cookie su reload/refresh
-    if not st.session_state.get('logged_out', False) and st.query_params.get('logged_out') != '1':
+    # Se il server ha rilevato un token non valido o scaduto, pulisci localStorage e cookie per evitare loop
+    if st.session_state.get('clear_invalid_token'):
+        st.session_state['clear_invalid_token'] = False
         components.html("""
         <script>
         (function() {
             try {
                 var p = window.parent || window;
-                var token = null;
-                try { token = p.localStorage.getItem("m0v3_rt"); } catch(e) {}
-                if (!token) {
-                    try { token = localStorage.getItem("m0v3_rt"); } catch(e) {}
-                }
-                if (!token) {
-                    try {
-                        var m = (p.document.cookie || document.cookie).match(/(?:^|; )m0v3_rt=([^;]*)/);
-                        if (m) token = decodeURIComponent(m[1]);
-                    } catch(e) {}
-                }
-                if (token && token.length > 10) {
-                    var curUrl = new URL(p.location.href);
-                    if (!curUrl.searchParams.has("m0v3_rt") && !curUrl.searchParams.has("logged_out")) {
-                        curUrl.searchParams.set("m0v3_rt", token);
-                        p.location.replace(curUrl.href);
-                    }
-                }
+                try { p.localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                try { localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                try { sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
+                try { document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {}
+                if (p.document) { try { p.document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {} }
             } catch(e) {}
         })();
         </script>
         """, height=0)
+    else:
+        # Auto-ripristino sessione persistente via localStorage/parent-cookie su reload/refresh (solo una volta per tab)
+        if not st.session_state.get('logged_out', False) and st.query_params.get('logged_out') != '1':
+            components.html("""
+            <script>
+            (function() {
+                try {
+                    var p = window.parent || window;
+                    var tried = null;
+                    try { tried = sessionStorage.getItem("m0v3_auth_tried"); } catch(e) {}
+                    if (tried === "1") return;
+
+                    var token = null;
+                    try { token = p.localStorage.getItem("m0v3_rt"); } catch(e) {}
+                    if (!token) {
+                        try { token = localStorage.getItem("m0v3_rt"); } catch(e) {}
+                    }
+                    if (!token) {
+                        try {
+                            var m = (p.document.cookie || document.cookie).match(/(?:^|; )m0v3_rt=([^;]*)/);
+                            if (m) token = decodeURIComponent(m[1]);
+                        } catch(e) {}
+                    }
+                    if (token && token.length > 10) {
+                        try { sessionStorage.setItem("m0v3_auth_tried", "1"); } catch(e) {}
+                        var curUrl = new URL(p.location.href);
+                        if (!curUrl.searchParams.has("m0v3_rt") && !curUrl.searchParams.has("logged_out")) {
+                            curUrl.searchParams.set("m0v3_rt", token);
+                            p.location.replace(curUrl.href);
+                        }
+                    }
+                } catch(e) {}
+            })();
+            </script>
+            """, height=0)
 
     logo_b64 = get_base64_image(LOGO_CIRCULAR_PATH)
     if not logo_b64:
@@ -816,6 +839,7 @@ def main():
                             del st.query_params['m0v3_rt']
                         st.rerun()
                 except Exception:
+                    st.session_state['clear_invalid_token'] = True
                     if 'm0v3_rt' in st.query_params:
                         del st.query_params['m0v3_rt']
 
@@ -833,9 +857,11 @@ def main():
                 var cookieStr = "m0v3_rt=" + encodeURIComponent(token) + "; path=/; max-age=2592000; SameSite=Lax";
                 document.cookie = cookieStr;
                 try { localStorage.setItem("m0v3_rt", token); } catch(e) {}
+                try { sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                 if (window.parent && window.parent !== window) {
                     try { window.parent.document.cookie = cookieStr; } catch(e) {}
                     try { window.parent.localStorage.setItem("m0v3_rt", token); } catch(e) {}
+                    try { window.parent.sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                 }
                 window.scrollTo(0, 0);
                 if (window.parent) {
@@ -901,13 +927,9 @@ def main():
     if device_param == 'desktop':
         st.session_state['view_mode'] = 'desktop'
     elif device_param == 'mobile':
-        if user_role not in ['Atleta'] and st.session_state.get('view_mode') != 'mobile':
-            # Utente non atleta (Coach/Admin) con vecchio query param da test: ripristina desktop
-            st.session_state['view_mode'] = 'desktop'
-            if 'device' in st.query_params:
-                del st.query_params['device']
-        else:
-            st.session_state['view_mode'] = 'mobile'
+        st.session_state['view_mode'] = 'mobile'
+    elif 'view_mode' not in st.session_state:
+        st.session_state['view_mode'] = 'mobile' if user_role == 'Atleta' else 'desktop'
 
     is_mobile = (st.session_state.get('view_mode') == 'mobile')
 
@@ -931,21 +953,6 @@ def main():
         _load_view(views.atleta_mobile)
         views.atleta_mobile.render_atleta_mobile(t)
         return
-
-    # Se l'utente è un Atleta e non ha forzato la vista desktop, esegui check schermo client-side
-    if st.session_state.get('role') == 'Atleta' and st.session_state.get('view_mode') != 'desktop':
-        components.html("""
-        <script>
-        (function() {
-            var isMobile = (window.innerWidth <= 768) || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            var url = new URL(window.parent.location.href);
-            if (isMobile && url.searchParams.get('device') !== 'mobile' && url.searchParams.get('device') !== 'desktop') {
-                url.searchParams.set('device', 'mobile');
-                window.parent.location.replace(url.href);
-            }
-        })();
-        </script>
-        """, height=0)
 
     # --- SIDEBAR ENTERPRISE ---
     with st.sidebar:
@@ -1203,9 +1210,11 @@ def main():
                 try {
                     document.cookie = "m0v3_rt=; path=/; max-age=0;";
                     try { localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    try { sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                     if (window.parent && window.parent !== window) {
                         try { window.parent.document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {}
                         try { window.parent.localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                        try { window.parent.sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                     }
                 } catch(e) {}
             })();

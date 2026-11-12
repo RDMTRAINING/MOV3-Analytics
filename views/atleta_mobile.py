@@ -581,9 +581,11 @@ def render_atleta_mobile(t=None):
                 try {
                     document.cookie = "m0v3_rt=; path=/; max-age=0;";
                     try { localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                    try { sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                     if (window.parent && window.parent !== window) {
                         try { window.parent.document.cookie = "m0v3_rt=; path=/; max-age=0;"; } catch(e) {}
                         try { window.parent.localStorage.removeItem("m0v3_rt"); } catch(e) {}
+                        try { window.parent.sessionStorage.removeItem("m0v3_auth_tried"); } catch(e) {}
                     }
                 } catch(e) {}
             })();
