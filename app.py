@@ -876,7 +876,14 @@ def main():
         accetta = st.checkbox("Dichiaro di aver letto e accetto integralmente l'Informativa.")
         if st.button("Accetta e Continua", type="primary", disabled=not accetta):
             if user_id:
-                supabase.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
+                try:
+                    supabase.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
+                except Exception:
+                    try:
+                        if supabase_admin:
+                            supabase_admin.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
+                    except Exception:
+                        pass
             st.session_state['privacy_accettata'] = True
             st.rerun()
             return

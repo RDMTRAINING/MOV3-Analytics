@@ -58,59 +58,59 @@ except Exception as e:
 # =========================================================================
 # AUTO-REFRESH DEL JWT EXPIRED PER POSTGREST
 # =========================================================================
-if not getattr(SyncQueryRequestBuilder.execute, '_is_auto_refresh', False):
-    _orig_postgrest_query_execute = SyncQueryRequestBuilder.execute
+if not hasattr(SyncQueryRequestBuilder, '_unwrapped_execute'):
+    SyncQueryRequestBuilder._unwrapped_execute = SyncQueryRequestBuilder.execute
 
-    def _auto_refresh_postgrest_execute(self, *args, **kwargs):
-        try:
-            return _orig_postgrest_query_execute(self, *args, **kwargs)
-        except Exception as e:
-            code = str(getattr(e, 'code', '') or '')
-            msg = str(getattr(e, 'message', '') or str(e)).lower()
-            if code == 'PGRST303' or 'jwt expired' in msg or 'jwt' in msg:
-                # Token scaduto durante una query: tenta il refresh automatico trasparente
-                try:
-                    rt = st.session_state.get('refresh_token')
-                    if not rt and hasattr(st, 'context') and hasattr(st.context, 'cookies'):
-                        rt = st.context.cookies.get('m0v3_rt')
+def _auto_refresh_postgrest_execute(self, *args, **kwargs):
+    _orig = getattr(SyncQueryRequestBuilder, '_unwrapped_execute', SyncQueryRequestBuilder.execute)
+    try:
+        return _orig(self, *args, **kwargs)
+    except Exception as e:
+        code = str(getattr(e, 'code', '') or '')
+        msg = str(getattr(e, 'message', '') or str(e)).lower()
+        if code == 'PGRST303' or 'jwt expired' in msg or 'jwt' in msg:
+            # Token scaduto durante una query: tenta il refresh automatico trasparente
+            try:
+                rt = st.session_state.get('refresh_token')
+                if not rt and hasattr(st, 'context') and hasattr(st.context, 'cookies'):
+                    rt = st.context.cookies.get('m0v3_rt')
 
-                    res = supabase.auth.refresh_session(rt) if rt else None
-                    if res and hasattr(res, 'session') and res.session:
-                        new_token = res.session.access_token
-                        st.session_state['refresh_token'] = res.session.refresh_token
-                        if hasattr(res, 'user') and res.user:
-                            st.session_state['user'] = res.user
+                res = supabase.auth.refresh_session(rt) if rt else None
+                if res and hasattr(res, 'session') and res.session:
+                    new_token = res.session.access_token
+                    st.session_state['refresh_token'] = res.session.refresh_token
+                    if hasattr(res, 'user') and res.user:
+                        st.session_state['user'] = res.user
 
-                        supabase.postgrest.auth(new_token)
-                        if 'sb_client' in st.session_state:
-                            st.session_state['sb_client'].postgrest.auth(new_token)
+                    supabase.postgrest.auth(new_token)
+                    if 'sb_client' in st.session_state:
+                        st.session_state['sb_client'].postgrest.auth(new_token)
 
-                        # Aggiorna gli header della richiesta corrente prima di rieseguire
-                        if hasattr(self, 'request'):
-                            req = self.request
-                            if hasattr(req, 'headers'):
-                                req.headers['Authorization'] = f"Bearer {new_token}"
-                                req.headers['authorization'] = f"Bearer {new_token}"
-                            if hasattr(req, 'auth'):
-                                try:
-                                    req.auth = lambda r: r.headers.update({"Authorization": f"Bearer {new_token}"})
-                                except Exception:
-                                    pass
-                        return _orig_postgrest_query_execute(self, *args, **kwargs)
-                except Exception:
-                    pass
+                    # Aggiorna gli header della richiesta corrente prima di rieseguire
+                    if hasattr(self, 'request'):
+                        req = self.request
+                        if hasattr(req, 'headers'):
+                            req.headers['Authorization'] = f"Bearer {new_token}"
+                            req.headers['authorization'] = f"Bearer {new_token}"
+                        if hasattr(req, 'auth'):
+                            try:
+                                req.auth = lambda r: r.headers.update({"Authorization": f"Bearer {new_token}"})
+                            except Exception:
+                                pass
+                    return _orig(self, *args, **kwargs)
+            except Exception:
+                pass
 
-                # Non renderizzare mai st.warning() all'interno di container UI attivi (es. sidebar).
-                # Se la sessione è effettivamente compromessa, ensure_valid_session() al main()
-                # gestirà il reindirizzamento pulito alla schermata di login.
-                if not st.session_state.get('user'):
-                    st.session_state['refresh_token'] = None
-                    st.session_state['role'] = None
-                    st.session_state['view_mode'] = None
-            raise e
+            # Non renderizzare mai st.warning() all'interno di container UI attivi (es. sidebar).
+            # Se la sessione è effettivamente compromessa, ensure_valid_session() al main()
+            # gestirà il reindirizzamento pulito alla schermata di login.
+            if not st.session_state.get('user'):
+                st.session_state['refresh_token'] = None
+                st.session_state['role'] = None
+                st.session_state['view_mode'] = None
+        raise e
 
-    _auto_refresh_postgrest_execute._is_auto_refresh = True
-    SyncQueryRequestBuilder.execute = _auto_refresh_postgrest_execute
+SyncQueryRequestBuilder.execute = _auto_refresh_postgrest_execute
 
 
 def ensure_valid_session():
