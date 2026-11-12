@@ -262,7 +262,7 @@ def render_carico_interno(t):
     # 6. Tab di Dettaglio (con navigazione persistente)
     lbl_ci_1 = tr("Incrocio GPS vs sRPE", "GPS vs sRPE Cross-Match")
     lbl_ci_2 = tr("Trend Risposta Biologica (Wellness)", "Wellness & Biological Trend")
-    lbl_ci_3 = tr("Storico Sedute & Audit Modifiche", "Session Log & Audit Trail")
+    lbl_ci_3 = tr("Analisi Incrociata", "Crossing Analysis")
     active_ci_tab = render_tab_navigation([lbl_ci_1, lbl_ci_2, lbl_ci_3], key="nav_carico_interno")
 
     # -------------------------------------------------------------
@@ -666,187 +666,12 @@ def render_carico_interno(t):
             st.dataframe(pd.DataFrame(tabella_w), use_container_width=True)
 
     # -------------------------------------------------------------
-    # TAB 3: AUDIT MODIFICHE & STORICO SEDUTE
+    # -------------------------------------------------------------
+    # TAB 3: ANALISI INCROCIATA (Correlazione Carichi vs Clinica)
     # -------------------------------------------------------------
     elif active_ci_tab == lbl_ci_3:
-        is_en_lang = st.session_state.get('lang', 'IT') == 'EN'
-
-        # Modulo Inserimento / Validazione Staff (Palestra & Prep. Fisica / RPE)
-        with st.expander(tr("Registrazione & Validazione Seduta Staff (Palestra, Prep. Fisica & Tennis)", "Staff Session Entry & Validation (Gym, Fitness & Tennis)"), expanded=False):
-            info_staff_sub = tr("Inserisci o valida la durata e il profilo biomeccanico per riconciliarli con quanto dichiarato dall'atleta.", "Enter or validate duration and biomechanical profile to reconcile with athlete inputs.")
-            st.markdown(
-                f"<div style='font-size:12px; color:#64748b; margin-bottom:12px; font-weight:600;'>"
-                f"{info_staff_sub}"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-            c_f1, c_f2, c_f3 = st.columns([1.5, 1.2, 1.8])
-            with c_f1:
-                data_staff_input = st.date_input(
-                    tr("Data Seduta", "Session Date"),
-                    value=date.today(),
-                    key="ci_staff_date"
-                )
-            with c_f2:
-                slot_staff_input = st.selectbox(
-                    tr("Slot Seduta", "Session Slot"),
-                    [1, 2],
-                    format_func=lambda s: f"Slot #{s}",
-                    key="ci_staff_slot"
-                )
-            with c_f3:
-                tipo_staff_opts = ["Palestra (Gym)", "Preparazione Fisica", "Tennis", "Recupero", "Altro"]
-                tipo_staff_sel = st.selectbox(
-                    tr("Tipologia Seduta", "Session Type"),
-                    tipo_staff_opts,
-                    key="ci_staff_tipo"
-                )
-                tipo_db_staff = "Gym" if "Palestra" in tipo_staff_sel else tipo_staff_sel
-
-            c_fd1, c_fd2 = st.columns([2, 2])
-            with c_fd1:
-                dur_staff_min_input = st.number_input(
-                    tr("Durata Staff (minuti)", "Staff Duration (minutes)"),
-                    min_value=5,
-                    max_value=360,
-                    value=60,
-                    step=5,
-                    key="ci_staff_dur_min"
-                )
-            with c_fd2:
-                rpe_staff_input = st.slider(
-                    tr("RPE Staff Stimato (0-10)", "Staff Estimated RPE (0-10)"),
-                    0, 10, 5,
-                    key="ci_staff_rpe"
-                )
-
-            # Profilazione Biomeccanica 70/30 per Palestra e Prep. Fisica
-            s_stim1, s_dist1, s_peso, s_stim2, s_dist2, s_stress = None, None, 100, None, None, 'Moderato'
-            if tipo_db_staff in ("Gym", "Preparazione Fisica"):
-                st.markdown(
-                    f"<div style='background:rgba(14,165,233,0.06); border:1px solid rgba(14,165,233,0.25); border-radius:8px; padding:10px 12px; margin:8px 0 12px 0;'>"
-                    f"<div style='font-size:11.5px; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;'>"
-                    f"<i class='bi bi-layers-half'></i> {tr('Profilazione Biomeccanica (Modello 70/30 Staff)', 'Biomechanical Profile (70/30 Staff Model)')}"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
-                l_stim_st = STIMOLI_GYM if tipo_db_staff == "Gym" else STIMOLI_PREP_FISICA
-                st_lbls_st = [s[1] if is_en_lang else s[0] for s in l_stim_st]
-                cat_lbls_st = [c[1] if is_en_lang else c[0] for c in DISTRETTI_CATENE_CINETICHE]
-
-                c_sb1, c_sb2 = st.columns(2)
-                with c_sb1:
-                    stim1_st_sel = st.selectbox(tr("Stimolo Preponderante (70%)", "Primary Stimulus (70%)"), st_lbls_st, key="ci_stim1_st")
-                with c_sb2:
-                    dist1_st_sel = st.selectbox(tr("Catena Cinetica Primaria", "Primary Kinetic Chain"), cat_lbls_st, key="ci_dist1_st")
-                s_stim1 = l_stim_st[st_lbls_st.index(stim1_st_sel)][0]
-                s_dist1 = DISTRETTI_CATENE_CINETICHE[cat_lbls_st.index(dist1_st_sel)][0]
-
-                chk_st_sec = st.checkbox(
-                    tr("Aggiungi Blocco Complementare (30% split)", "Add Complementary Block (30% split)"),
-                    value=False,
-                    key="ci_chk_st_sec"
-                )
-                if chk_st_sec:
-                    s_peso = 70
-                    c_sbc1, c_sbc2 = st.columns(2)
-                    with c_sbc1:
-                        stim2_st_sel = st.selectbox(tr("Stimolo Complementare (30%)", "Complementary Stimulus (30%)"), st_lbls_st, key="ci_stim2_st")
-                    with c_sbc2:
-                        dist2_st_sel = st.selectbox(tr("Catena Complementare", "Complementary Chain"), cat_lbls_st, key="ci_dist2_st")
-                    s_stim2 = l_stim_st[st_lbls_st.index(stim2_st_sel)][0]
-                    s_dist2 = DISTRETTI_CATENE_CINETICHE[cat_lbls_st.index(dist2_st_sel)][0]
-
-                opz_str_st = [("Basso", "Low"), ("Moderato", "Moderate"), ("Elevato", "High")]
-                str_lbls_st = [s[1] if is_en_lang else s[0] for s in opz_str_st]
-                str_sel_st = st.selectbox(tr("Stress Eccentrico / Frenate", "Expected Eccentric Stress"), str_lbls_st, index=1, key="ci_str_st")
-                s_stress = opz_str_st[str_lbls_st.index(str_sel_st)][0]
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            note_staff_input = st.text_input(tr("Note Tecniche Seduta (opzionale)", "Staff Technical Notes (optional)"), key="ci_staff_note")
-
-            if st.button(tr("Salva / Valida Seduta Staff", "Save / Validate Staff Session"), type="primary", key="ci_btn_save_staff"):
-                staff_payload = {
-                    "atleta_id": atleta_id_sel,
-                    "profilo_id": user.id if user else None,
-                    "data": str(data_staff_input),
-                    "slot": slot_staff_input,
-                    "tipologia": tipo_db_staff,
-                    "durata_staff_min": float(dur_staff_min_input),
-                    "rpe_staff": float(rpe_staff_input),
-                    "stimolo_primario": s_stim1,
-                    "distretto_primario": s_dist1,
-                    "peso_primario_pct": s_peso,
-                    "stimolo_secondario": s_stim2,
-                    "distretto_secondario": s_dist2,
-                    "stress_eccentrico_atteso": s_stress,
-                    "note": note_staff_input.strip() if note_staff_input else None
-                }
-                ok_st, res_st = calcola_e_salva_slot_rpe(staff_payload, autore='staff')
-                if ok_st:
-                    st.success(tr("Seduta validata e salvata con successo dallo Staff!", "Session successfully validated and saved by Staff!"))
-                    st.rerun()
-                else:
-                    st.error(f"{tr('Errore nel salvataggio:', 'Error saving:')} {res_st}")
-
-        st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-
-        if df_r.empty:
-            st.info("Nessuna sessione sRPE presente nello storico.")
-        else:
-            st.markdown(f"#### {tr('Tracciamento Sessioni, Riconciliazione & Audit Modifiche:', 'Session Tracking, Reconciliation & Audit Trail:')}")
-            tabella_audit = []
-            for _, r_item in df_r.sort_values('data', ascending=False).iterrows():
-                c_at = r_item.get('created_at', '')
-                u_at = r_item.get('updated_at', '')
-                modificato = False
-                if c_at and u_at:
-                    modificato = (str(u_at)[:19] != str(c_at)[:19])
-
-                dur_atl = r_item.get('durata_atleta_min')
-                dur_stf = r_item.get('durata_staff_min')
-                dur_eff = r_item.get('durata_minuti', 0)
-
-                # Dettaglio riconciliazione
-                if dur_atl is not None and dur_stf is not None and float(dur_atl) > 0 and float(dur_stf) > 0:
-                    dur_str = f"{dur_eff}m (Atl: {float(dur_atl):.0f}m | Stf: {float(dur_stf):.0f}m)"
-                elif dur_atl is not None and float(dur_atl) > 0:
-                    dur_str = f"{dur_eff}m (Atleta)"
-                elif dur_stf is not None and float(dur_stf) > 0:
-                    dur_str = f"{dur_eff}m (Staff)"
-                else:
-                    dur_str = f"{dur_eff}m"
-
-                # Profilo 70/30
-                stim_prim = r_item.get('stimolo_primario')
-                dist_prim = r_item.get('distretto_primario')
-                stim_sec = r_item.get('stimolo_secondario')
-                peso_pct = r_item.get('peso_primario_pct', 100) or 100
-
-                if stim_prim and stim_sec:
-                    profilo_str = f"{stim_prim} ({peso_pct}%) + {stim_sec} ({100-peso_pct}%)"
-                elif stim_prim:
-                    profilo_str = f"{stim_prim} ({dist_prim or 'Globale'})"
-                else:
-                    profilo_str = "-"
-
-                rpe_v = r_item.get('rpe', 0)
-                rpe_stf_v = r_item.get('rpe_staff')
-                rpe_display = f"{rpe_v} (Stf: {float(rpe_stf_v):.0f})" if rpe_stf_v is not None and float(rpe_stf_v) != float(rpe_v) else str(rpe_v)
-
-                tabella_audit.append({
-                    tr("Data", "Date"): r_item['data'],
-                    tr("Slot", "Slot"): f"#{r_item.get('slot', 1)}",
-                    tr("Tipologia", "Type"): r_item.get('tipologia', 'N/D'),
-                    tr("Durata Consolidata", "Duration"): dur_str,
-                    tr("RPE", "RPE"): rpe_display,
-                    tr("Carico AU", "Load AU"): f"{r_item.get('carico_interno', 0)} AU",
-                    tr("Profilo 70/30", "70/30 Profile"): profilo_str,
-                    tr("Stress Eccentrico", "Eccentric Stress"): r_item.get('stress_eccentrico_atteso', 'Moderato') or 'Moderato',
-                    tr("Stato", "Status"): "[MODIFICATO]" if modificato else "[ORIGINALE]",
-                    tr("Ultimo Aggiornamento", "Last Update"): str(u_at)[:16].replace('T', ' ') if u_at else '-'
-                })
-            st.dataframe(pd.DataFrame(tabella_audit), use_container_width=True)
+        from views.calendario_medico import render_correlazione_clinica
+        render_correlazione_clinica(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="ci_corr")
 
     st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-    render_scientific_methodology_box("carico_interno")
+    render_scientific_methodology_box('carico_interno')

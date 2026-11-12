@@ -595,6 +595,12 @@ def render_home(t):
         )
 
     st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+    # =========================================================================
+    # CALENDARIO & MASTER TIMELINE INTEGRATA (FOCUS ATLETA)
+    # =========================================================================
+    from views.calendario_medico import render_master_timeline
+    render_master_timeline(t, atleta_sel=ath_home_sel, key_prefix="home_cal", show_hero_strip=False)
+    st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
 
     # =========================================================================
     # SEZIONE PRINCIPALE: ROSTER READINESS & ACWR OVERVIEW
@@ -949,83 +955,15 @@ def render_home(t):
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
     # =========================================================================
-    # SEZIONE 2: ULTIME ACQUISIZIONI & QUICK LAUNCH (STILE EXECUTIVE)
+    # SEZIONE: AZIONI RAPIDE & COLLEGAMENTI OPERATIVI (QUICK LAUNCH)
     # =========================================================================
-    lbl_sec2_title = tr("ULTIME SESSIONI REGISTRATE NEL DATABASE", "LATEST RECORDED SESSIONS IN DATABASE")
-    lbl_sec2_sub = tr(
-        "Riepilogo delle ultime acquisizioni con metriche principali di Volume, Intensità e GPS.",
-        "Summary of latest acquisitions with core Volume, Intensity, and GPS metrics."
+    st.markdown(
+        f"<div style='margin-top:20px; margin-bottom:8px; font-weight:800; color:#0f172a; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;'>"
+        f"<i class='bi bi-lightning-charge' style='color:#0ea5e9; margin-right:6px;'></i>"
+        f"{tr('Accesso Rapido Funzionalità Operative', 'Quick Launch Operational Actions')}"
+        f"</div>",
+        unsafe_allow_html=True
     )
-
-    html_rec = (
-        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; "
-        "box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:16px; font-family:\"Inter\", sans-serif;'>"
-        "<div style='background:#0f172a; border-bottom:2px solid #10b981; padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
-        "<div>"
-        f"<div style='color:white; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_sec2_title}</div>"
-        f"<div style='color:#94a3b8; font-size:11.5px; margin-top:2px;'>{lbl_sec2_sub}</div>"
-        "</div>"
-        f"<span style='background:rgba(16,185,129,0.18); color:#34d399; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{tot_sessioni} {tr('SESSIONI TOTALI', 'TOTAL SESSIONS')}</span>"
-        "</div>"
-    )
-
-    if df_storico.empty:
-        html_rec += (
-            f"<div style='padding:24px; text-align:center; color:#64748b; font-size:14px;'>"
-            f"{tr('Nessuna sessione presente nel database.', 'No sessions found in the database.')}</div></div>"
-        )
-        st.markdown(html_rec, unsafe_allow_html=True)
-    else:
-        df_rec = df_storico.dropna(subset=['Date_obj']).sort_values('Date_obj', ascending=False).head(6)
-        html_rec += (
-            "<table style='width:100%; border-collapse:collapse;'>"
-            "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-            f"<th style='text-align:left; padding:10px 14px; font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; width:15%;'>{tr('Data & Contesto', 'Date & Context')}</th>"
-            f"<th style='text-align:left; padding:10px 14px; font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; width:30%;'>{tr('Atleta & Nome Sessione', 'Athlete & Session Name')}</th>"
-            f"<th style='text-align:center; padding:10px 10px; font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; width:13%;'>{tr('Tipologia', 'Type')}</th>"
-            f"<th style='text-align:center; padding:10px 10px; font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; width:14%;'>{tr('Durata', 'Duration')}</th>"
-            f"<th style='text-align:center; padding:10px 10px; font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; width:14%;'>Training Load</th>"
-            f"<th style='text-align:center; padding:10px 10px; font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; width:14%;'>{tr('Distanza GPS', 'GPS Distance')}</th>"
-            "</tr>"
-        )
-
-        for _, row in df_rec.iterrows():
-            s_type = str(row.get('Tipologia Sessione', 'N/D')).strip()
-            t_bg, t_fg = get_tipologia_badge_style(s_type)
-
-            is_sim = bool(row.get('Dato_Simulato', False))
-            sim_badge = (
-                " <span style='background:#fef3c7; color:#b45309; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:4px;'>SIMULATO</span>"
-                if is_sim else ""
-            )
-
-            dt_s = str(row.get('Date', ''))
-            pl_s = str(row.get('Players', ''))
-            nm_s = str(row.get('Session', ''))
-            amb_s = str(row.get('Ambiente', 'Outdoor'))
-            cmp_s = str(row.get('Tipologia Campo', 'Hard'))
-            tl_val = get_val(row, 'Training Load', 0)
-            tl_h_val = get_val(row, 'TL_High', 0)
-            min_val = get_val(row, 'Minuti', 0)
-            dist_val = get_val(row, 'DISTANCE', 0)
-            dist_txt = "0 m (Indoor)" if amb_s.strip().lower() == 'indoor' else f"{dist_val:.0f} m"
-
-            html_rec += (
-                "<tr style='border-bottom:1px solid #f1f5f9;'>"
-                f"<td style='padding:11px 14px;'><div style='font-weight:800; color:#0f172a; font-size:13px;'>{dt_s}</div>"
-                f"<div style='font-size:11px; color:#64748b;'>{cmp_s} · {amb_s}</div></td>"
-                f"<td style='padding:11px 14px;'><div style='font-weight:800; color:#0f172a; font-size:13.5px;'>{pl_s}{sim_badge}</div>"
-                f"<div style='font-size:11.5px; color:#64748b;'>{nm_s}</div></td>"
-                f"<td style='padding:11px 10px; text-align:center;'><span style='background:{t_bg}; color:{t_fg}; padding:3px 9px; border-radius:6px; font-size:10.5px; font-weight:800; text-transform:uppercase;'>{s_type}</span></td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#0f172a; font-size:13px;'>{min_val:.0f} min</td>"
-                f"<td style='padding:11px 10px; text-align:center;'><div style='font-weight:900; color:#0f172a; font-size:14px;'>{tl_val:.0f}</div><div style='font-size:10.5px; color:#dc2626; font-weight:700;'>TL High: {tl_h_val:.0f}</div></td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:700; color:#475569; font-size:12.5px;'>{dist_txt}</td>"
-                "</tr>"
-            )
-
-        html_rec += "</table></div>"
-        st.markdown(html_rec, unsafe_allow_html=True)
-
     # --- BARRA AZIONI RAPIDE (QUICK LAUNCH) ---
     with st.container(border=True):
         b1, b2, b3, b4, b5 = st.columns([1.1, 1.2, 1.1, 1.1, 1.1])

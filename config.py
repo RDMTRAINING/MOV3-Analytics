@@ -753,7 +753,8 @@ AREA_TO_PAGINA = {
     "Statistiche Match": "Statistiche Match",
     "Medie": "Medie",
     "Test Fisici & Neuromuscolari": "Test & Valutazioni",
-    "Calendario & Area Medica": "Calendario & Area Medica"
+    "Calendario & Area Medica": "Calendario & Area Medica",
+    "Inserimento Sessioni Extra Tennis": "Calendario & Area Medica"
 }
 
 COLONNE_STANDARD = [

@@ -1076,7 +1076,7 @@ def main():
             (tr("Carico Interno", "Internal Load"), "Carico Interno", "heart-pulse"),
             (tr("Test & Valutazioni", "Tests & Assessments"), "Test & Valutazioni", "clipboard2-pulse"),
             (tr("M0V3 Tennis Test", "M0V3 Tennis Test"), "M0V3 Tennis Test", "lightning-charge-fill"),
-            (tr("Calendario & Area Medica", "Calendar & Medical Area"), "Calendario & Area Medica", "calendar-check"),
+            (tr("Inserimento Sessioni Extra Tennis", "Extra-Tennis Session Entry"), "Calendario & Area Medica", "calendar-plus"),
             (tr("Caricamento Dati", "Data Upload"), "Caricamento Dati", "cloud-arrow-up"),
             (tr("Generatore (No GPS)", "Data Generator"), "Generatore Dati (No GPS)", "sliders"),
             (tr("Gestione File", "File Manager"), "Gestione File Caricati", "folder2-open"),
