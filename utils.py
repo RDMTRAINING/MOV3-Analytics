@@ -10,8 +10,14 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from supabase import create_client, Client
-import postgrest.exceptions
-from postgrest._sync.request_builder import SyncQueryRequestBuilder
+try:
+    import postgrest.exceptions
+    from postgrest._sync.request_builder import SyncQueryRequestBuilder
+except Exception:
+    try:
+        from postgrest.request_builder import SyncQueryRequestBuilder
+    except Exception:
+        SyncQueryRequestBuilder = None
 from config import DB_PATH, DB_PARQUET_PATH, LEGENDA_ACWR, COLONNE_STANDARD, tr, PLOTLY_CONFIG
 
 COLONNE_METADATI = [
@@ -60,11 +66,13 @@ except Exception as e:
 # =========================================================================
 # AUTO-REFRESH DEL JWT EXPIRED PER POSTGREST
 # =========================================================================
-if not hasattr(SyncQueryRequestBuilder, '_unwrapped_execute'):
+if SyncQueryRequestBuilder is not None and not hasattr(SyncQueryRequestBuilder, '_unwrapped_execute'):
     SyncQueryRequestBuilder._unwrapped_execute = SyncQueryRequestBuilder.execute
 
 def _auto_refresh_postgrest_execute(self, *args, **kwargs):
-    _orig = getattr(SyncQueryRequestBuilder, '_unwrapped_execute', SyncQueryRequestBuilder.execute)
+    _orig = getattr(SyncQueryRequestBuilder, '_unwrapped_execute', SyncQueryRequestBuilder.execute) if SyncQueryRequestBuilder else None
+    if not _orig:
+        return None
     try:
         return _orig(self, *args, **kwargs)
     except Exception as e:
@@ -112,7 +120,8 @@ def _auto_refresh_postgrest_execute(self, *args, **kwargs):
                 st.session_state['view_mode'] = None
         raise e
 
-SyncQueryRequestBuilder.execute = _auto_refresh_postgrest_execute
+if SyncQueryRequestBuilder is not None:
+    SyncQueryRequestBuilder.execute = _auto_refresh_postgrest_execute
 
 
 def ensure_valid_session():

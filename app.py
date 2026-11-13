@@ -19,6 +19,20 @@ from config import (
     PAGINE_OPERATIVE,
     AREA_TO_PAGINA,
 )
+
+import utils
+if not hasattr(utils, "render_m0v3_footer"):
+    try:
+        import importlib
+        importlib.reload(utils)
+    except Exception:
+        pass
+
+try:
+    from utils import render_m0v3_footer
+except ImportError:
+    from config import render_m0v3_footer
+
 from utils import (
     supabase,
     supabase_admin,
@@ -26,7 +40,6 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
-    render_m0v3_footer,
 )
 
 DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"

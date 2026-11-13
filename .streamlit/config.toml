@@ -16,3 +16,7 @@ fastReruns = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+showErrorDetails = true
+

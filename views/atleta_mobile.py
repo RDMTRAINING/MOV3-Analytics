@@ -23,8 +23,11 @@ from utils import (
     get_sessioni_test,
     get_catalogo_protocolli,
     valuta_readiness_test,
-    render_m0v3_footer,
 )
+try:
+    from utils import render_m0v3_footer
+except ImportError:
+    from config import render_m0v3_footer
 
 
 def genera_promemoria_ics(time_wellness, time_srpe, app_url):
