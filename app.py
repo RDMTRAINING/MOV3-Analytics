@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import datetime
 import importlib
@@ -24,6 +26,7 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
+    render_m0v3_footer,
 )
 
 DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"
@@ -79,6 +82,9 @@ if 'lang' not in st.session_state: st.session_state['lang'] = 'IT'
 if 'user' not in st.session_state: st.session_state['user'] = None
 if 'role' not in st.session_state: st.session_state['role'] = None
 if 'privacy_accettata' not in st.session_state: st.session_state['privacy_accettata'] = False
+if 'has_accepted_terms' not in st.session_state: st.session_state['has_accepted_terms'] = False
+if 'terms_accepted_at' not in st.session_state: st.session_state['terms_accepted_at'] = ''
+if 'terms_version' not in st.session_state: st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
 
 add_custom_css(LOGO_CIRCULAR_PATH)
 
@@ -752,13 +758,21 @@ MATCH READY
                         if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
                             st.session_state['refresh_token'] = res.session.refresh_token
 
-                        profilo = supabase.table('profili').select('ruolo, privacy_accettata').eq('id', res.user.id).execute()
+                        profilo = supabase.table('profili').select('*').eq('id', res.user.id).execute()
                         if profilo.data:
-                            st.session_state['role'] = profilo.data[0].get('ruolo', 'Atleta')
-                            st.session_state['privacy_accettata'] = True if profilo.data[0].get('privacy_accettata') else False
+                            p_row = profilo.data[0]
+                            st.session_state['role'] = p_row.get('ruolo', 'Atleta')
+                            has_acc = bool(p_row.get('has_accepted_terms') or p_row.get('privacy_accettata', False))
+                            st.session_state['has_accepted_terms'] = has_acc
+                            st.session_state['privacy_accettata'] = has_acc
+                            st.session_state['terms_accepted_at'] = p_row.get('terms_accepted_at', '')
+                            st.session_state['terms_version'] = p_row.get('terms_version', 'M0V3_IP_GDPR_v2.0')
                         else:
                             st.session_state['role'] = 'Atleta'
+                            st.session_state['has_accepted_terms'] = False
                             st.session_state['privacy_accettata'] = False
+                            st.session_state['terms_accepted_at'] = ''
+                            st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
                         st.rerun()
                     except Exception as e:
                         st.error(tr("Credenziali errate o sessione scaduta. Riprova.", "Invalid credentials or session expired. Try again."))
@@ -828,13 +842,21 @@ def main():
                         st.session_state['logged_out'] = False
                         if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
                             st.session_state['refresh_token'] = res.session.refresh_token
-                        profilo = supabase.table('profili').select('ruolo, privacy_accettata').eq('id', res.user.id).execute()
+                        profilo = supabase.table('profili').select('*').eq('id', res.user.id).execute()
                         if profilo.data:
-                            st.session_state['role'] = profilo.data[0].get('ruolo', 'Atleta')
-                            st.session_state['privacy_accettata'] = bool(profilo.data[0].get('privacy_accettata'))
+                            p_row = profilo.data[0]
+                            st.session_state['role'] = p_row.get('ruolo', 'Atleta')
+                            has_acc = bool(p_row.get('has_accepted_terms') or p_row.get('privacy_accettata', False))
+                            st.session_state['has_accepted_terms'] = has_acc
+                            st.session_state['privacy_accettata'] = has_acc
+                            st.session_state['terms_accepted_at'] = p_row.get('terms_accepted_at', '')
+                            st.session_state['terms_version'] = p_row.get('terms_version', 'M0V3_IP_GDPR_v2.0')
                         else:
                             st.session_state['role'] = 'Atleta'
+                            st.session_state['has_accepted_terms'] = False
                             st.session_state['privacy_accettata'] = False
+                            st.session_state['terms_accepted_at'] = ''
+                            st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
                         if 'm0v3_rt' in st.query_params:
                             del st.query_params['m0v3_rt']
                         st.rerun()
@@ -887,32 +909,160 @@ def main():
     user_obj = st.session_state.get('user')
     user_id = getattr(user_obj, 'id', None) if user_obj else None
 
-    if not st.session_state.get('privacy_accettata', False):
-        st.title("Aggiornamento Privacy e Condizioni d'Uso")
-        st.warning("Per continuare a utilizzare M0V3 Analytics, devi prendere visione e accettare l'Informativa sul Trattamento dei Dati Personali.")
-        privacy_doc_path = "INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI.docx"
-        if os.path.exists(privacy_doc_path):
-            with open(privacy_doc_path, "rb") as f_doc:
-                st.download_button(
-                    label="Scarica e leggi l'Informativa Privacy (.docx)",
-                    data=f_doc.read(),
-                    file_name="Informativa_Privacy_M0V3.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-        accetta = st.checkbox("Dichiaro di aver letto e accetto integralmente l'Informativa.")
-        if st.button("Accetta e Continua", type="primary", disabled=not accetta):
-            if user_id:
+    user_has_accepted = bool(st.session_state.get('has_accepted_terms') or st.session_state.get('privacy_accettata', False))
+
+    if not user_has_accepted:
+        # BLOCCO ESCLUSIVO DI ACCETTAZIONE AL PRIMO ACCESSO (CLICKWRAP AGREEMENT)
+        target_logo = LOGO_CIRCULAR_PATH if os.path.exists(LOGO_CIRCULAR_PATH) else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
+        if target_logo:
+            logo_b64 = get_base64_image(target_logo)
+            st.markdown(f"""
+            <div style='text-align: center; padding: 10px 0 16px 0;'>
+                <img src='data:image/png;base64,{logo_b64}'
+                     alt='M0V3 Analytics'
+                     style='width: 140px; max-width: 80%; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 4px 14px rgba(14, 165, 233, 0.4));'>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style='text-align: center; margin-bottom: 24px;'>
+            <div style='font-size: 22px; font-weight: 900; color: #0f172a; font-family: "Inter", sans-serif; letter-spacing: -0.5px;'>
+                Termini d'Uso, Riservatezza Clinica e Proprietà Intellettuale — M0V3 Analytics Enterprise
+            </div>
+            <div style='font-size: 13px; color: #0284c7; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px;'>
+                Accordo Obbligatorio al Primo Accesso (Versione Normativa: M0V3_IP_GDPR_v2.0)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.container(border=True):
+            st.markdown("""
+            <div style='font-size: 13.5px; line-height: 1.6; color: #1e293b; font-family: "Inter", sans-serif; margin-bottom: 16px;'>
+                Benvenuto nella piattaforma scientifica <b>M0V3 Analytics Enterprise</b>. L'accesso a questo sistema è strettamente personale, tracciato e riservato agli utenti autorizzati. Prima di procedere, ti invitiamo a leggere e accettare le seguenti condizioni operative:
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style='background: rgba(2, 132, 199, 0.04); border-left: 4px solid #0284c7; padding: 14px 16px; border-radius: 6px; margin-bottom: 14px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
+                    1. Proprietà Intellettuale e Licenza d'Uso
+                </div>
+                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
+                    Questa piattaforma web, incluse le architetture di database, le logiche di calcolo del microciclo e macrociclo, gli algoritmi proprietari (Readiness SWC, Pure I:E Ratio, Metriche Per-Point, ACWR Uncoupled EWMA, ripartizione carichi 70/30 e matrici di correlazione clinica) e le interfacce grafiche, costituisce tecnologia proprietaria esclusiva di <b>Riccardo Di Maio — M0V3 S.r.l.</b> Il sistema è concesso in mero utilizzo funzionale temporaneo. È severamente vietato riprodurre, copiare, catturare schermate a fini divulgativi, analizzare (reverse engineering) o cedere l'accesso a terze parti senza l'esplicita autorizzazione scritta dell'autore.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style='background: rgba(16, 185, 129, 0.04); border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 6px; margin-bottom: 14px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
+                    2. Trattamento dei Dati Sensibili, Biometrici e Sanitari (Art. 9 Reg. UE 2016/679 - GDPR)
+                </div>
+                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
+                    Il database contiene categorie particolari di dati personali (Art. 9 GDPR), tra cui parametri fisici, telemetria GPS/IMU, profili neuromuscolari, questionari di benessere psicofisico (Wellness/sRPE) e cartelle clinico-fisioterapiche (diagnosi, trattamenti e scale del dolore VAS).<br/>
+                    <div style='margin-top: 6px;'>• <b>Per lo Staff Tecnico, Atletico e Medico:</b> L'utente si impegna al rigoroso rispetto del segreto professionale, a trattare i dati esclusivamente per finalità tecniche, atletiche e mediche interne, e a non diffondere dati o report PDF al di fuori degli ambienti protetti autorizzati.</div>
+                    <div style='margin-top: 4px;'>• <b>Per l'Atleta:</b> L'utente prende atto e acconsente al conferimento dei propri parametri giornalieri di benessere e carico percepito affinché lo staff tecnico e sanitario autorizzato possa monitorare il recupero e prevenire gli infortuni.</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style='background: rgba(239, 68, 68, 0.04); border-left: 4px solid #ef4444; padding: 14px 16px; border-radius: 6px; margin-bottom: 16px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
+                    3. Sicurezza delle Credenziali e Tracciabilità
+                </div>
+                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
+                    L'utente è l'unico responsabile della segretezza della propria password. Ogni esportazione PDF riporta a piè di pagina l'identificativo dell'account che l'ha generata. Eventuali Data Breach derivanti da gestione negligente o condivisione del proprio account ricadranno sotto la responsabilità esclusiva dell'utente stesso.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Download button PDF Informativa Ufficiale
+            doc_path = os.path.join(os.path.dirname(__file__), "assets", "Atto_Privacy_IP_MOV3_v2.pdf")
+            pdf_bytes = None
+            if os.path.exists(doc_path):
                 try:
-                    supabase.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
+                    with open(doc_path, "rb") as f_pdf:
+                        pdf_bytes = f_pdf.read()
                 except Exception:
-                    try:
-                        if supabase_admin:
-                            supabase_admin.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
-                    except Exception:
-                        pass
-            st.session_state['privacy_accettata'] = True
-            st.rerun()
-            return
+                    pdf_bytes = None
+
+            if not pdf_bytes:
+                try:
+                    import pdf_generator
+                    u_mail = getattr(user_obj, 'email', '') or (user_obj.get('email', '') if isinstance(user_obj, dict) else '') or "utente-autorizzato"
+                    pdf_bytes = pdf_generator.genera_pdf_informativa_privacy_mov3(user_email=u_mail)
+                except Exception:
+                    pdf_bytes = None
+
+            if pdf_bytes:
+                st.download_button(
+                    label="Scarica l'Informativa Completa Privacy & Proprietà Intellettuale M0V3 (PDF)",
+                    data=pdf_bytes,
+                    file_name="Atto_Privacy_IP_MOV3_v2.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                    key="btn_download_informativa_pdf"
+                )
+
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+            chk_label = "Dichiaro di aver letto, compreso e accettato i Termini d'Uso, i vincoli di Proprietà Intellettuale (Tecnologia Riccardo Di Maio — M0V3 S.r.l.) e le direttive GDPR sulla Privacy dei dati biometrici e sanitari."
+            accepted = st.checkbox(chk_label, key="chk_clickwrap_m0v3")
+
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+            col_act1, col_act2 = st.columns([3, 1.2])
+            with col_act1:
+                btn_confirm = st.button(
+                    "Accedi alla Piattaforma",
+                    type="primary",
+                    use_container_width=True,
+                    disabled=not accepted,
+                    key="btn_conferma_accesso_clickwrap"
+                )
+                if btn_confirm:
+                    if accepted:
+                        now_iso = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        if user_id:
+                            upd = {
+                                "has_accepted_terms": True,
+                                "privacy_accettata": True,
+                                "terms_accepted_at": now_iso,
+                                "terms_version": "M0V3_IP_GDPR_v2.0"
+                            }
+                            db_t = supabase_admin if supabase_admin else supabase
+                            try:
+                                db_t.table('profili').update(upd).eq('id', user_id).execute()
+                            except Exception:
+                                try:
+                                    db_t.table('profili').update({"privacy_accettata": True}).eq('id', user_id).execute()
+                                except Exception:
+                                    pass
+                        st.session_state['has_accepted_terms'] = True
+                        st.session_state['privacy_accettata'] = True
+                        st.session_state['terms_accepted_at'] = now_iso
+                        st.session_state['terms_version'] = "M0V3_IP_GDPR_v2.0"
+                        st.success("Accettazione registrata con successo! Accesso alla piattaforma in corso...")
+                        st.rerun()
+                    else:
+                        st.warning("È obbligatorio spuntare la casella di accettazione prima di accedere.")
+
+            with col_act2:
+                if st.button("Esci / Logout", type="secondary", use_container_width=True, key="btn_logout_clickwrap"):
+                    try: supabase.auth.sign_out()
+                    except Exception: pass
+                    st.session_state['user'] = None
+                    st.session_state['role'] = None
+                    st.session_state['refresh_token'] = None
+                    st.session_state['has_accepted_terms'] = False
+                    st.session_state['privacy_accettata'] = False
+                    st.session_state['terms_accepted_at'] = ''
+                    st.session_state['view_mode'] = None
+                    st.session_state['logged_out'] = True
+                    st.rerun()
+
+        render_m0v3_footer(is_sidebar=False)
         return
 
     if 'current_page' not in st.session_state: st.session_state.current_page = "Home"
@@ -1199,7 +1349,9 @@ def main():
             st.session_state['user'] = None
             st.session_state['role'] = None
             st.session_state['refresh_token'] = None
+            st.session_state['has_accepted_terms'] = False
             st.session_state['privacy_accettata'] = False
+            st.session_state['terms_accepted_at'] = ''
             st.session_state['view_mode'] = None
             st.session_state['logged_out'] = True
             st.query_params.clear()
@@ -1221,6 +1373,9 @@ def main():
             </script>
             """, height=0)
             st.rerun()
+
+        # Footer istituzionale con Logo M0V3 e Copyright nella sidebar
+        render_m0v3_footer(is_sidebar=True)
 
         components.html("""
         <script>
@@ -1444,6 +1599,9 @@ def main():
         import views.supporto
         _load_view(views.supporto)
         views.supporto.render_supporto(t)
+
+    # Footer Istituzionale M0V3 Analytics con Logo e Copyright a fondo pagina
+    render_m0v3_footer(is_sidebar=False)
 
 
 if __name__ == "__main__":

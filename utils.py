@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import re
 import time
@@ -3605,4 +3607,67 @@ def render_dual_athlete_strip(ath1, ath2, session_type=None, week=None, extra_ba
         f"</div>"
     )
     st.markdown(dual_html, unsafe_allow_html=True)
+
+
+def render_m0v3_footer(is_sidebar=False):
+    """
+    Renderizza il footer ufficiale di M0V3 Analytics con logo in Base64 e testo legale di copyright.
+    Stringa esatta:
+    '© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati'
+    """
+    import base64
+    candidates = [
+        os.path.join(os.path.dirname(__file__), "assets", "logo_mov3.png"),
+        os.path.join(os.path.dirname(__file__), "logo_mov3.png"),
+        os.path.join(os.path.dirname(__file__), "data_supporto", "logo_mov3.png"),
+        os.path.join(os.path.dirname(__file__), "assets", "logo_circular.png"),
+        os.path.join(os.path.dirname(__file__), "logo_circular.png"),
+    ]
+    logo_b64 = None
+    for c in candidates:
+        if os.path.exists(c):
+            try:
+                with open(c, "rb") as f:
+                    logo_b64 = base64.b64encode(f.read()).decode("utf-8")
+                break
+            except Exception:
+                pass
+
+    if logo_b64:
+        logo_html = f"<img src='data:image/png;base64,{logo_b64}' alt='M0V3' style='height:{'18px' if is_sidebar else '20px'}; width:auto; vertical-align:middle; border-radius:4px; opacity:0.9;' />"
+    else:
+        # Fallback vettoriale SVG badge M0V3
+        logo_html = (
+            "<svg width='22' height='22' viewBox='0 0 40 40' fill='none' xmlns='http://www.w3.org/2000/svg' style='vertical-align:middle; border-radius:4px;'>"
+            "<rect width='40' height='40' rx='8' fill='#0f172a'/>"
+            "<text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#0284c7' font-family='Inter, sans-serif' font-weight='900' font-size='13'>M0V3</text>"
+            "</svg>"
+        )
+
+    legal_text = "© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati"
+
+    if is_sidebar:
+        html = f"""
+        <div style='text-align:center; padding:16px 8px 10px 8px; font-size:0.68rem; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.08); margin-top:24px; font-family:"Inter", sans-serif;'>
+            <div style='display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;'>
+                {logo_html}
+                <span style='font-weight:800; letter-spacing:0.5px; color:#e2e8f0; font-size:0.75rem;'>M0V3 Analytics</span>
+            </div>
+            <div style='opacity:0.85; line-height:1.35; font-size:0.64rem;'>
+                {legal_text}
+            </div>
+        </div>
+        """
+    else:
+        html = f"""
+        <div class='no-print' style='text-align:center; padding:26px 12px 18px 12px; font-size:0.74rem; color:#64748b; border-top:1px solid #e2e8f0; margin-top:40px; font-family:"Inter", sans-serif;'>
+            <div style='display:inline-flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;'>
+                {logo_html}
+                <span>{legal_text}</span>
+            </div>
+        </div>
+        """
+
+    st.markdown(html, unsafe_allow_html=True)
+
 

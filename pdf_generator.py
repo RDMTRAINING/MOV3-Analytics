@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import re
 import io
@@ -58,21 +60,242 @@ def colora_acwr(tabella, pct, riga=3):
         cmds.append(('TEXTCOLOR', (i + 1, riga), (i + 1, riga), colors.HexColor(fg)))
     tabella.setStyle(TableStyle(cmds))
 
-def build_pdf_con_footer(doc, elements, brand="M0V3 Analytics", is_landscape=True):
-    """Costruisce il PDF con data di generazione e numero di pagina in ogni pagina."""
-    generato = pd.Timestamp.now(tz='Europe/Rome').strftime('%d/%m/%Y %H:%M')
+def build_pdf_con_footer(doc, elements, brand="M0V3 Analytics", is_landscape=True, user_email=None, data_ora=None):
+    """
+    Costruisce il PDF con intestazione istituzionale M0V3 e piè di pagina con:
+    - Footer Sinistro: Logo M0V3 ridimensionato (altezza 12pt–14pt) + Scritta Copyright
+      'Generato tramite tecnologia proprietaria Riccardo Di Maio - M0V3 S.r.l. - Tutti i diritti riservati'
+    - Footer Destro: Audit Watermark Anti-Diffusione (Art. 9 GDPR)
+      'Documento Riservato (Art. 9 GDPR) — Esportato da: {user_email} il {data_ora}   |   Pagina {d.page}'
+    """
+    generato = data_ora or pd.Timestamp.now(tz='Europe/Rome').strftime('%d/%m/%Y %H:%M')
     larghezza = landscape(A4)[0] if is_landscape else A4[0]
+
+    email_str = user_email
+    if not email_str:
+        try:
+            import streamlit as st
+            u = st.session_state.get('user')
+            if u:
+                email_str = getattr(u, 'email', '') or (u.get('email', '') if isinstance(u, dict) else '')
+        except Exception:
+            pass
+    if not email_str:
+        email_str = "utente-autorizzato"
+
+    # Ricerca logo per footer
+    base_dir = os.path.dirname(__file__)
+    candidates_logo = [
+        os.path.join(base_dir, "assets", "logo_mov3.png"),
+        os.path.join(base_dir, "logo_mov3.png"),
+        os.path.join(base_dir, "assets", "logo_circular.png"),
+        os.path.join(base_dir, "logo_circular.png"),
+        os.path.join(base_dir, "data_supporto", "logo_mov3.png"),
+    ]
+    logo_footer_path = None
+    for c_path in candidates_logo:
+        if os.path.exists(c_path):
+            logo_footer_path = c_path
+            break
+
     def _footer(canvas, d):
         canvas.saveState()
-        canvas.setStrokeColor(colors.HexColor('#e2e8f0'))
-        canvas.setLineWidth(0.5)
-        canvas.line(25, 21, larghezza - 25, 21)
-        canvas.setFont('Helvetica', 7.5)
-        canvas.setFillColor(colors.HexColor('#64748b'))
-        canvas.drawString(25, 11, f"{brand}   |   Report generato il {generato}")
-        canvas.drawRightString(larghezza - 25, 11, f"Pagina {d.page}")
+        canvas.setStrokeColor(colors.HexColor('#CBD5E1'))
+        canvas.setLineWidth(0.4)
+        canvas.line(25, 20, larghezza - 25, 20)
+
+        # Footer Sinistro: Logo M0V3 + Copyright esatto
+        text_x = 25
+        if logo_footer_path:
+            try:
+                canvas.drawImage(logo_footer_path, 25, 7, width=13, height=13, preserveAspectRatio=True, mask='auto')
+                text_x = 42
+            except Exception:
+                text_x = 25
+
+        canvas.setFont('Helvetica-Bold', 6.2)
+        canvas.setFillColor(colors.HexColor('#0F172A'))
+        canvas.drawString(text_x, 10, "Generato tramite tecnologia proprietaria Riccardo Di Maio - M0V3 S.r.l. - Tutti i diritti riservati")
+
+        # Footer Destro: Audit Watermark Anti-Diffusione (Art. 9 GDPR)
+        canvas.setFont('Helvetica', 6.0)
+        canvas.setFillColor(colors.HexColor('#475569'))
+        right_txt = f"Documento Riservato (Art. 9 GDPR) — Esportato da: {email_str} il {generato}   |   Pagina {d.page}"
+        canvas.drawRightString(larghezza - 25, 10, right_txt)
         canvas.restoreState()
+
     doc.build(elements, onFirstPage=_footer, onLaterPages=_footer)
+
+
+def genera_pdf_informativa_privacy_mov3(user_email=None, data_ora=None):
+    """
+    Genera dinamicamente in memoria il PDF ufficiale di conformità Privacy & Tutela IP:
+    'Atto_Privacy_IP_MOV3_v2.pdf'
+    Include il logo ufficiale M0V3, il testo integrale dei 3 punti operativi e il piè di pagina normativo.
+    """
+    generato = data_ora or pd.Timestamp.now(tz='Europe/Rome').strftime('%d/%m/%Y %H:%M')
+    email_str = user_email or "utente-autorizzato"
+    buf = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=A4,
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=36,
+        bottomMargin=36
+    )
+
+    base_dir = os.path.dirname(__file__)
+    logo_path = os.path.join(base_dir, "assets", "logo_mov3.png")
+    if not os.path.exists(logo_path):
+        logo_path = os.path.join(base_dir, "logo_circular.png")
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'DocTitle',
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        leading=16,
+        textColor=colors.HexColor('#0F172A'),
+        alignment=1
+    )
+    sub_style = ParagraphStyle(
+        'DocSub',
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=12,
+        textColor=colors.HexColor('#0284C7'),
+        alignment=1
+    )
+    h2_style = ParagraphStyle(
+        'DocH2',
+        fontName='Helvetica-Bold',
+        fontSize=9.5,
+        leading=13,
+        textColor=colors.HexColor('#0F172A'),
+        spaceBefore=8,
+        spaceAfter=3
+    )
+    body_style = ParagraphStyle(
+        'DocBody',
+        fontName='Helvetica',
+        fontSize=8.2,
+        leading=11.5,
+        textColor=colors.HexColor('#1E293B'),
+        alignment=4
+    )
+    body_bold = ParagraphStyle(
+        'DocBodyBold',
+        fontName='Helvetica-Bold',
+        fontSize=8.2,
+        leading=11.5,
+        textColor=colors.HexColor('#0F172A')
+    )
+
+    elements = []
+
+    # Header Istituzionale con Logo M0V3
+    logo_flowable = RLImage(logo_path, width=48, height=48) if os.path.exists(logo_path) else Paragraph('<b>M0V3</b>', title_style)
+    header_txt = [
+        Paragraph('M0V3 ANALYTICS ENTERPRISE', ParagraphStyle('H1', fontName='Helvetica-Bold', fontSize=12.5, leading=15, textColor=colors.HexColor('#0F172A'))),
+        Paragraph('SPORTS SCIENCE & CLINICAL PERFORMANCE INTELLIGENCE ARCHITECTURE', ParagraphStyle('H2', fontName='Helvetica-Bold', fontSize=8, leading=10.5, textColor=colors.HexColor('#0284C7'))),
+        Paragraph('Informativa Privacy (Reg. UE 2016/679 - GDPR) & Disciplinare di Tutela IP', ParagraphStyle('H3', fontName='Helvetica', fontSize=7.2, leading=9.5, textColor=colors.HexColor('#64748B'))),
+    ]
+    header_table = Table([[logo_flowable, header_txt]], colWidths=[56, 466])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    elements.append(header_table)
+
+    # Linea accento bicolore (Ciano M0V3 + Smeraldo)
+    line_table = Table([['']], colWidths=[522], rowHeights=[2.5])
+    line_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#0284C7')),
+        ('TOPPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+    ]))
+    elements.append(line_table)
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph("DISCIPLINARE D'USO, RISERVATEZZA CLINICA E TUTELA DELLA PROPRIETÀ INTELLETTUALE", title_style))
+    elements.append(Spacer(1, 3))
+    elements.append(Paragraph("M0V3 ANALYTICS ENTERPRISE • CONTRATTO D'USO E ACCORDO AL PRIMO ACCESSO (VERSIONE M0V3_IP_GDPR_v2.0)", sub_style))
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph(
+        "<b>Benvenuto nella piattaforma scientifica M0V3 Analytics Enterprise.</b> L'accesso a questo sistema è strettamente personale, "
+        "tracciato e riservato agli utenti autorizzati (Staff Tecnico, Medico, Atletico e Atleti). Prima di procedere, "
+        "ti invitiamo a leggere e accettare le seguenti condizioni operative vincolanti:",
+        body_style
+    ))
+    elements.append(Spacer(1, 6))
+
+    # Punto 1
+    elements.append(Paragraph("1. Proprietà Intellettuale e Licenza d'Uso", h2_style))
+    elements.append(Paragraph(
+        "Questa piattaforma web, incluse le architetture di database, le logiche di calcolo del microciclo e macrociclo, "
+        "gli algoritmi proprietari (Readiness SWC, Pure I:E Ratio, Metriche Per-Point, ACWR Uncoupled EWMA, ripartizione carichi 70/30 "
+        "e matrici di correlazione clinica) e le interfacce grafiche, costituisce tecnologia proprietaria esclusiva di "
+        "<b>Riccardo Di Maio — M0V3 S.r.l.</b> Il sistema è concesso in mero utilizzo funzionale temporaneo. "
+        "È severamente vietato riprodurre, copiare, catturare schermate a fini divulgativi, analizzare (reverse engineering) o "
+        "cedere l'accesso a terze parti senza l'esplicita autorizzazione scritta dell'autore.",
+        body_style
+    ))
+
+    # Punto 2
+    elements.append(Paragraph("2. Trattamento dei Dati Sensibili, Biometrici e Sanitari (Art. 9 Reg. UE 2016/679 - GDPR)", h2_style))
+    elements.append(Paragraph(
+        "Il database contiene categorie particolari di dati personali (Art. 9 GDPR), tra cui parametri fisici, telemetria GPS/IMU, "
+        "profili neuromuscolari, questionari di benessere psicofisico (Wellness/sRPE) e cartelle clinico-fisioterapiche "
+        "(diagnosi, trattamenti e scale del dolore VAS).<br/>"
+        "• <b>Per lo Staff Tecnico, Atletico e Medico:</b> L'utente si impegna al rigoroso rispetto del segreto professionale, a trattare i dati "
+        "esclusivamente per finalità tecniche, atletiche e mediche interne, e a non diffondere dati o report PDF al di fuori degli ambienti protetti autorizzati.<br/>"
+        "• <b>Per l'Atleta:</b> L'utente prende atto e acconsente al conferimento dei propri parametri giornalieri di benessere e carico percepito "
+        "affinché lo staff tecnico e sanitario autorizzato possa monitorare il recupero e prevenire gli infortuni.",
+        body_style
+    ))
+
+    # Punto 3
+    elements.append(Paragraph("3. Sicurezza delle Credenziali e Tracciabilità", h2_style))
+    elements.append(Paragraph(
+        "L'utente è l'unico responsabile della segretezza della propria password. Ogni esportazione PDF riporta a piè di pagina "
+        "l'identificativo dell'account che l'ha generata. Eventuali Data Breach derivanti da gestione negligente o condivisione "
+        "del proprio account ricadranno sotto la responsabilità esclusiva dell'utente stesso.",
+        body_style
+    ))
+    elements.append(Spacer(1, 10))
+
+    # Firme
+    sig_table = Table([
+        [
+            Paragraph("<b>Per M0V3 S.r.l. & Riccardo Di Maio</b><br/><font size=7 color='#64748B'>Titolare Proprietà Intellettuale & Sviluppo</font>", body_style),
+            Paragraph(f"<b>L'Utente Autorizzato</b><br/><font size=7 color='#0284C7'>{email_str}</font><br/><font size=6.8 color='#64748B'>Sottoscrizione Digitale Clickwrap Telematica</font>", body_style)
+        ]
+    ], colWidths=[260, 262])
+    sig_table.setStyle(TableStyle([
+        ('LINEABOVE', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    elements.append(sig_table)
+
+    build_pdf_con_footer(doc, elements, brand="M0V3 Analytics", is_landscape=False, user_email=email_str, data_ora=generato)
+    pdf_bytes = buf.getvalue()
+    buf.close()
+
+    # Salva una copia anche nel percorso statico assets se accessibile
+    try:
+        static_p = os.path.join(base_dir, "assets", "Atto_Privacy_IP_MOV3_v2.pdf")
+        os.makedirs(os.path.dirname(static_p), exist_ok=True)
+        with open(static_p, "wb") as f_out:
+            f_out.write(pdf_bytes)
+    except Exception:
+        pass
+
+    return pdf_bytes
+
 def fig_to_rl_image(fig, width=360, height=210):
     """Converte un grafico Plotly in un'immagine ad alta risoluzione proporzionale per ReportLab."""
     try:

@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import streamlit as st
 from config import tr, render_page_header, render_action_bar, CATALOGO_REPORT

@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import datetime
 import urllib.parse
 import streamlit as st
@@ -21,6 +23,7 @@ from utils import (
     get_sessioni_test,
     get_catalogo_protocolli,
     valuta_readiness_test,
+    render_m0v3_footer,
 )
 
 
@@ -1490,3 +1493,7 @@ def _render_sezione_test_atleta(atleta_id, nome_atleta):
                     st.markdown(f"<div style='display:flex; justify-content:space-between; font-size:11.5px; border-bottom:1px solid rgba(255,255,255,0.05); padding:3px 0;'><span style='color:#94a3b8;'>{k.replace('_', ' ').capitalize()}</span><span style='color:#ffffff; font-weight:700;'>{v}</span></div>", unsafe_allow_html=True)
             if s.get('note'):
                 st.markdown(f"<div style='font-size:10.5px; color:#64748b; margin-top:6px; font-style:italic;'>{tr('Note Coach:', 'Coach Notes:')} {s.get('note')}</div>", unsafe_allow_html=True)
+
+    # Footer Istituzionale con Logo M0V3 e Copyright a fondo pagina smartphone
+    render_m0v3_footer(is_sidebar=False)
+

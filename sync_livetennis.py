@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 #!/usr/bin/env python3
 """
 Sync script per scaricare giornalmente (es. ore 22:00) i dati aggiornati di Flavio Cobolli

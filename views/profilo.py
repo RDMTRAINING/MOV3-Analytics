@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import re
 import secrets
@@ -85,12 +87,22 @@ def render_profilo(t):
         lbl_atleti_sub = tr(f"{len(atleti_list)} atleti assegnati al profilo", f"{len(atleti_list)} athletes linked to profile")
 
     # Stato Privacy badge
-    if privacy_attiva:
+    terms_acc_date = st.session_state.get('terms_accepted_at', '')
+    if not terms_acc_date:
+        try:
+            p_res = supabase.table('profili').select('*').eq('id', uid).execute()
+            if p_res.data:
+                terms_acc_date = p_res.data[0].get('terms_accepted_at', '')
+        except Exception:
+            pass
+
+    if privacy_attiva or st.session_state.get('has_accepted_terms'):
         priv_badge_bg, priv_badge_fg = "#dcfce7", "#166534"
-        priv_badge_txt = tr("✓ Consenso Privacy Attivo", "✓ Active Privacy Consent")
+        date_str = f" il {terms_acc_date}" if terms_acc_date else ""
+        priv_badge_txt = f"Termini IP & GDPR Accettati{date_str}"
     else:
         priv_badge_bg, priv_badge_fg = "#fee2e2", "#991b1b"
-        priv_badge_txt = tr("[!] Consenso Non Concesso / Revocato", "[!] Consent Not Granted / Revoked")
+        priv_badge_txt = tr("[!] In attesa di primo accesso", "[!] Pending First Login")
 
     # 1. CARD ANAGRAFICA & STATO PROFILO (STILE EXECUTIVE)
     col_k1, col_k2, col_k3, col_k4 = st.columns(4)
@@ -212,17 +224,42 @@ def render_profilo(t):
                 "M0V3 processes performance and tracking data in strict compliance with EU Regulation 2016/679 (GDPR). You can review the policy or revoke your processing consent."
             ))
         with c_doc2:
-            privacy_doc_path = "INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI.docx"
-            if os.path.exists(privacy_doc_path):
-                with open(privacy_doc_path, "rb") as f_doc:
-                    st.download_button(
-                        label=tr("Scarica Informativa Privacy (.docx)", "Download Privacy Policy (.docx)"),
-                        data=f_doc.read(),
-                        file_name="Informativa_Privacy_M0V3.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True,
-                        key="btn_download_policy_profile"
-                    )
+            doc_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "Atto_Privacy_IP_MOV3_v2.pdf")
+            pdf_bytes = None
+            if os.path.exists(doc_path):
+                try:
+                    with open(doc_path, "rb") as f_pdf:
+                        pdf_bytes = f_pdf.read()
+                except Exception:
+                    pdf_bytes = None
+            if not pdf_bytes:
+                try:
+                    import pdf_generator
+                    pdf_bytes = pdf_generator.genera_pdf_informativa_privacy_mov3(user_email=email_utente, data_ora=terms_acc_date)
+                except Exception:
+                    pdf_bytes = None
+
+            if pdf_bytes:
+                st.download_button(
+                    label=tr("Scarica Informativa Privacy & IP (PDF)", "Download Privacy & IP Policy (PDF)"),
+                    data=pdf_bytes,
+                    file_name="Atto_Privacy_IP_MOV3_v2.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                    key="btn_download_policy_profile_pdf"
+                )
+            else:
+                privacy_doc_path = "INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI.docx"
+                if os.path.exists(privacy_doc_path):
+                    with open(privacy_doc_path, "rb") as f_doc:
+                        st.download_button(
+                            label=tr("Scarica Informativa Privacy (.docx)", "Download Privacy Policy (.docx)"),
+                            data=f_doc.read(),
+                            file_name="Informativa_Privacy_M0V3.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True,
+                            key="btn_download_policy_profile"
+                        )
 
         st.divider()
 
@@ -230,16 +267,26 @@ def render_profilo(t):
         col_rev1, col_rev2 = st.columns([2, 1])
         with col_rev1:
             st.markdown(f"**{tr('Stato Attuale del Consenso:', 'Current Consent Status:')}**")
-            if privacy_attiva:
-                st.markdown(f"<span style='color:#166534; font-weight:700;'>{tr('Consenso attivo e rilasciato.', 'Consent is active and granted.')}</span>", unsafe_allow_html=True)
+            if privacy_attiva or st.session_state.get('has_accepted_terms'):
+                st.markdown(f"<span style='color:#166534; font-weight:700;'>{tr('Termini IP & GDPR accettati e attivi', 'IP & GDPR Terms active and accepted')}{f' ({terms_acc_date})' if terms_acc_date else ''}.</span>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<span style='color:#dc2626; font-weight:700;'>{tr('Consenso revocato o non rilasciato.', 'Consent revoked or not granted.')}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color:#dc2626; font-weight:700;'>{tr('Consenso revocato o in attesa di primo accesso.', 'Consent revoked or pending first login.')}</span>", unsafe_allow_html=True)
         with col_rev2:
-            if privacy_attiva:
+            if privacy_attiva or st.session_state.get('has_accepted_terms'):
                 if st.button(tr("Revoca Consenso Privacy", "Revoke Privacy Consent"), type="secondary", use_container_width=True):
                     try:
-                        supabase.table('profili').update({"privacy_accettata": False}).eq('id', uid).execute()
+                        upd_rev = {
+                            "privacy_accettata": False,
+                            "has_accepted_terms": False,
+                            "terms_accepted_at": None
+                        }
+                        try:
+                            supabase.table('profili').update(upd_rev).eq('id', uid).execute()
+                        except Exception:
+                            supabase.table('profili').update({"privacy_accettata": False}).eq('id', uid).execute()
                         st.session_state['privacy_accettata'] = False
+                        st.session_state['has_accepted_terms'] = False
+                        st.session_state['terms_accepted_at'] = ''
                         st.warning(tr("Consenso revocato. Verrai reindirizzato alla schermata di accettazione.", "Consent revoked. You will be redirected to the acceptance screen."))
                         st.rerun()
                     except Exception as e:

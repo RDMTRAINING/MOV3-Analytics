@@ -1,3 +1,5 @@
+# Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
+# Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
 import re
 import secrets
@@ -239,7 +241,13 @@ def render_admin(t):
                 em_u = p_u['email']
                 p_uid = p_u['id']
                 r_u = p_u.get('ruolo', 'Atleta')
-                priv_ok = bool(p_u.get('privacy_accettata', False))
+                has_acc_u = bool(p_u.get('has_accepted_terms') or p_u.get('privacy_accettata', False))
+                dt_acc_u = p_u.get('terms_accepted_at')
+
+                if has_acc_u:
+                    stato_priv_ip = f"✓ Accettati ({dt_acc_u})" if dt_acc_u else "✓ Accettati"
+                else:
+                    stato_priv_ip = "In attesa di primo accesso"
 
                 df_u_sub = df_storico_admin[df_storico_admin['Uploader_Email'] == em_u] if (not df_storico_admin.empty and 'Uploader_Email' in df_storico_admin.columns) else pd.DataFrame()
                 n_sess_u = len(df_u_sub)
@@ -252,7 +260,7 @@ def render_admin(t):
                     atleti_str = ", ".join(dict_user_assoc.get(p_uid, [])) if dict_user_assoc.get(p_uid) else "Nessuno"
 
                 # Applicazione filtri
-                if filtro_tab == "Solo Senza Consenso Privacy ([!])" and priv_ok:
+                if filtro_tab == "Solo Senza Consenso Privacy ([!])" and has_acc_u:
                     continue
                 if filtro_tab == "Solo con Sessioni nel DB" and n_sess_u == 0:
                     continue
@@ -260,7 +268,7 @@ def render_admin(t):
                 tabella_utenti.append({
                     "Email Account": em_u,
                     "Ruolo": r_u,
-                    "Stato Privacy GDPR": "✓ Concesso" if priv_ok else "[!] REVOCATO / MANCANTE",
+                    "Stato Privacy & IP": stato_priv_ip,
                     "Atleti Assegnati": atleti_str,
                     "Sessioni Totali": n_sess_u,
                     "Reali": n_real_u,
@@ -357,29 +365,49 @@ def render_admin(t):
             if utente_selezionato != t['select']:
                 profilo_data = next((p for p in list_profili if p['email'] == utente_selezionato), None)
                 p_id = profilo_data['id']
-                priv_selezionata = bool(profilo_data.get('privacy_accettata', False))
+                has_acc_sel = bool(profilo_data.get('has_accepted_terms') or profilo_data.get('privacy_accettata', False))
+                dt_acc_sel = profilo_data.get('terms_accepted_at')
 
                 # Box informativo stato utente
                 with st.container(border=True):
                     c_info1, c_info2 = st.columns([2, 1])
                     with c_info1:
                         st.markdown(f"#### `{utente_selezionato}`")
-                        if priv_selezionata:
-                            st.markdown("<span style='background:#dcfce7; color:#166534; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>✓ Consenso Privacy GDPR: Attivo</span>", unsafe_allow_html=True)
+                        if has_acc_sel:
+                            dt_label = f" (il {dt_acc_sel})" if dt_acc_sel else ""
+                            st.markdown(f"<span style='background:#dcfce7; color:#166534; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>✓ Termini IP & GDPR: Accettati{dt_label}</span>", unsafe_allow_html=True)
                         else:
-                            st.markdown("<span style='background:#fee2e2; color:#991b1b; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>[!] Consenso Privacy GDPR: NON RILASCIATO / REVOCATO</span>", unsafe_allow_html=True)
+                            st.markdown("<span style='background:#fee2e2; color:#991b1b; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>[!] Termini IP & GDPR: In attesa di primo accesso</span>", unsafe_allow_html=True)
 
                     with c_info2:
                         st.caption("Azione Rapida Admin:")
-                        if not priv_selezionata:
-                            if st.button("✓ Registra Consenso (Cartaceo/Verbale)", key=f"btn_force_priv_{p_id}", use_container_width=True):
-                                supabase_admin.table('profili').update({"privacy_accettata": True}).eq('id', p_id).execute()
+                        if not has_acc_sel:
+                            if st.button("✓ Registra Consenso d'Ufficio", key=f"btn_force_priv_{p_id}", use_container_width=True):
+                                now_iso = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                upd_adm = {
+                                    "has_accepted_terms": True,
+                                    "privacy_accettata": True,
+                                    "terms_accepted_at": now_iso,
+                                    "terms_version": "M0V3_IP_GDPR_v2.0"
+                                }
+                                try:
+                                    supabase_admin.table('profili').update(upd_adm).eq('id', p_id).execute()
+                                except Exception:
+                                    supabase_admin.table('profili').update({"privacy_accettata": True}).eq('id', p_id).execute()
                                 st.success(f"Consenso registrato per {utente_selezionato}!")
                                 st.rerun()
                         else:
-                            if st.button("[!] Revoca Consenso d'Ufficio", key=f"btn_revoke_priv_{p_id}", use_container_width=True):
-                                supabase_admin.table('profili').update({"privacy_accettata": False}).eq('id', p_id).execute()
-                                st.warning(f"Consenso revocato d'ufficio per {utente_selezionato}!")
+                            if st.button("[!] Resetta Termini (Richiedi Nuovo Accesso)", key=f"btn_revoke_priv_{p_id}", use_container_width=True):
+                                upd_reset = {
+                                    "has_accepted_terms": False,
+                                    "privacy_accettata": False,
+                                    "terms_accepted_at": None
+                                }
+                                try:
+                                    supabase_admin.table('profili').update(upd_reset).eq('id', p_id).execute()
+                                except Exception:
+                                    supabase_admin.table('profili').update({"privacy_accettata": False}).eq('id', p_id).execute()
+                                st.warning(f"Termini resettati. {utente_selezionato} dovrà firmare al prossimo login!")
                                 st.rerun()
 
                 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
