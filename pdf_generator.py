@@ -1063,7 +1063,7 @@ def crea_pdf_sessione_m0v3(giocatore, data_sess, sessione, tipologia, campo, amb
 # =========================================================================
 # 3. MOTORE PDF: TREND SETTIMANALE (TUTTE LE SOTTOAREE)
 # =========================================================================
-def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte"):
+def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte", df_ath=None, ref_date_acwr=None, **kwargs):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=25)
     elements = []
@@ -1073,7 +1073,7 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
     sub_style = ParagraphStyle('M0V3Sub', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=11, textColor=colors.HexColor('#0ea5e9'), spaceAfter=12)
     sec_style = ParagraphStyle('M0V3Sec', keepWithNext=1, parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=13, textColor=colors.HexColor('#0f172a'), spaceBefore=8, spaceAfter=8)
 
-    sub_label = "REPORT COMPLETO" if sottoarea == "Tutte" else sottoarea.replace('_', ' ').upper()
+    sub_label = "REPORT COMPLETO" if sottoarea in ["Tutte", "all"] else sottoarea.replace('_', ' ').upper()
     header_title = [
         Paragraph(f"M0V3 ANALYTICS — WEEKLY TREND ({sub_label})", title_style),
         Paragraph(f"ATLETA: {giocatore.upper()}   |   SETTIMANA: {settimana_label}", sub_style)
@@ -1090,16 +1090,16 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
     rows_w = [["GIORNO", "DATA", "MINUTI", "TRAINING LOAD", "TL HIGH", "HIGH ACC", "HIGH DEC", "AZIONI >2\"", "DIST. OUT (m)", "HML >25.5W"]]
     for _, r in df_plot.iterrows():
         rows_w.append([
-            str(r['DayName']), str(r['ShortDate']),
-            f"{r['Minuti']:.0f}", f"{r['Training Load']:.0f}", f"{r['TL_High']:.0f}",
-            f"{r['High Accel IMU']:.0f}", f"{r['High Decel IMU']:.0f}", f"{r['Azioni Int. IMU >2']:.0f}",
-            f"{r['DISTANCE_out']:.0f}", f"{r['HML_out']:.0f}"
+            str(r.get('DayName', '')), str(r.get('ShortDate', '')),
+            f"{float(r.get('Minuti', 0)):.0f}", f"{float(r.get('Training Load', 0)):.0f}", f"{float(r.get('TL_High', 0)):.0f}",
+            f"{float(r.get('High Accel IMU', 0)):.0f}", f"{float(r.get('High Decel IMU', 0)):.0f}", f"{float(r.get('Azioni Int. IMU >2', 0)):.0f}",
+            f"{float(r.get('DISTANCE_out', 0)):.0f}", f"{float(r.get('HML_out', 0)):.0f}"
         ])
     rows_w.append([
         "TOTALE SETTIMANA", "",
-        f"{df_plot['Minuti'].sum():.0f}", f"{df_plot['Training Load'].sum():.0f}", f"{df_plot['TL_High'].sum():.0f}",
-        f"{df_plot['High Accel IMU'].sum():.0f}", f"{df_plot['High Decel IMU'].sum():.0f}", f"{df_plot['Azioni Int. IMU >2'].sum():.0f}",
-        f"{df_plot['DISTANCE_out'].sum():.0f}", f"{df_plot['HML_out'].sum():.0f}"
+        f"{float(df_plot.get('Minuti', pd.Series(0)).sum()):.0f}", f"{float(df_plot.get('Training Load', pd.Series(0)).sum()):.0f}", f"{float(df_plot.get('TL_High', pd.Series(0)).sum()):.0f}",
+        f"{float(df_plot.get('High Accel IMU', pd.Series(0)).sum()):.0f}", f"{float(df_plot.get('High Decel IMU', pd.Series(0)).sum()):.0f}", f"{float(df_plot.get('Azioni Int. IMU >2', pd.Series(0)).sum()):.0f}",
+        f"{float(df_plot.get('DISTANCE_out', pd.Series(0)).sum()):.0f}", f"{float(df_plot.get('HML_out', pd.Series(0)).sum()):.0f}"
     ])
 
     t_w = Table(rows_w, colWidths=[92, 60, 75, 95, 75, 75, 75, 80, 85, 80])
@@ -1115,16 +1115,17 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
     elements.append(t_w)
     elements.append(Spacer(1, 10))
 
-    x_lbl = df_plot['DayName'] + " (" + df_plot['ShortDate'] + ")"
+    x_lbl = df_plot.get('DayName', pd.Series([''])).astype(str) + " (" + df_plot.get('ShortDate', pd.Series([''])).astype(str) + ")"
     def quick_bar(y_col, color, title):
-        f = go.Figure(go.Bar(x=x_lbl, y=df_plot[y_col], marker_color=color, text=[f"{v:.0f}" if v > 0 else "" for v in df_plot[y_col]], textposition='outside'))
+        col_vals = df_plot.get(y_col, pd.Series(0, index=df_plot.index))
+        f = go.Figure(go.Bar(x=x_lbl, y=col_vals, marker_color=color, text=[f"{float(v):.0f}" if float(v) > 0 else "" for v in col_vals], textposition='outside'))
         f.update_layout(title=title, paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=12), margin=dict(l=40, r=20, t=45, b=35), yaxis=dict(rangemode='tozero'))
         return f
 
     if sottoarea in ["Tutte", "Volumi_Generali"]:
         elements.append(Paragraph("VOLUMI GENERALI DELLA SETTIMANA (DURATA & TRAINING LOAD)", sec_style))
-        f_min = quick_bar('Minuti', '#10b981', f"Durata (Tot: {df_plot['Minuti'].sum():.0f} min)")
-        f_tl = quick_bar('Training Load', '#0ea5e9', f"Training Load Globale (Tot: {df_plot['Training Load'].sum():.0f})")
+        f_min = quick_bar('Minuti', '#10b981', f"Durata (Tot: {float(df_plot.get('Minuti', pd.Series(0)).sum()):.0f} min)")
+        f_tl = quick_bar('Training Load', '#0ea5e9', f"Training Load Globale (Tot: {float(df_plot.get('Training Load', pd.Series(0)).sum()):.0f})")
         t_c1 = Table([[fig_to_rl_image(f_min, 385, 180), fig_to_rl_image(f_tl, 385, 180)]], colWidths=[396, 396])
         t_c1.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
         elements.append(t_c1)
@@ -1132,14 +1133,14 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
     if sottoarea in ["Tutte", "Intensita_Meccanica"]:
         if sottoarea == "Tutte": elements.append(PageBreak())
         elements.append(Paragraph("INTENSITÀ & IMPATTO MECCANICO SETTIMANALE", sec_style))
-        f_tlh = quick_bar('TL_High', '#ef4444', f"Training Load High (Tot: {df_plot['TL_High'].sum():.0f})")
+        f_tlh = quick_bar('TL_High', '#ef4444', f"Training Load High (Tot: {float(df_plot.get('TL_High', pd.Series(0)).sum()):.0f})")
         f_mech = go.Figure(data=[
-            go.Bar(name='High Acc', x=x_lbl, y=df_plot['High Accel IMU'], marker_color='#10b981'),
-            go.Bar(name='High Dec', x=x_lbl, y=df_plot['High Decel IMU'], marker_color='#ef4444')
+            go.Bar(name='High Acc', x=x_lbl, y=df_plot.get('High Accel IMU', pd.Series(0)), marker_color='#10b981'),
+            go.Bar(name='High Dec', x=x_lbl, y=df_plot.get('High Decel IMU', pd.Series(0)), marker_color='#ef4444')
         ])
         f_mech.update_layout(title="Accelerazioni & Decelerazioni IMU", barmode='group', paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=12), margin=dict(l=40, r=20, t=45, b=35))
-        f_az = quick_bar('Azioni Int. IMU >2', '#8b5cf6', f"Azioni Intense >2\" (Tot: {df_plot['Azioni Int. IMU >2'].sum():.0f})")
-        f_az10 = quick_bar('Azioni Int. IMU >10', '#f59e0b', f"Azioni Lunghissime >10\" (Tot: {df_plot['Azioni Int. IMU >10'].sum():.0f})")
+        f_az = quick_bar('Azioni Int. IMU >2', '#8b5cf6', f"Azioni Intense >2\" (Tot: {float(df_plot.get('Azioni Int. IMU >2', pd.Series(0)).sum()):.0f})")
+        f_az10 = quick_bar('Azioni Int. IMU >10', '#f59e0b', f"Azioni Lunghissime >10\" (Tot: {float(df_plot.get('Azioni Int. IMU >10', pd.Series(0)).sum()):.0f})")
 
         t_c2 = Table([
             [fig_to_rl_image(f_tlh, 385, 180), fig_to_rl_image(f_mech, 385, 180)],
@@ -1151,9 +1152,9 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
     if sottoarea in ["Tutte", "Dati_GPS_Outdoor"]:
         if sottoarea == "Tutte": elements.append(Spacer(1, 12))
         elements.append(Paragraph("DATI GPS OUTDOOR SETTIMANALI", sec_style))
-        f_dist = quick_bar('DISTANCE_out', '#0ea5e9', f"Distanza Totale (Tot: {df_plot['DISTANCE_out'].sum():.0f} m)")
-        f_hml = quick_bar('HML_out', '#f59e0b', f"HML >25.5W (Tot: {df_plot['HML_out'].sum():.0f} m)")
-        f_vhml = quick_bar('VHML_out', '#ef4444', f"VHML >50W (Tot: {df_plot['VHML_out'].sum():.0f} m)")
+        f_dist = quick_bar('DISTANCE_out', '#0ea5e9', f"Distanza Totale (Tot: {float(df_plot.get('DISTANCE_out', pd.Series(0)).sum()):.0f} m)")
+        f_hml = quick_bar('HML_out', '#f59e0b', f"HML >25.5W (Tot: {float(df_plot.get('HML_out', pd.Series(0)).sum()):.0f} m)")
+        f_vhml = quick_bar('VHML_out', '#ef4444', f"VHML >50W (Tot: {float(df_plot.get('VHML_out', pd.Series(0)).sum()):.0f} m)")
         t_c3 = Table([[fig_to_rl_image(f_dist, 255, 165), fig_to_rl_image(f_hml, 255, 165), fig_to_rl_image(f_vhml, 255, 165)]], colWidths=[264, 264, 264])
         t_c3.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
         elements.append(t_c3)
@@ -1163,7 +1164,7 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
         elements.append(Paragraph("INDICI COMPOSITI SETTIMANALI (VOLUME & WORK RATE — LIGHTEST DAY = 1)", sec_style))
 
         def quick_index_pdf(y_col, title_txt):
-            vals = df_plot[y_col].tolist()
+            vals = [float(v) for v in df_plot[y_col].tolist()]
             txt_v = ["0" if v == 0 else ("1" if abs(v - 1.0) < 0.05 else f"{v:.1f}".replace('.', ',')) for v in vals]
             f = go.Figure()
             for idx_d, v in enumerate(vals):
@@ -1179,7 +1180,7 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
                 title=f"{title_txt} (Day with score 1 is the lightest of the week)",
                 paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=11),
                 margin=dict(l=30, r=30, t=45, b=40),
-                yaxis=dict(rangemode='tozero', range=[0, max(max(vals)*1.25, 2.0)], showgrid=True, gridcolor='#f1f5f9')
+                yaxis=dict(rangemode='tozero', range=[0, max(max(vals or [1])*1.25, 2.0)], showgrid=True, gridcolor='#f1f5f9')
             )
             return f
 
@@ -1189,6 +1190,77 @@ def crea_pdf_weekly_m0v3(giocatore, settimana_label, df_plot, sottoarea="Tutte")
         t_idx_pdf = Table([[fig_to_rl_image(f_vi_pdf, 770, 175)], [fig_to_rl_image(f_wi_pdf, 770, 175)]], colWidths=[792])
         t_idx_pdf.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
         elements.append(KeepTogether([t_idx_pdf]))
+
+    # Sezione ACWR (se richiesta o in report completo con dati disponibili)
+    if sottoarea in ["Tutte", "ACWR_Settimanale", "Last_7_Days", "Current_Week"] and df_ath is not None and not df_ath.empty:
+        try:
+            df_ath_real = df_ath[df_ath.get('Ambiente', '').astype(str).str.lower() != 'gym'].copy() if 'Ambiente' in df_ath.columns else df_ath.copy()
+            if 'Date_obj' in df_ath_real.columns:
+                if 'Date_obj' in df_plot.columns and not df_plot['Date_obj'].dropna().empty:
+                    ac_start = pd.to_datetime(df_plot['Date_obj'].min())
+                    ac_end = pd.to_datetime(ref_date_acwr) if ref_date_acwr is not None else pd.to_datetime(df_plot['Date_obj'].max())
+                else:
+                    ac_end = pd.to_datetime(ref_date_acwr) if ref_date_acwr is not None else pd.Timestamp.today().normalize()
+                    ac_start = ac_end - timedelta(days=6)
+
+                b_end = ac_start - timedelta(days=1)
+                b_start = b_end - timedelta(days=27)
+
+                col_acwr = ['Minuti', 'Training Load', 'TL_High', 'High Accel IMU', 'High Decel IMU', 'Azioni Int. IMU >2']
+                for col_k in col_acwr:
+                    if col_k not in df_ath_real.columns:
+                        df_ath_real[col_k] = 0.0
+
+                df_w = df_ath_real[(df_ath_real['Date_obj'] >= ac_start) & (df_ath_real['Date_obj'] <= ac_end)]
+                df_b = df_ath_real[(df_ath_real['Date_obj'] >= b_start) & (df_ath_real['Date_obj'] <= b_end)]
+
+                val_ac = df_w[col_acwr].sum().fillna(0)
+                if not df_b.empty:
+                    blocchi = calcola_blocchi_baseline(df_ath_real, b_end, 7.0)
+                    val_ch = (df_b[col_acwr].sum() / blocchi).fillna(0)
+                else:
+                    val_ch = pd.Series(0.0, index=col_acwr)
+
+                pct_tl = (val_ac['Training Load'] / val_ch['Training Load'] * 100.0) if val_ch['Training Load'] > 0 else 0.0
+                pct_min = (val_ac['Minuti'] / val_ch['Minuti'] * 100.0) if val_ch['Minuti'] > 0 else 0.0
+                pct_az = (val_ac['Azioni Int. IMU >2'] / val_ch['Azioni Int. IMU >2'] * 100.0) if val_ch['Azioni Int. IMU >2'] > 0 else 0.0
+
+                if sottoarea == "Tutte":
+                    elements.append(PageBreak())
+
+                elements.append(Paragraph("ANALISI ACWR (ACUTE / CHRONIC WORKLOAD RATIO)", sec_style))
+
+                stato_acwr = "OTTIMALE (Sweet Spot)" if (80 <= pct_tl <= 125) else ("ATTENZIONE (Carico Elevato)" if (125 < pct_tl <= 150) else ("ALLARME OVERLOAD" if pct_tl > 150 else "SOTTO-CARICO"))
+                acwr_color_hex = "#10b981" if (80 <= pct_tl <= 125) else ("#f59e0b" if (125 < pct_tl <= 150 or 50 <= pct_tl < 80) else "#ef4444")
+
+                acwr_summary_data = [
+                    ["METRICA", "CARICO ACUTO (FINESTRA)", "CHRONIC LOAD (BASELINE 28gg)", "% ACWR RATIO", "STATO RISK/READINESS"],
+                    ["Training Load", f"{val_ac['Training Load']:,.0f}".replace(',', '.'), f"{val_ch['Training Load']:,.0f}".replace(',', '.'), f"{pct_tl:.1f}%", stato_acwr],
+                    ["Minuti / Durata", f"{val_ac['Minuti']:,.0f}".replace(',', '.'), f"{val_ch['Minuti']:,.0f}".replace(',', '.'), f"{pct_min:.1f}%", "-"],
+                    ["Azioni Intense >2\"", f"{val_ac['Azioni Int. IMU >2']:,.0f}".replace(',', '.'), f"{val_ch['Azioni Int. IMU >2']:,.0f}".replace(',', '.'), f"{pct_az:.1f}%", "-"]
+                ]
+                t_acwr = Table(acwr_summary_data, colWidths=[180, 160, 170, 110, 172])
+                t_acwr.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+                    ('TOPPADDING', (0, 0), (-1, -1), 5),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                    ('TEXTCOLOR', (3, 1), (3, 1), colors.HexColor(acwr_color_hex)),
+                    ('FONTNAME', (3, 1), (3, 1), 'Helvetica-Bold'),
+                    ('TEXTCOLOR', (4, 1), (4, 1), colors.HexColor(acwr_color_hex)),
+                    ('FONTNAME', (4, 1), (4, 1), 'Helvetica-Bold'),
+                    ('BACKGROUND', (4, 1), (4, 1), colors.HexColor('#f8fafc')),
+                ]))
+                elements.append(t_acwr)
+                elements.append(Spacer(1, 12))
+        except Exception:
+            pass
 
     # Sezione Note Metodologiche & Bibliografia Validata
     elements.extend(genera_sezione_metodologia_pdf("acwr", styles))
