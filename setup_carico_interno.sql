@@ -220,3 +220,26 @@ ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS stimolo_secondario TEXT;
 ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS distretto_secondario TEXT;
 ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS stress_eccentrico_atteso TEXT DEFAULT 'Moderato';
 
+-- =====================================================================
+-- 7. MIGRAZIONE: DATA GOVERNANCE & AUDIT TRAIL (GDPR ART. 9)
+-- Soft-Delete (is_valid) e Tracciamento Modifiche Staff (RPE & Wellness)
+-- =====================================================================
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS modificato_da_staff BOOLEAN DEFAULT FALSE;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS rpe_originale NUMERIC;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS durata_originale_min NUMERIC;
+
+UPDATE rpe_sessioni SET is_valid = TRUE WHERE is_valid IS NULL;
+UPDATE rpe_sessioni SET modificato_da_staff = FALSE WHERE modificato_da_staff IS NULL;
+
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS modificato_da_staff BOOLEAN DEFAULT FALSE;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS wellness_originale_json JSONB;
+
+UPDATE wellness_mattutino SET is_valid = TRUE WHERE is_valid IS NULL;
+UPDATE wellness_mattutino SET modificato_da_staff = FALSE WHERE modificato_da_staff IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_rpe_is_valid ON rpe_sessioni(atleta_id, is_valid, data DESC);
+CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id, is_valid, data DESC);
+
+

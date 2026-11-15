@@ -136,16 +136,16 @@ def render_carico_interno(t):
 
     data_inizio_str = data_inizio.strftime('%Y-%m-%d')
 
-    # 3. Query Dati da Supabase (Wellness & sRPE)
+    # 3. Query Dati da Supabase (Wellness & sRPE) con filtro Data Governance (solo is_valid != False)
     try:
         res_w = supabase.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id_sel).gte('data', data_inizio_str).order('data').execute()
-        list_w = res_w.data or []
+        list_w = [w for w in (res_w.data or []) if w.get('is_valid') is not False]
     except Exception as e:
         list_w = []
 
     try:
         res_r = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id_sel).gte('data', data_inizio_str).order('data').execute()
-        list_r = res_r.data or []
+        list_r = [r for r in (res_r.data or []) if r.get('is_valid') is not False]
     except Exception as e:
         list_r = []
 

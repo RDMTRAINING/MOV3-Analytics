@@ -123,6 +123,17 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
         f"</div>"
     )
 
+    # Segnale Visivo Data Governance & Audit Trail (GDPR Art. 9)
+    if d_info.get('modificato_da_staff'):
+        rpe_orig_val = d_info.get('rpe_originale')
+        orig_alert_txt = f" (Valore Atleta: RPE {rpe_orig_val:.0f})" if (rpe_orig_val is not None and not pd.isna(rpe_orig_val)) else ""
+        lines.append(
+            f"<div style='background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.45); border-radius:5px; padding:3px 6px; margin-bottom:6px; color:#fbbf24; font-size:10px; font-weight:700; display:flex; align-items:center; gap:5px;'>"
+            f"<i class='bi bi-pencil-square text-warning'></i>"
+            f"<span>{tr('Dati rettificati dallo Staff', 'Data corrected by Staff')}{orig_alert_txt}</span>"
+            f"</div>"
+        )
+
     has_content = False
 
     # 1. Tennis & GPS (+ eventuale Match ATP/ITF con Torneo/Avversario/Score + TL High/pt)
@@ -1012,14 +1023,28 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
     dates_dt = [datetime.datetime.strptime(d, "%Y-%m-%d").date() for d in date_list]
     tl_gps_list = [corr_calendar[d]['training_load_gps'] for d in date_list]
     
-    # Carico Tennis sRPE (AU) + Etichetta fissa sopra la barra (incluso [NO-GPS])
+    # Carico Tennis sRPE (AU) + Etichetta fissa sopra la barra (incluso [NO-GPS]) e Audit Trail
     tennis_srpe_list = []
     tennis_srpe_texts = []
+    tennis_srpe_customdata = []
     for d in date_list:
-        t_load = sum(sl.get('carico', 0) for sl in corr_calendar[d].get('srpe_slots', []) if sl.get('tipo') == 'Tennis')
+        d_val = corr_calendar[d]
+        t_slots = [sl for sl in d_val.get('srpe_slots', []) if sl.get('tipo') == 'Tennis']
+        t_load = sum(sl.get('carico', 0) for sl in t_slots)
         tennis_srpe_list.append(t_load)
+        
+        is_mod_d = any(sl.get('modificato_da_staff') for sl in t_slots) or bool(d_val.get('modificato_da_staff'))
+        rpe_o = next((sl.get('rpe_originale') for sl in t_slots if sl.get('rpe_originale') is not None), d_val.get('rpe_originale'))
+        if is_mod_d and rpe_o is not None:
+            alert_str = f"<br><span style='color:#fbbf24;'>&#9998; <b>Dati rettificati dallo Staff</b> (Valore Atleta: RPE {rpe_o:.0f})</span>"
+        elif is_mod_d:
+            alert_str = f"<br><span style='color:#fbbf24;'>&#9998; <b>Dati rettificati dallo Staff</b></span>"
+        else:
+            alert_str = ""
+        tennis_srpe_customdata.append([alert_str])
+
         if t_load > 0:
-            tl_g = corr_calendar[d].get('training_load_gps', 0) or 0
+            tl_g = d_val.get('training_load_gps', 0) or 0
             if tl_g == 0:
                 tennis_srpe_texts.append(f"sRPE: {t_load:.0f} AU [NO-GPS]")
             else:
@@ -1050,7 +1075,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             gym_sec_colors.append('#38bdf8')
             gym_opacities.append(0.85)
             gym_labels.append("")
-            gym_customdata.append(["-", "-", "-", "-", "-", "-", "-", "0 AU", "0 AU", "0 AU"])
+            gym_customdata.append(["-", "-", "-", "-", "-", "-", "-", "0 AU", "0 AU", "0 AU", ""])
         else:
             c_p_sum = sum(sl.get('carico_primario', sl.get('carico', 0)) for sl in gym_slots)
             c_s_sum = sum(sl.get('carico_secondario', 0) for sl in gym_slots)
@@ -1075,11 +1100,21 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 calc_str = f"{tot_g:.0f} AU = RPE {rpe_v:.0f} × {dur_m:.0f} min"
             note_sl = first_sl.get('note') or '-'
 
+            # Segnale Audit Trail per hover Plotly
+            is_mod_g = any(sl.get('modificato_da_staff') for sl in gym_slots) or bool(d_val.get('modificato_da_staff'))
+            rpe_o_g = next((sl.get('rpe_originale') for sl in gym_slots if sl.get('rpe_originale') is not None), d_val.get('rpe_originale'))
+            if is_mod_g and rpe_o_g is not None:
+                gym_alert_str = f"<br><span style='color:#fbbf24;'>&#9998; <b>Dati rettificati dallo Staff</b> (Valore Atleta: RPE {rpe_o_g:.0f})</span>"
+            elif is_mod_g:
+                gym_alert_str = f"<br><span style='color:#fbbf24;'>&#9998; <b>Dati rettificati dallo Staff</b></span>"
+            else:
+                gym_alert_str = ""
+
             gym_prim_colors.append(get_stimolo_color(stim_1, is_secondary=False))
             gym_sec_colors.append(get_stimolo_color(stim_2, is_secondary=True) if stim_2 != '-' else '#94a3b8')
             gym_customdata.append([
                 stim_1, dist_1, stim_2, dist_2, stress_e, calc_str, note_sl,
-                f"{tot_g:.0f} AU", f"{c_p_sum:.0f} AU", f"{c_s_sum:.0f} AU"
+                f"{tot_g:.0f} AU", f"{c_p_sum:.0f} AU", f"{c_s_sum:.0f} AU", gym_alert_str
             ])
 
             # Lente Clinica: Opacità selettiva
@@ -1174,7 +1209,8 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         text=tennis_srpe_texts,
         textposition="outside",
         textfont=dict(size=9, color="#c2410c", family="Inter"),
-        hovertemplate="<b>%{x|%d %b %Y}</b><br>sRPE Tennis: <b>%{y:.0f} AU</b><extra></extra>"
+        customdata=tennis_srpe_customdata,
+        hovertemplate="<b>%{x|%d %b %Y}</b><br>sRPE Tennis: <b>%{y:.0f} AU</b>%{customdata[0]}<extra></extra>"
     ), row=1, col=1, secondary_y=False)
 
     fig_corr.add_trace(go.Scatter(
@@ -1466,7 +1502,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             "&bull; 70% Primario: <b>%{customdata[8]}</b> — %{customdata[0]} (%{customdata[1]})<br>"
             "&bull; 30% Complementare: <b>%{customdata[9]}</b> — %{customdata[2]} (%{customdata[3]})<br>"
             "&bull; Stress Eccentrico: <b>%{customdata[4]}</b><br>"
-            "&bull; Note: %{customdata[6]}<extra></extra>"
+            "&bull; Note: %{customdata[6]}%{customdata[10]}<extra></extra>"
         )
     ), row=2, col=1)
 
@@ -1490,7 +1526,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             "&bull; 30% Complementare: <b>%{customdata[9]}</b> — %{customdata[2]} (%{customdata[3]})<br>"
             "&bull; 70% Primario: <b>%{customdata[8]}</b> — %{customdata[0]} (%{customdata[1]})<br>"
             "&bull; Stress Eccentrico: <b>%{customdata[4]}</b><br>"
-            "&bull; Note: %{customdata[6]}<extra></extra>"
+            "&bull; Note: %{customdata[6]}%{customdata[10]}<extra></extra>"
         )
     ), row=2, col=1)
 
@@ -2103,7 +2139,7 @@ def render_allenamenti_gym_fisico(t, atleta_sel=None, atleta_id_sel=None, key_pr
     if atleta_id_sel and not str(atleta_id_sel).startswith("mock-"):
         try:
             res_r = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id_sel).order('data', desc=True).limit(60).execute()
-            df_r = pd.DataFrame(res_r.data or [])
+            df_r = pd.DataFrame([r for r in (res_r.data or []) if r.get('is_valid') is not False])
         except Exception:
             df_r = pd.DataFrame()
 

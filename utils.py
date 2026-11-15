@@ -2038,35 +2038,64 @@ def get_atleta_dettagli_per_utente(profilo_id):
 
 
 @st.cache_data(ttl=60, show_spinner=False)
-def get_wellness_mattutino(atleta_id, data_str):
-    """Carica la rilevazione di wellness mattutino per un atleta in una determinata data."""
+def get_wellness_mattutino(atleta_id, data_str, solo_valido=True):
+    """Carica la rilevazione di wellness mattutino per un atleta in una determinata data (Data Governance)."""
     try:
         res = supabase.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id).eq('data', data_str).execute()
-        return res.data[0] if (res.data and len(res.data) > 0) else None
+        if res.data and len(res.data) > 0:
+            row = res.data[0]
+            if solo_valido and row.get('is_valid') is False:
+                return None
+            return row
+        return None
     except Exception:
         return None
 
 
 def upsert_wellness_mattutino(payload):
-    """Inserisce o aggiorna il wellness mattutino (grazie al vincolo UNIQUE atleta_id, data)."""
+    """Inserisce o aggiorna il wellness mattutino con Data Governance & Audit Trail."""
     try:
+        # Default di integrità GDPR
+        if "is_valid" not in payload:
+            payload["is_valid"] = True
+        if "modificato_da_staff" not in payload:
+            payload["modificato_da_staff"] = False
+
         res = supabase.table('wellness_mattutino').upsert(payload, on_conflict='atleta_id, data').execute()
         try:
             get_wellness_mattutino.clear()
             get_athlete_master_calendar.clear()
+            st.cache_data.clear()
         except Exception:
             pass
         return True, res.data
     except Exception as e:
-        return False, str(e)
+        err_msg = str(e)
+        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
+            basic_payload = {k: v for k, v in payload.items() if k not in ('is_valid', 'modificato_da_staff', 'wellness_originale_json')}
+            try:
+                res_fb = supabase.table('wellness_mattutino').upsert(basic_payload, on_conflict='atleta_id, data').execute()
+                try:
+                    get_wellness_mattutino.clear()
+                    get_athlete_master_calendar.clear()
+                    st.cache_data.clear()
+                except Exception:
+                    pass
+                return True, res_fb.data
+            except Exception as e2:
+                return False, str(e2)
+        return False, err_msg
 
 
 @st.cache_data(ttl=60, show_spinner=False)
-def get_rpe_sessioni(atleta_id, data_str):
-    """Recupera le sessioni sRPE registrate da un atleta per una determinata data."""
+def get_rpe_sessioni(atleta_id, data_str, solo_valido=True):
+    """Recupera le sessioni sRPE registrate da un atleta per una determinata data (Data Governance)."""
     try:
         res = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id).eq('data', data_str).order('slot').execute()
-        return res.data or []
+        dati = res.data or []
+        if solo_valido:
+            return [r for r in dati if r.get('is_valid') is not False]
+        return dati
     except Exception:
         return []
 
@@ -2079,13 +2108,7 @@ def upsert_rpe_sessione(payload, autore='atleta'):
 def calcola_e_salva_slot_rpe(payload, autore='atleta'):
     """
     Riconcilia le durate (Atleta vs Staff) e salva la seduta sRPE con profilazione
-    70/30 (Palestra & Preparazione Fisica).
-    
-    Regola Riconciliazione Tempo:
-    - Se sia Atleta che Staff hanno inserito una durata > 0, durata_minuti = (durata_atleta_min + durata_staff_min) / 2.0
-    - Altrimenti durata_minuti = unico valore disponibile.
-    - Se l'autore è l'atleta, preserva durata_staff_min esistente.
-    - Se l'autore è lo staff, preserva durata_atleta_min esistente.
+    70/30 (Palestra & Preparazione Fisica) e Data Governance (Audit Trail / GDPR Art. 9).
     """
     atleta_id = payload.get("atleta_id")
     data_str = str(payload.get("data", ""))[:10]
@@ -2186,6 +2209,32 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
         "distretto_secondario": distretto_sec,
         "stress_eccentrico_atteso": stress_ecc
     }
+
+    # Data Governance & Audit Trail
+    db_payload["is_valid"] = existing_row.get("is_valid", True) if existing_row.get("is_valid") is not None else True
+
+    if autore == 'staff':
+        # Flag modificato dallo staff
+        db_payload["modificato_da_staff"] = True
+        # Se prima modifica dello staff, archivia il valore originale dell'atleta
+        rpe_orig = existing_row.get("rpe_originale")
+        if rpe_orig is None and existing_row.get("rpe") is not None:
+            rpe_orig = existing_row.get("rpe")
+        db_payload["rpe_originale"] = rpe_orig
+
+        dur_orig = existing_row.get("durata_originale_min")
+        if dur_orig is None and existing_row.get("durata_minuti") is not None:
+            dur_orig = existing_row.get("durata_minuti")
+        db_payload["durata_originale_min"] = dur_orig
+    else:
+        # Autore atleta: preserva flag e valori originali se già presenti
+        if existing_row.get("modificato_da_staff"):
+            db_payload["modificato_da_staff"] = True
+            db_payload["rpe_originale"] = existing_row.get("rpe_originale")
+            db_payload["durata_originale_min"] = existing_row.get("durata_originale_min")
+        else:
+            db_payload["modificato_da_staff"] = False
+
     if payload.get("profilo_id"):
         db_payload["profilo_id"] = payload["profilo_id"]
     if payload.get("note") is not None:
@@ -2199,6 +2248,7 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
         try:
             get_rpe_sessioni.clear()
             get_athlete_master_calendar.clear()
+            st.cache_data.clear()
         except Exception:
             pass
         return True, res.data
@@ -2220,6 +2270,7 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
                 try:
                     get_rpe_sessioni.clear()
                     get_athlete_master_calendar.clear()
+                    st.cache_data.clear()
                 except Exception:
                     pass
                 return True, res_fallback.data
@@ -2228,19 +2279,332 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
         return False, err_msg
 
 
+# =====================================================================
+# MODULO DATA GOVERNANCE & AUDIT TRAIL (GDPR ART. 9)
+# Zero Hard-Delete · Soft-Delete (is_valid) · Tracciamento Modifiche Staff
+# =====================================================================
 
-def delete_rpe_sessione(session_id):
-    """Elimina uno slot di sessione sRPE."""
+def soft_delete_rpe_sessione(session_id, is_valid=False):
+    """
+    Esegue il Soft-Delete (o Ripristino) su uno slot di sessione sRPE (GDPR Art. 9: nessuna eliminazione fisica).
+    """
     try:
-        supabase.table('rpe_sessioni').delete().eq('id', session_id).execute()
+        db = supabase_admin if supabase_admin is not None else supabase
+        res = db.table('rpe_sessioni').update({"is_valid": is_valid}).eq('id', session_id).execute()
         try:
             get_rpe_sessioni.clear()
             get_athlete_master_calendar.clear()
+            st.cache_data.clear()
         except Exception:
             pass
-        return True
+        return True, res.data
+    except Exception as e:
+        return False, str(e)
+
+
+def ripristina_rpe_sessione(session_id):
+    """Ripristina la validità di uno slot sRPE precedentemente invalidato."""
+    return soft_delete_rpe_sessione(session_id, is_valid=True)
+
+
+def soft_delete_wellness_mattutino(record_id, is_valid=False):
+    """
+    Esegue il Soft-Delete (o Ripristino) sulla rilevazione Wellness mattutina (GDPR Art. 9).
+    """
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        res = db.table('wellness_mattutino').update({"is_valid": is_valid}).eq('id', record_id).execute()
+        try:
+            get_wellness_mattutino.clear()
+            get_athlete_master_calendar.clear()
+            st.cache_data.clear()
+        except Exception:
+            pass
+        return True, res.data
+    except Exception as e:
+        return False, str(e)
+
+
+def ripristina_wellness_mattutino(record_id):
+    """Ripristina la validità di una registrazione Wellness precedentemente invalidata."""
+    return soft_delete_wellness_mattutino(record_id, is_valid=True)
+
+
+def delete_rpe_sessione(session_id):
+    """
+    Sostituzione eliminazione fisica con Soft-Delete su sRPE (Zero DELETE SQL policy).
+    """
+    ok, _ = soft_delete_rpe_sessione(session_id, is_valid=False)
+    return ok
+
+
+def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_tipologia=None, nuove_note=None):
+    """
+    Motore di Modifica Tracciata per RPE (GDPR Art. 9):
+    Se prima modifica (rpe_originale is None), archivia il voto originale inserito dall'atleta.
+    Imposta modificato_da_staff = True e ricalcola il carico interno.
+    """
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        res_curr = db.table('rpe_sessioni').select('*').eq('id', session_id).execute()
+        if not res_curr.data:
+            return False, "Record non trovato nel database."
+        curr_row = res_curr.data[0]
+
+        rpe_orig = curr_row.get('rpe_originale')
+        if rpe_orig is None and curr_row.get('rpe') is not None:
+            rpe_orig = curr_row.get('rpe')
+
+        dur_orig = curr_row.get('durata_originale_min')
+        if dur_orig is None and curr_row.get('durata_minuti') is not None:
+            dur_orig = curr_row.get('durata_minuti')
+
+        dur_finale = int(round(float(nuova_durata_min))) if nuova_durata_min is not None else int(curr_row.get('durata_minuti', 60))
+        rpe_finale = int(round(float(nuovo_rpe)))
+        carico_finale = int(round(dur_finale * rpe_finale))
+
+        update_payload = {
+            "rpe": rpe_finale,
+            "durata_minuti": dur_finale,
+            "carico_interno": carico_finale,
+            "modificato_da_staff": True,
+            "rpe_originale": rpe_orig,
+            "durata_originale_min": dur_orig
+        }
+        if nuova_tipologia:
+            update_payload["tipologia"] = nuova_tipologia
+        if nuove_note is not None:
+            update_payload["note"] = nuove_note
+
+        res_up = db.table('rpe_sessioni').update(update_payload).eq('id', session_id).execute()
+        try:
+            get_rpe_sessioni.clear()
+            get_athlete_master_calendar.clear()
+            st.cache_data.clear()
+        except Exception:
+            pass
+        return True, res_up.data
+    except Exception as e:
+        err_msg = str(e)
+        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
+            try:
+                fb_payload = {
+                    "rpe": int(round(float(nuovo_rpe))),
+                    "durata_minuti": int(round(float(nuova_durata_min))) if nuova_durata_min else 60
+                }
+                if nuova_tipologia: fb_payload["tipologia"] = nuova_tipologia
+                if nuove_note: fb_payload["note"] = nuove_note
+                db.table('rpe_sessioni').update(fb_payload).eq('id', session_id).execute()
+                st.cache_data.clear()
+                return True, "Salvato (modalità fallback senza colonne audit)"
+            except Exception as e2:
+                return False, str(e2)
+        return False, err_msg
+
+
+def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
+    """
+    Motore di Modifica Tracciata per Wellness Mattutino (GDPR Art. 9):
+    Se prima modifica (wellness_originale_json is None), archivia il dizionario dei 5 parametri dell'atleta.
+    Imposta modificato_da_staff = True.
+    """
+    import json
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        res_curr = db.table('wellness_mattutino').select('*').eq('id', record_id).execute()
+        if not res_curr.data:
+            return False, "Record non trovato nel database."
+        curr_row = res_curr.data[0]
+
+        wel_orig = curr_row.get('wellness_originale_json')
+        if wel_orig is None:
+            wel_orig = {
+                "sonno": curr_row.get('sonno_qualita', curr_row.get('sonno', 5)),
+                "fatica": curr_row.get('fatica', 5),
+                "doms": curr_row.get('doms', curr_row.get('dolore_muscolare', 5)),
+                "stress": curr_row.get('stress', 5),
+                "umore": curr_row.get('umore', 5)
+            }
+
+        update_payload = {
+            "sonno_qualita": int(nuovi_valori_dict.get('sonno', 5)),
+            "fatica": int(nuovi_valori_dict.get('fatica', 5)),
+            "doms": int(nuovi_valori_dict.get('doms', 5)),
+            "stress": int(nuovi_valori_dict.get('stress', 5)),
+            "umore": int(nuovi_valori_dict.get('umore', 5)),
+            "modificato_da_staff": True,
+            "wellness_originale_json": wel_orig if isinstance(wel_orig, dict) else json.loads(wel_orig) if isinstance(wel_orig, str) else wel_orig
+        }
+        if nuove_note is not None:
+            update_payload["note"] = nuove_note
+
+        res_up = db.table('wellness_mattutino').update(update_payload).eq('id', record_id).execute()
+        try:
+            get_wellness_mattutino.clear()
+            get_athlete_master_calendar.clear()
+            st.cache_data.clear()
+        except Exception:
+            pass
+        return True, res_up.data
+    except Exception as e:
+        err_msg = str(e)
+        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
+            try:
+                fb_payload = {
+                    "sonno_qualita": int(nuovi_valori_dict.get('sonno', 5)),
+                    "fatica": int(nuovi_valori_dict.get('fatica', 5)),
+                    "doms": int(nuovi_valori_dict.get('doms', 5)),
+                    "stress": int(nuovi_valori_dict.get('stress', 5)),
+                    "umore": int(nuovi_valori_dict.get('umore', 5))
+                }
+                if nuove_note: fb_payload["note"] = nuove_note
+                db.table('wellness_mattutino').update(fb_payload).eq('id', record_id).execute()
+                st.cache_data.clear()
+                return True, "Salvato (modalità fallback senza colonne audit)"
+            except Exception as e2:
+                return False, str(e2)
+        return False, err_msg
+
+
+def get_governance_records(atleta_id=None, limit_days=90):
+    """
+    Carica l'intero registro di Governance (RPE & Wellness), inclusi i record invalidati,
+    con mapping anagrafico e audit trail.
+    """
+    import datetime as dt
+    db = supabase_admin if supabase_admin is not None else supabase
+    d_start = (dt.date.today() - dt.timedelta(days=limit_days)).strftime('%Y-%m-%d') if (limit_days and limit_days > 0) else "2020-01-01"
+
+    dict_id_to_name = {}
+    try:
+        res_at = db.table('atleti').select('id, nome, cognome').execute()
+        for a in (res_at.data or []):
+            dict_id_to_name[a['id']] = f"{a.get('nome', '')} {a.get('cognome', '')}".strip()
     except Exception:
-        return False
+        pass
+
+    records = []
+
+    # 1. RPE Sessioni
+    try:
+        q_r = db.table('rpe_sessioni').select('*').gte('data', d_start).order('data', desc=True)
+        if atleta_id and not str(atleta_id).startswith("mock-"):
+            q_r = q_r.eq('atleta_id', atleta_id)
+        res_r = q_r.execute()
+        for r in (res_r.data or []):
+            is_val = r.get('is_valid') if r.get('is_valid') is not None else True
+            is_mod = bool(r.get('modificato_da_staff', False))
+            rpe_orig = r.get('rpe_originale')
+            dur_orig = r.get('durata_originale_min')
+            atl_name = dict_id_to_name.get(r.get('atleta_id'), str(r.get('atleta_id', 'N/D'))[:8])
+            records.append({
+                "id": str(r.get('id', '')),
+                "tabella": "rpe_sessioni",
+                "metrica": "sRPE",
+                "atleta_id": r.get('atleta_id'),
+                "atleta_nome": atl_name,
+                "data": str(r.get('data', ''))[:10],
+                "slot": r.get('slot', 1),
+                "tipologia": r.get('tipologia', 'Tennis'),
+                "rpe": r.get('rpe', 0),
+                "durata_minuti": r.get('durata_minuti', 0),
+                "carico_interno": r.get('carico_interno', 0),
+                "is_valid": is_val,
+                "modificato_da_staff": is_mod,
+                "rpe_originale": rpe_orig,
+                "durata_originale_min": dur_orig,
+                "wellness_originale_json": None,
+                "raw_record": r,
+                "note": r.get('note', '')
+            })
+    except Exception:
+        pass
+
+    # 2. Wellness Mattutino
+    try:
+        q_w = db.table('wellness_mattutino').select('*').gte('data', d_start).order('data', desc=True)
+        if atleta_id and not str(atleta_id).startswith("mock-"):
+            q_w = q_w.eq('atleta_id', atleta_id)
+        res_w = q_w.execute()
+        for w in (res_w.data or []):
+            is_val = w.get('is_valid') if w.get('is_valid') is not None else True
+            is_mod = bool(w.get('modificato_da_staff', False))
+            atl_name = dict_id_to_name.get(w.get('atleta_id'), str(w.get('atleta_id', 'N/D'))[:8])
+            
+            sonno = w.get('sonno_qualita', w.get('sonno', 5))
+            fatica = w.get('fatica', 5)
+            stress = w.get('stress', 5)
+            umore = w.get('umore', 5)
+            doms = w.get('doms', w.get('dolore_muscolare', 5))
+            w_score = w.get('wellness_score')
+            if w_score is None:
+                w_score = round(((sonno + umore) + (11 - fatica) + (11 - stress) + (11 - doms)) / 5.0, 1)
+
+            records.append({
+                "id": str(w.get('id', '')),
+                "tabella": "wellness_mattutino",
+                "metrica": "Wellness",
+                "atleta_id": w.get('atleta_id'),
+                "atleta_nome": atl_name,
+                "data": str(w.get('data', ''))[:10],
+                "slot": "-",
+                "tipologia": "Rilevazione Mattutina",
+                "rpe": w_score,
+                "durata_minuti": "-",
+                "carico_interno": "-",
+                "is_valid": is_val,
+                "modificato_da_staff": is_mod,
+                "rpe_originale": None,
+                "durata_originale_min": None,
+                "wellness_originale_json": w.get('wellness_originale_json'),
+                "sonno": sonno,
+                "fatica": fatica,
+                "stress": stress,
+                "umore": umore,
+                "doms": doms,
+                "wellness_score": w_score,
+                "raw_record": w,
+                "note": w.get('note', '')
+            })
+    except Exception:
+        pass
+
+    records.sort(key=lambda x: str(x.get('data', '')), reverse=True)
+    return records
+
+
+def get_atleti_dict(user=None, is_admin=False, is_coach=True):
+    """
+    Restituisce un dizionario {Nome Cognome: id_atleta} per il selettore atleti.
+    """
+    dict_atleti = {}
+    try:
+        db = supabase_admin if is_admin else supabase
+        if is_admin:
+            res_a = db.table('atleti').select('id, nome, cognome').order('cognome').execute()
+            for a in (res_a.data or []):
+                full = f"{a.get('nome', '')} {a.get('cognome', '')}".strip()
+                if full:
+                    dict_atleti[full] = a['id']
+        elif is_coach:
+            if user:
+                res_assoc = db.table('associazioni').select('atleta_id, atleti(id, nome, cognome)').eq('profilo_id', user.id).execute()
+                for it in (res_assoc.data or []):
+                    atl = it.get('atleti')
+                    if atl:
+                        full = f"{atl.get('nome', '')} {atl.get('cognome', '')}".strip()
+                        if full:
+                            dict_atleti[full] = atl['id']
+            if not dict_atleti:
+                res_a = db.table('atleti').select('id, nome, cognome').order('cognome').execute()
+                for a in (res_a.data or []):
+                    full = f"{a.get('nome', '')} {a.get('cognome', '')}".strip()
+                    if full:
+                        dict_atleti[full] = a['id']
+    except Exception:
+        pass
+    return dict_atleti
+
 
 
 def check_stato_giornaliero_atleta(atleta_id, data_str):
@@ -3569,10 +3933,25 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
         if atleta_id and not str(atleta_id).startswith("mock-"):
             res_rpe = db.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id).gte('data', str(d_start)).lte('data', str(d_end)).execute()
             for r in (res_rpe.data or []):
+                # Data Governance (GDPR Art. 9): record invalidati non partecipano ai calcoli
+                if r.get('is_valid') is False:
+                    continue
+
                 d_str = str(r.get('data', ''))[:10]
                 if d_str in calendar_data:
                     d_dict = calendar_data[d_str]
                     d_dict["srpe_presente"] = True
+
+                    # Audit Trail: tracciamento modifiche staff
+                    is_mod = bool(r.get('modificato_da_staff', False))
+                    rpe_orig = r.get('rpe_originale')
+                    dur_orig = r.get('durata_originale_min')
+                    if is_mod:
+                        d_dict["modificato_da_staff"] = True
+                        if rpe_orig is not None:
+                            d_dict["rpe_originale"] = rpe_orig
+                        if dur_orig is not None:
+                            d_dict["durata_originale_min"] = dur_orig
 
                     # 1. Schema con colonne singole (tabella reale: slot, tipologia, durata_minuti, rpe, carico_interno)
                     if 'durata_minuti' in r or 'carico_interno' in r or 'rpe' in r:
@@ -3606,6 +3985,10 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
                             "distretto_secondario": r.get('distretto_secondario'),
                             "carico_secondario": carico_secondario,
                             "stress_eccentrico_atteso": r.get('stress_eccentrico_atteso', 'Moderato'),
+                            "is_valid": r.get('is_valid', True),
+                            "modificato_da_staff": is_mod,
+                            "rpe_originale": rpe_orig,
+                            "durata_originale_min": dur_orig,
                             "note": r.get('note', '')
                         })
                         d_dict["srpe_minuti"] += minuti
@@ -3623,7 +4006,7 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
                         s1_m = float(r.get('slot1_durata_minuti', 0) or 0)
                         s1_r = float(r.get('slot1_rpe', 0) or 0)
                         s1_c = float(r.get('slot1_carico', 0) or (s1_m * s1_r))
-                        d_dict["srpe_slots"].append({"slot": 1, "tipo": s1_t or "Attività", "minuti": s1_m, "rpe": s1_r, "carico": s1_c})
+                        d_dict["srpe_slots"].append({"slot": 1, "tipo": s1_t or "Attività", "minuti": s1_m, "rpe": s1_r, "carico": s1_c, "is_valid": True, "modificato_da_staff": False})
                         d_dict["srpe_minuti"] += s1_m
                         d_dict["srpe_carico"] += s1_c
 
@@ -3632,7 +4015,7 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
                         s2_m = float(r.get('slot2_durata_minuti', 0) or 0)
                         s2_r = float(r.get('slot2_rpe', 0) or 0)
                         s2_c = float(r.get('slot2_carico', 0) or (s2_m * s2_r))
-                        d_dict["srpe_slots"].append({"slot": 2, "tipo": s2_t or "Attività", "minuti": s2_m, "rpe": s2_r, "carico": s2_c})
+                        d_dict["srpe_slots"].append({"slot": 2, "tipo": s2_t or "Attività", "minuti": s2_m, "rpe": s2_r, "carico": s2_c, "is_valid": True, "modificato_da_staff": False})
                         d_dict["srpe_minuti"] += s2_m
                         d_dict["srpe_carico"] += s2_c
 
@@ -3648,10 +4031,18 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
         if atleta_id and not str(atleta_id).startswith("mock-"):
             res_wel = db.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id).gte('data', str(d_start)).lte('data', str(d_end)).execute()
             for w in (res_wel.data or []):
+                # Data Governance (GDPR Art. 9): record invalidati non partecipano al calcolo Readiness
+                if w.get('is_valid') is False:
+                    continue
+
                 d_str = str(w.get('data', ''))[:10]
                 if d_str in calendar_data:
                     d_dict = calendar_data[d_str]
                     d_dict["wellness_presente"] = True
+                    if w.get('modificato_da_staff'):
+                        d_dict["wellness_modificato_da_staff"] = True
+                        d_dict["wellness_originale_json"] = w.get('wellness_originale_json')
+
                     sonno = float(w.get('sonno_qualita', 0) or w.get('sonno', 0) or 0)
                     fatica = float(w.get('fatica', 0) or 0)
                     stress = float(w.get('stress', 0) or 0)

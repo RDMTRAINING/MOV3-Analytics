@@ -50,6 +50,14 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     slugify_name,
+    get_atleti_dict,
+    get_governance_records,
+    soft_delete_rpe_sessione,
+    ripristina_rpe_sessione,
+    soft_delete_wellness_mattutino,
+    ripristina_wellness_mattutino,
+    modifica_tracciata_rpe,
+    modifica_tracciata_wellness,
 )
 get_cloud_snapshot_status = getattr(
     _utils_mod,
@@ -66,7 +74,6 @@ from pdf_generator import (
 
 def render_gestione_file(t):
     render_page_header(tr("Gestione File e Sessioni Caricate", "Uploaded Files & Sessions Management"), t['home_file_desc'], "DATABASE MANAGEMENT")
-    df_storico = load_local_database()
 
     # --- RIGA DIAGNOSTICA CLOUD SNAPSHOT & DOWNLOAD MASTER PARQUET ---
     snap_stat = get_cloud_snapshot_status()
@@ -95,6 +102,22 @@ def render_gestione_file(t):
             except Exception:
                 pass
 
+    # --- TAB PRINCIPALI: SESSIONI GPS vs DATA GOVERNANCE & AUDIT TRAIL ---
+    tab_gps, tab_gov = st.tabs([
+        tr("Archivio Sessioni GPS & Database", "GPS Sessions Archive & Database"),
+        tr("Data Governance & Audit Trail (RPE / Wellness)", "Data Governance & Audit Trail (RPE / Wellness)")
+    ])
+
+    with tab_gps:
+        _render_gps_archive_tab(t)
+
+    with tab_gov:
+        _render_data_governance_tab(t)
+
+
+def _render_gps_archive_tab(t):
+    """Gestione delle sessioni GPS consolidate in database_storico.parquet."""
+    df_storico = load_local_database()
     if df_storico.empty:
         st.info(tr("Nessun dato presente nel database.", "No data found in the database."))
         return
@@ -113,7 +136,7 @@ def render_gestione_file(t):
         return
 
     # --- BARRA FILTRI RAPIDI ---
-    st.markdown(f"### {tr('Filtri Rapidi Database', 'Database Quick Filters')}")
+    st.markdown(f"### {tr('Filtri Rapidi Database GPS', 'GPS Database Quick Filters')}")
     lbl_tutti_utenti = tr("Tutti gli utenti", "All users")
     lbl_tutti_atleti = tr("Tutti gli atleti", "All athletes")
     lbl_tutte_tipologie = tr("Tutte le tipologie", "All types")
@@ -138,7 +161,6 @@ def render_gestione_file(t):
             st.session_state['gf_flt_ath'] = lbl_tutti_atleti
         filtro_atleta = st.selectbox(tr("Atleta:", "Athlete:"), opts_atleti, key="gf_flt_ath")
 
-    # Scoped dataframe for Tipologia Sessione based on current filtro_utente AND filtro_atleta
     df_scoped_tipi = df_scoped_ath.copy()
     if filtro_atleta != lbl_tutti_atleti:
         df_scoped_tipi = df_scoped_tipi[df_scoped_tipi['Players'] == filtro_atleta]
@@ -175,12 +197,10 @@ def render_gestione_file(t):
         st.warning(tr("Nessuna sessione trovata con i filtri selezionati.", "No sessions found with selected filters."))
         return
 
-    # Ordinamento cronologico dal più recente al meno recente, preservando l'indice originale di df_storico
     df_vista_sort = df_vista.copy()
     df_vista_sort['_dt_sort'] = pd.to_datetime(df_vista_sort['Date'], format="%d/%m/%Y", errors='coerce')
     df_vista_sort.sort_values(by=['_dt_sort'], ascending=False, inplace=True)
 
-    # Costruzione mappa univoca: Etichetta descrittiva -> Indice univoco di riga in df_storico
     mappa_sessioni_idx = {}
     for idx_row, row_s in df_vista_sort.iterrows():
         dt_s = str(row_s.get('Date', 'N/D'))
@@ -196,7 +216,7 @@ def render_gestione_file(t):
     lista_etichette_sessioni = [placeholder_sel] + list(mappa_sessioni_idx.keys())
 
     st.divider()
-    st.markdown(f"### {tr('Modifica Informazioni Sessione', 'Edit Session Information')}")
+    st.markdown(f"### {tr('Modifica Informazioni Sessione GPS', 'Edit GPS Session Information')}")
     st.info(tr("Seleziona una sessione specifica per modificarne Atleta, Data, Nome, Durata, Superficie, Ambiente, Sparring o Tipologia senza dover ricaricare il file CSV.", "Select a specific session to edit Athlete, Date, Name, Duration, Surface, Environment, Sparring or Type without re-uploading the CSV file."))
 
     etichetta_da_modificare = st.selectbox(tr("Scegli la sessione da modificare:", "Choose session to edit:"), lista_etichette_sessioni, key="sel_mod")
@@ -271,13 +291,11 @@ def render_gestione_file(t):
                 df_storico.loc[idx_target, 'Minuti Sparring'] = int(new_sparring)
                 df_storico.loc[idx_target, 'Dato_Simulato'] = bool(is_sim_final)
 
-                # Se convertito da simulato a reale, sanifica File_Name se era del simulatore
                 if not is_sim_final:
                     curr_fn = str(df_storico.loc[idx_target, 'File_Name']).strip()
                     if curr_fn in ('Generato_dal_Sistema_M0V3', '', 'nan', 'None'):
                         df_storico.loc[idx_target, 'File_Name'] = f"Sessione_{new_player}_{new_date.strftime('%Y%m%d')}.csv"
 
-                # Se cambiato in Indoor, azzera le colonne GPS satellitari per coerenza fisica
                 if str(new_amb).strip().lower() == "indoor":
                     for c_gps in COLONNE_GPS:
                         if c_gps in df_storico.columns:
@@ -337,3 +355,487 @@ def render_gestione_file(t):
                 ]
             )
             st.rerun()
+
+
+def _render_data_governance_tab(t):
+    """
+    Modulo 'Data Governance & Audit Trail' (GDPR Art. 9):
+    Integrità del dato sulle metriche soggettive dell'atleta (RPE e Wellness).
+    Zero Hard-Delete (nessun DELETE SQL), Soft-Delete (Invalidazione is_valid=False)
+    e Modifica Tracciata con archiviazione del dato originale.
+    """
+    # Box Introduttivo di Governance & GDPR Art. 9
+    gov_intro_desc = tr(
+        "Conformemente al principio di integrità del dato e validità scientifica, le metriche soggettive dell'atleta (RPE e Wellness) non possono essere eliminate fisicamente dal database (Zero DELETE SQL policy). Lo staff tecnico applica l'Invalidazione (Soft-Delete) che esclude istantaneamente il record dai calcoli analitici (ACWR, Readiness e Trend di Carico) preservando la tracciabilità storica. Ogni rettifica manuale dello staff archivia il valore originale dell'atleta esponendo un apposito segnale visivo di Audit.",
+        "In compliance with data integrity and scientific validity principles, subjective athlete metrics (RPE and Wellness) cannot be physically deleted from the database (Zero DELETE SQL policy). Technical staff can apply Invalidation (Soft-Delete) which instantly excludes the record from analytical load calculations (ACWR, Readiness and Load Trends) while preserving historical auditability. Every manual adjustment by staff archives the athlete's original input and displays a dedicated Audit visual signal."
+    )
+    st.markdown(
+        f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:16px 20px; margin-bottom:18px;'>"
+        f"<div style='display:flex; align-items:center; gap:10px; margin-bottom:8px;'>"
+        f"<i class='bi bi-shield-check' style='color:#0ea5e9; font-size:22px;'></i>"
+        f"<span style='font-size:15px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;'>{tr('Data Governance & Audit Trail — Integrità del Dato (GDPR Art. 9)', 'Data Governance & Audit Trail — Data Integrity (GDPR Art. 9)')}</span>"
+        f"</div>"
+        f"<div style='font-size:12px; color:#475569; line-height:1.55;'>"
+        f"{gov_intro_desc}"
+        f"</div></div>",
+        unsafe_allow_html=True
+    )
+
+    user_role = st.session_state.get('role', 'Super-Admin')
+    is_admin = (user_role in ['Super-Admin', 'Admin'])
+    is_coach = (user_role in ['Staff', 'Coach', 'Fisio / Medico'] or is_admin)
+    user = st.session_state.get('user')
+
+    dict_atleti = get_atleti_dict(user=user, is_admin=is_admin, is_coach=is_coach)
+    nomi_atleti = sorted(list(dict_atleti.keys()))
+
+    # --- BARRA DEI FILTRI GOVERNANCE ---
+    st.markdown(f"### {tr('Filtri di Governance & Selezione Dati', 'Governance Filters & Data Selection')}")
+    c_f1, c_f2, c_f3, c_f4 = st.columns(4)
+
+    lbl_all_ath = tr("Tutti gli Atleti", "All Athletes")
+    opts_ath = [lbl_all_ath] + nomi_atleti
+    with c_f1:
+        sel_ath = st.selectbox(tr("Atleta:", "Athlete:"), opts_ath, key="gov_sel_ath")
+    atleta_id_filtro = dict_atleti.get(sel_ath) if sel_ath != lbl_all_ath else None
+
+    with c_f2:
+        opz_metrica = [
+            tr("Tutte le Metriche (sRPE + Wellness)", "All Metrics (sRPE + Wellness)"),
+            tr("Solo sRPE (Carico Sedute)", "sRPE Only (Session Load)"),
+            tr("Solo Wellness (Rilevazioni Mattutine)", "Wellness Only (Morning Entries)")
+        ]
+        sel_metrica = st.selectbox(tr("Tipo Metrica:", "Metric Type:"), opz_metrica, key="gov_sel_metr")
+
+    with c_f3:
+        opz_validita = [
+            tr("Tutti i Record (Validi + Invalidati)", "All Records (Valid + Invalidated)"),
+            tr("Solo Validi (Attivi nei Calcoli)", "Valid Only (Active in Calculations)"),
+            tr("Solo Invalidati (Soft-Deleted)", "Invalidated Only (Soft-Deleted)")
+        ]
+        sel_validita = st.selectbox(tr("Stato Validità:", "Validity Status:"), opz_validita, key="gov_sel_val")
+
+    with c_f4:
+        opz_giorni = [
+            tr("Ultimi 30 giorni", "Last 30 days"),
+            tr("Ultimi 60 giorni", "Last 60 days"),
+            tr("Ultimi 90 giorni", "Last 90 days"),
+            tr("Ultimi 180 giorni", "Last 180 days"),
+            tr("Tutto lo Storico", "All History")
+        ]
+        sel_giorni = st.selectbox(tr("Finestra Temporale:", "Time Window:"), opz_giorni, index=2, key="gov_sel_days")
+
+    days_map = {
+        opz_giorni[0]: 30,
+        opz_giorni[1]: 60,
+        opz_giorni[2]: 90,
+        opz_giorni[3]: 180,
+        opz_giorni[4]: 0
+    }
+    days_val = days_map.get(sel_giorni, 90)
+
+    # Recupero record via funzione centralizzata
+    raw_records = get_governance_records(atleta_id=atleta_id_filtro, limit_days=days_val)
+
+    # Filtraggio per metrica
+    if sel_metrica == opz_metrica[1]:
+        filtered_records = [r for r in raw_records if r['metrica'] == 'sRPE']
+    elif sel_metrica == opz_metrica[2]:
+        filtered_records = [r for r in raw_records if r['metrica'] == 'Wellness']
+    else:
+        filtered_records = list(raw_records)
+
+    # Filtraggio per validità
+    if sel_validita == opz_validita[1]:
+        filtered_records = [r for r in filtered_records if r['is_valid'] is True]
+    elif sel_validita == opz_validita[2]:
+        filtered_records = [r for r in filtered_records if r['is_valid'] is False]
+
+    # --- BARRA KPI SINTETICI DI GOVERNANCE ---
+    tot_rec = len(filtered_records)
+    tot_val = sum(1 for r in filtered_records if r['is_valid'] is True)
+    tot_inval = sum(1 for r in filtered_records if r['is_valid'] is False)
+    tot_mod = sum(1 for r in filtered_records if r['modificato_da_staff'] is True)
+
+    c_k1, c_k2, c_k3, c_k4 = st.columns(4)
+    with c_k1:
+        st.markdown(card_kpi(tr("Record Monitorati", "Monitored Records"), f"{tot_rec}", sottotitolo=tr("Nel perimetro selezionato", "In selected perimeter"), accento="#0ea5e9"), unsafe_allow_html=True)
+    with c_k2:
+        st.markdown(card_kpi(tr("Record Validi (Attivi)", "Valid Records (Active)"), f"{tot_val}", sottotitolo=tr("Partecipano ad ACWR e carichi", "Active in ACWR & loads"), accento="#10b981"), unsafe_allow_html=True)
+    with c_k3:
+        st.markdown(card_kpi(tr("Invalidati (Soft-Delete)", "Invalidated (Soft-Delete)"), f"{tot_inval}", sottotitolo=tr("Esclusi da grafici e medie", "Excluded from charts & means"), accento="#e11d48"), unsafe_allow_html=True)
+    with c_k4:
+        st.markdown(card_kpi(tr("Modificati dallo Staff", "Staff Corrected"), f"{tot_mod}", sottotitolo=tr("Con tracciamento audit attivo", "Active audit trail"), accento="#f59e0b"), unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-bottom:14px;'></div>", unsafe_allow_html=True)
+
+    if not filtered_records:
+        st.info(tr("Nessuna registrazione trovata per i filtri selezionati.", "No records found matching selected filters."))
+        return
+
+    # --- SEZIONE A: TABELLA INTERATTIVA DI CONTROLLO & AUDIT ---
+    st.markdown(f"### {tr('A. Tabella di Controllo & Registro Audit Trail', 'A. Control Table & Audit Trail Registry')}")
+    st.caption(tr("I record invalidati hanno sfondo grigio ed opacità ridotta. Il badge 'Modificato' segnala le rettifiche apportate dallo staff con tooltip sul valore originale.", "Invalidated records appear with gray background and reduced opacity. The 'Modified' badge signals staff adjustments with hover tooltip on athlete original values."))
+
+    html_rows = []
+    rows_for_df = []
+
+    for r in filtered_records:
+        is_v = r['is_valid']
+        is_m = r['modificato_da_staff']
+
+        # Descrizioni di valore e di audit
+        if r['metrica'] == 'sRPE':
+            val_html = f"<b>RPE {r['rpe']}</b> &bull; {r['durata_minuti']}m ({r['tipologia']}) &rarr; <b>{r['carico_interno']} AU</b>"
+            val_raw = f"RPE {r['rpe']} | {r['durata_minuti']}m ({r['tipologia']}) -> {r['carico_interno']} AU"
+            if is_m:
+                rpe_o = r.get('rpe_originale')
+                dur_o = r.get('durata_originale_min')
+                orig_desc = f"RPE {rpe_o}" + (f", {dur_o:.0f} min" if dur_o is not None else "")
+                audit_hover = f"Valore originale Atleta: {orig_desc}"
+                badge_audit = (
+                    f"<span title='{audit_hover}' style='background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fde68a; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-pencil-square text-warning'></i> Modificato"
+                    f"</span>"
+                )
+                audit_txt = f"Modificato (Orig: {orig_desc})"
+            else:
+                badge_audit = (
+                    f"<span style='color:#64748b; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-person-check text-success'></i> Originale Atleta"
+                    f"</span>"
+                )
+                audit_txt = "Originale Atleta"
+        else:
+            w_sc = r.get('wellness_score', 0)
+            val_html = f"<b>Score {w_sc:.1f}</b> (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')})"
+            val_raw = f"Score {w_sc:.1f} (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')})"
+            if is_m:
+                wel_o = r.get('wellness_originale_json') or {}
+                if isinstance(wel_o, dict):
+                    orig_desc = f"Sonno:{wel_o.get('sonno')}, Fatica:{wel_o.get('fatica')}, DOMS:{wel_o.get('doms')}, Stress:{wel_o.get('stress')}, Umore:{wel_o.get('umore')}"
+                else:
+                    orig_desc = str(wel_o)
+                audit_hover = f"Valore originale Atleta: {orig_desc}"
+                badge_audit = (
+                    f"<span title='{audit_hover}' style='background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fde68a; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-pencil-square text-warning'></i> Modificato"
+                    f"</span>"
+                )
+                audit_txt = f"Modificato (Orig: {orig_desc})"
+            else:
+                badge_audit = (
+                    f"<span style='color:#64748b; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-person-check text-success'></i> Originale Atleta"
+                    f"</span>"
+                )
+                audit_txt = "Originale Atleta"
+
+        # Badge validità
+        if is_v:
+            badge_stato = (
+                f"<span style='background:#dcfce7; color:#166534; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:4px;'>"
+                f"<i class='bi bi-shield-check'></i> Valido"
+                f"</span>"
+            )
+            stato_txt = "Valido"
+            row_style = "background:#ffffff; color:#0f172a; border-bottom:1px solid #f1f5f9;"
+        else:
+            badge_stato = (
+                f"<span style='background:#fee2e2; color:#991b1b; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px;'>"
+                f"<i class='bi bi-eye-slash-fill'></i> Invalidato"
+                f"</span>"
+            )
+            stato_txt = "INVALIDATO"
+            row_style = "background:#f8fafc; color:#94a3b8; border-bottom:1px solid #e2e8f0; opacity:0.65; text-decoration:line-through;"
+
+        html_rows.append(
+            f"<tr style='{row_style} font-size:12px; font-family:\"Inter\",sans-serif;'>"
+            f"<td style='padding:8px 10px; font-weight:700;'>{r['data']}</td>"
+            f"<td style='padding:8px 10px; font-weight:700;'>{r['atleta_nome']}</td>"
+            f"<td style='padding:8px 10px; font-weight:600;'>{r['metrica']}</td>"
+            f"<td style='padding:8px 10px;'>{val_html}</td>"
+            f"<td style='padding:8px 10px; text-align:center;'>{badge_audit}</td>"
+            f"<td style='padding:8px 10px; text-align:center;'>{badge_stato}</td>"
+            f"<td style='padding:8px 10px; font-size:11px; color:#64748b;'>{r.get('note', '') or '-'}</td>"
+            f"</tr>"
+        )
+
+        rows_for_df.append({
+            "ID": r['id'][:8],
+            "Data": r['data'],
+            "Atleta": r['atleta_nome'],
+            "Metrica": r['metrica'],
+            "Valore": val_raw,
+            "Audit": audit_txt,
+            "Stato": stato_txt,
+            "Valido": bool(is_v),
+            "Modificato": bool(is_m),
+            "Note": r.get('note', '') or "-"
+        })
+
+    # Render Tabella HTML High-Contrast con Bootstrap Badges
+    th_data = tr("Data", "Date")
+    th_atl = tr("Atleta", "Athlete")
+    th_met = tr("Metrica", "Metric")
+    th_val = tr("Valore Corrente", "Current Value")
+    th_aud = tr("Audit Trail", "Audit Trail")
+    th_sta = tr("Stato Validità", "Validity Status")
+    th_not = tr("Note", "Notes")
+
+    st.markdown(
+        f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); overflow:hidden; margin-bottom:16px;'>"
+        f"<table style='width:100%; border-collapse:collapse;'>"
+        f"<thead><tr style='background:#0A192F; color:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-family:\"Inter\",sans-serif;'>"
+        f"<th style='padding:10px 12px; text-align:left;'>{th_data}</th>"
+        f"<th style='padding:10px 12px; text-align:left;'>{th_atl}</th>"
+        f"<th style='padding:10px 12px; text-align:left;'>{th_met}</th>"
+        f"<th style='padding:10px 12px; text-align:left;'>{th_val}</th>"
+        f"<th style='padding:10px 12px; text-align:center;'>{th_aud}</th>"
+        f"<th style='padding:10px 12px; text-align:center;'>{th_sta}</th>"
+        f"<th style='padding:10px 12px; text-align:left;'>{th_not}</th>"
+        f"</tr></thead><tbody>{''.join(html_rows)}</tbody></table></div>",
+        unsafe_allow_html=True
+    )
+
+    # Vista st.data_editor per ispezione interattiva e ordinamento
+    with st.expander(tr("Visualizza Vista Dati Avanzata (st.data_editor)", "View Advanced Data View (st.data_editor)"), expanded=False):
+        df_editor = pd.DataFrame(rows_for_df)
+        st.data_editor(
+            df_editor,
+            use_container_width=True,
+            disabled=True,
+            key="gov_data_editor_table",
+            column_config={
+                "Valido": st.column_config.CheckboxColumn(tr("Valido", "Valid"), help=tr("Partecipa ai calcoli analitici", "Participates in analytical calculations")),
+                "Modificato": st.column_config.CheckboxColumn(tr("Modificato da Staff", "Modified by Staff"), help=tr("Dato rettificato manualmente dallo staff", "Data manually adjusted by staff")),
+            }
+        )
+
+    st.divider()
+
+    # --- SEZIONE B & C: CENTRO OPERATIVO DI MODIFICA TRACCIATA & SOFT-DELETE ---
+    st.markdown(f"### {tr('B & C. Modifica Tracciata & Invalida Registrazione (Soft-Delete)', 'B & C. Tracked Edit & Record Invalidation (Soft-Delete)')}")
+    st.info(tr("Seleziona una specifica registrazione per modificarne il valore in modo tracciato (conservando il voto originale dell'atleta nell'Audit Trail) oppure per Invalidarla/Ripristinarla senza eseguire eliminazioni fisiche.", "Select a specific record to edit its value with tracking (preserving athlete original input in the Audit Trail) or to Invalidate/Restore it without executing physical deletions."))
+
+    mappa_scelte = {}
+    for r in filtered_records:
+        tag_v = "VALIDO" if r['is_valid'] else "INVALIDATO"
+        tag_m = "MODIFICATO" if r['modificato_da_staff'] else "ORIGINALE"
+        if r['metrica'] == 'sRPE':
+            desc_s = f"RPE {r['rpe']} ({r['durata_minuti']}m - {r['tipologia']})"
+        else:
+            desc_s = f"Wellness Score {r.get('wellness_score', 0):.1f}"
+        lbl_k = f"[{tag_v} | {tag_m}] {r['data']} — {r['atleta_nome']} — {r['metrica']}: {desc_s} (ID #{r['id'][:8]})"
+        mappa_scelte[lbl_k] = r
+
+    chiavi_scelte = list(mappa_scelte.keys())
+    placeholder_sel_gov = tr("Seleziona una registrazione...", "Select a record...")
+    sel_rec_label = st.selectbox(
+        tr("Scegli la registrazione da gestire:", "Choose record to manage:"),
+        [placeholder_sel_gov] + chiavi_scelte,
+        key="gov_rec_picker"
+    )
+
+    if sel_rec_label != placeholder_sel_gov:
+        rec = mappa_scelte[sel_rec_label]
+        is_rpe = (rec['tabella'] == 'rpe_sessioni')
+
+        # Scheda Dettagliata Record Selezionato
+        st.markdown("<div style='margin-top:10px;'></div>", unsafe_allow_html=True)
+        col_sch1, col_sch2 = st.columns([1.8, 1.2])
+
+        with col_sch1:
+            # Badge di Stato
+            if rec['is_valid']:
+                badge_v_big = "<span style='background:#dcfce7; color:#166534; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #86efac;'><i class='bi bi-shield-check'></i> Record Valido (Incluso nei Calcoli di Carico)</span>"
+            else:
+                badge_v_big = "<span style='background:#fee2e2; color:#991b1b; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #fca5a5;'><i class='bi bi-eye-slash-fill'></i> Record INVALIDATO (Escluso da Medie e Grafici)</span>"
+
+            if rec['modificato_da_staff']:
+                orig_show = f"RPE {rec.get('rpe_originale')}" if is_rpe else f"{rec.get('wellness_originale_json')}"
+                badge_m_big = f"<span style='background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #fde68a;'><i class='bi bi-pencil-square text-warning'></i> Modificato dallo Staff</span> &bull; <b>Valore Originale Atleta: {orig_show}</b>"
+            else:
+                badge_m_big = "<span style='background:#f0fdf4; color:#166534; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #bbf7d0;'><i class='bi bi-person-check'></i> Dato Originale Inserito dall'Atleta</span>"
+
+            st.markdown(
+                f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:16px 20px; margin-bottom:14px;'>"
+                f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;'>"
+                f"<span style='font-size:14px; font-weight:800; color:#0f172a;'><i class='bi bi-person-badge' style='color:#0ea5e9; margin-right:6px;'></i>{rec['atleta_nome']} — {rec['data']}</span>"
+                f"<span style='font-size:11px; color:#64748b; font-family:monospace;'>ID: {rec['id']}</span>"
+                f"</div>"
+                f"<div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;'>"
+                f"{badge_v_big} {badge_m_big}"
+                f"</div></div>",
+                unsafe_allow_html=True
+            )
+
+        with col_sch2:
+            privacy_note_desc = tr(
+                "Nessuna operazione rimuove righe fisiche dal database Supabase. Le modifiche generano un'impronta di Audit permanente. Le invalidazioni aggiornano il flag logico is_valid.",
+                "No operation physically removes rows from Supabase database. Modifications generate a permanent Audit footprint. Invalidations update the logical is_valid flag."
+            )
+            st.markdown(
+                f"<div style='background:#f8fafc; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.06); padding:14px 16px; margin-bottom:14px; font-size:11.5px; color:#475569;'>"
+                f"<b>{tr('Integrità Scientifica & Privacy:', 'Scientific Integrity & Privacy:')}</b><br>"
+                f"{privacy_note_desc}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        # Sezione Due Colonne: Modifica Tracciata (SX) vs Azione Soft-Delete / Ripristino (DX)
+        c_mod, c_del = st.columns([1.6, 1.4])
+
+        with c_mod:
+            st.markdown(f"#### <i class='bi bi-pencil-square'></i> {tr('Motore di Modifica Tracciata', 'Tracked Modification Engine')}", unsafe_allow_html=True)
+            if is_rpe:
+                with st.form("form_modifica_rpe_gov"):
+                    st.caption(tr("Rettifica il carico dichiarato dall'atleta. Se è la prima modifica, il voto originale viene archiviato nell'Audit Trail.", "Adjust load declared by athlete. On first edit, original input is archived in Audit Trail."))
+                    curr_rpe_val = int(rec.get('rpe', 5))
+                    curr_dur_val = int(rec.get('durata_minuti', 60))
+                    curr_tipo_val = rec.get('tipologia', 'Tennis')
+
+                    col_r1, col_r2 = st.columns(2)
+                    with col_r1:
+                        new_rpe_in = st.number_input(tr("Nuovo Voto RPE (0-10)", "New RPE Vote (0-10)"), min_value=0, max_value=10, value=curr_rpe_val, step=1)
+                        opz_tipi = ['Tennis', 'Preparazione Fisica', 'Gym', 'Recupero', 'Altro']
+                        idx_tp = opz_tipi.index(curr_tipo_val) if curr_tipo_val in opz_tipi else 0
+                        new_tipo_in = st.selectbox(tr("Tipologia Sessione", "Session Type"), opz_tipi, index=idx_tp)
+                    with col_r2:
+                        new_dur_in = st.number_input(tr("Durata (Minuti)", "Duration (Minutes)"), min_value=1, value=curr_dur_val, step=5)
+                        prev_carico = int(new_rpe_in * new_dur_in)
+                        st.metric(tr("Carico Ricalcolato", "Recalculated Load"), f"{prev_carico} AU")
+
+                    new_note_in = st.text_input(tr("Motivazione Rettifica Staff / Note", "Staff Adjustment Reason / Notes"), value=rec.get('note', '') or "")
+
+                    btn_salva_rpe = st.form_submit_button(tr("Salva Modifica Tracciata", "Save Tracked Edit"), type="primary", use_container_width=True)
+                    if btn_salva_rpe:
+                        ok_up, res_up = modifica_tracciata_rpe(
+                            session_id=rec['id'],
+                            nuovo_rpe=new_rpe_in,
+                            nuova_durata_min=new_dur_in,
+                            nuova_tipologia=new_tipo_in,
+                            nuove_note=new_note_in
+                        )
+                        if ok_up:
+                            orig_str_not = f"RPE {rec['rpe_originale'] or rec['rpe']}"
+                            set_notification(
+                                title=tr("Modifica Tracciata Salvata", "Tracked Edit Saved"),
+                                message=tr(f"Sessione sRPE per {rec['atleta_nome']} aggiornata a RPE {new_rpe_in} e durata {new_dur_in} min. Valore originale archiviato.",
+                                           f"sRPE session for {rec['atleta_nome']} updated to RPE {new_rpe_in} and duration {new_dur_in} min. Original value archived."),
+                                tipo="modal",
+                                details=[
+                                    tr(f"Atleta: {rec['atleta_nome']}", f"Athlete: {rec['atleta_nome']}"),
+                                    tr(f"Data: {rec['data']}", f"Date: {rec['data']}"),
+                                    tr(f"Valore Primario Atleta: {orig_str_not}", f"Primary Athlete Value: {orig_str_not}"),
+                                    tr(f"Nuovo Valore Rettificato Staff: RPE {new_rpe_in} ({new_dur_in} min) &rarr; {prev_carico} AU", f"New Staff Adjusted Value: RPE {new_rpe_in} ({new_dur_in} min) -> {prev_carico} AU"),
+                                    tr("Flag 'modificato_da_staff' attivato nell'Audit Trail", "Flag 'modificato_da_staff' set in Audit Trail")
+                                ]
+                            )
+                            st.rerun()
+                        else:
+                            st.error(f"Errore durante l'aggiornamento: {res_up}")
+            else:
+                # Wellness Mattutino Form
+                with st.form("form_modifica_wel_gov"):
+                    st.caption(tr("Rettifica i 5 parametri del Wellness. I valori originali dell'atleta vengono archiviati nel campo JSON di Audit.", "Adjust the 5 Wellness parameters. Original values are archived in the Audit JSON field."))
+                    raw_w = rec.get('raw_record', {})
+                    c_w1, c_w2, c_w3 = st.columns(3)
+                    with c_w1:
+                        w_sonno = st.number_input(tr("Qualità Sonno (1-10)", "Sleep Quality (1-10)"), min_value=1, max_value=10, value=int(rec.get('sonno', 5)), step=1)
+                        w_fatica = st.number_input(tr("Fatica (1-10)", "Fatigue (1-10)"), min_value=1, max_value=10, value=int(rec.get('fatica', 5)), step=1)
+                    with c_w2:
+                        w_doms = st.number_input(tr("DOMS / Dolore (1-10)", "DOMS / Soreness (1-10)"), min_value=1, max_value=10, value=int(rec.get('doms', 5)), step=1)
+                        w_stress = st.number_input(tr("Stress (1-10)", "Stress (1-10)"), min_value=1, max_value=10, value=int(rec.get('stress', 5)), step=1)
+                    with c_w3:
+                        w_umore = st.number_input(tr("Umore (1-10)", "Mood (1-10)"), min_value=1, max_value=10, value=int(rec.get('umore', 5)), step=1)
+                        calc_new_score = round(((w_sonno + w_umore) + (11 - w_fatica) + (11 - w_stress) + (11 - w_doms)) / 5.0, 1)
+                        st.metric(tr("Readiness Score", "Readiness Score"), f"{calc_new_score} / 10")
+
+                    w_note_in = st.text_input(tr("Motivazione Rettifica Staff / Note", "Staff Adjustment Reason / Notes"), value=rec.get('note', '') or "")
+
+                    btn_salva_wel = st.form_submit_button(tr("Salva Modifica Tracciata", "Save Tracked Edit"), type="primary", use_container_width=True)
+                    if btn_salva_wel:
+                        ok_up_w, res_up_w = modifica_tracciata_wellness(
+                            record_id=rec['id'],
+                            nuovi_valori_dict={
+                                "sonno": w_sonno,
+                                "fatica": w_fatica,
+                                "doms": w_doms,
+                                "stress": w_stress,
+                                "umore": w_umore
+                            },
+                            nuove_note=w_note_in
+                        )
+                        if ok_up_w:
+                            set_notification(
+                                title=tr("Modifica Tracciata Salvata", "Tracked Edit Saved"),
+                                message=tr(f"Rilevazione Wellness per {rec['atleta_nome']} aggiornata con nuovo score {calc_new_score}. Parametri originali archiviati.",
+                                           f"Wellness entry for {rec['atleta_nome']} updated with new score {calc_new_score}. Original parameters archived."),
+                                tipo="modal",
+                                details=[
+                                    tr(f"Atleta: {rec['atleta_nome']}", f"Athlete: {rec['atleta_nome']}"),
+                                    tr(f"Data: {rec['data']}", f"Date: {rec['data']}"),
+                                    tr(f"Nuovo Readiness Score: {calc_new_score} / 10", f"New Readiness Score: {calc_new_score} / 10"),
+                                    tr("Valori originali archiviati nel campo JSON di Audit", "Original values archived in Audit JSON field")
+                                ]
+                            )
+                            st.rerun()
+                        else:
+                            st.error(f"Errore durante l'aggiornamento: {res_up_w}")
+
+        with c_del:
+            st.markdown(f"#### <i class='bi bi-shield-slash'></i> {tr('Azione di Validità (Soft-Delete)', 'Validity Action (Soft-Delete)')}", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.5; color:#334155;'>"
+                f"<b>{tr('Regola di Validità Analitica:', 'Analytical Validity Rule:')}</b><br>"
+                f"{tr('Se una compilazione è viziata o inattendibile, non cancellarla fisicamente: invalida la registrazione. Il record non parteciperà più alle medie settimanali, ai calcoli ACWR e alla Readiness, ma rimarrà conservato per trasparenza medico-legale.', 'If an entry is flawed or unreliable, do not physically delete it: invalidate the registration. The record will no longer participate in weekly averages, ACWR calculations and Readiness, but will remain preserved for medico-legal transparency.')}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+            if rec['is_valid']:
+                st.warning(tr("La registrazione è attualmente ATTIVA e partecipa a tutti i calcoli di carico e grafici.", "This record is currently ACTIVE and participates in all load calculations and charts."))
+                lbl_inval_btn = tr("Invalida Registrazione (Soft-Delete)", "Invalidate Record (Soft-Delete)")
+                if st.button(lbl_inval_btn, type="primary", key="btn_invalida_rec", use_container_width=True):
+                    if is_rpe:
+                        ok_inv, err_inv = soft_delete_rpe_sessione(rec['id'], is_valid=False)
+                    else:
+                        ok_inv, err_inv = soft_delete_wellness_mattutino(rec['id'], is_valid=False)
+
+                    if ok_inv:
+                        set_notification(
+                            title=tr("Registrazione Invalidata con Successo", "Record Successfully Invalidated"),
+                            message=tr(f"La registrazione di {rec['metrica']} del {rec['data']} per {rec['atleta_nome']} è stata invalidata. È ora esclusa da tutti i calcoli e grafici.",
+                                       f"{rec['metrica']} record of {rec['data']} for {rec['atleta_nome']} was invalidated. It is now excluded from all calculations and charts."),
+                            tipo="modal",
+                            details=[
+                                tr(f"Atleta: {rec['atleta_nome']}", f"Athlete: {rec['atleta_nome']}"),
+                                tr(f"Data: {rec['data']}", f"Date: {rec['data']}"),
+                                tr(f"Metrica: {rec['metrica']}", f"Metric: {rec['metrica']}"),
+                                tr("Stato impostato su: INVALIDATO (is_valid = FALSE)", "Status set to: INVALIDATED (is_valid = FALSE)"),
+                                tr("Zero Hard-Delete: nessuna cancellazione fisica eseguita sul database", "Zero Hard-Delete: no physical row deleted from database")
+                            ]
+                        )
+                        st.rerun()
+                    else:
+                        st.error(f"Errore durante l'invalidazione: {err_inv}")
+            else:
+                st.error(tr("Questa registrazione è attualmente INVALIDATA ed esclusa da tutti i calcoli analitici e grafici.", "This record is currently INVALIDATED and excluded from all analytical calculations and charts."))
+                lbl_rip_btn = tr("Rendi Valido (Ripristina)", "Make Valid (Restore)")
+                if st.button(lbl_rip_btn, type="primary", key="btn_ripristina_rec", use_container_width=True):
+                    if is_rpe:
+                        ok_rip, err_rip = ripristina_rpe_sessione(rec['id'])
+                    else:
+                        ok_rip, err_rip = ripristina_wellness_mattutino(rec['id'])
+
+                    if ok_rip:
+                        set_notification(
+                            title=tr("Registrazione Ripristinata", "Record Restored"),
+                            message=tr(f"La registrazione di {rec['metrica']} per {rec['atleta_nome']} è stata riattivata con successo.",
+                                       f"{rec['metrica']} record for {rec['atleta_nome']} was successfully restored."),
+                            tipo="toast"
+                        )
+                        st.rerun()
+                    else:
+                        st.error(f"Errore durante il ripristino: {err_rip}")
