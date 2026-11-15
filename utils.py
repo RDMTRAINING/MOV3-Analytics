@@ -2037,6 +2037,133 @@ def get_atleta_dettagli_per_utente(profilo_id):
         return None
 
 
+
+def parse_audit_from_row(row, default_valid=True):
+    """
+    Estrae i metadati di Data Governance (is_valid, modificato_da_staff, rpe_originale,
+    durata_originale_min, wellness_originale_json, clean_note) in modo retrocompatibile
+    e resiliente: prima controlla le colonne native Supabase, poi il tag [AUDIT:{...}]
+    incorporato in note, o l'esistenza di rpe_staff.
+    """
+    if not isinstance(row, dict):
+        return {
+            "is_valid": default_valid,
+            "modificato_da_staff": False,
+            "rpe_originale": None,
+            "durata_originale_min": None,
+            "wellness_originale_json": None,
+            "clean_note": ""
+        }
+
+    raw_note = str(row.get('note') or '').strip()
+    audit_meta = {}
+    clean_note = raw_note
+    if raw_note.startswith('[AUDIT:') and ']' in raw_note:
+        end_idx = raw_note.find(']')
+        json_str = raw_note[7:end_idx].strip()
+        clean_note = raw_note[end_idx+1:].strip()
+        try:
+            audit_meta = json.loads(json_str)
+        except Exception:
+            audit_meta = {}
+
+    # is_valid
+    if row.get('is_valid') is not None:
+        is_val = bool(row.get('is_valid'))
+    elif 'is_valid' in audit_meta:
+        is_val = bool(audit_meta['is_valid'])
+    else:
+        is_val = default_valid
+
+    # modificato_da_staff
+    if row.get('modificato_da_staff') is not None:
+        is_mod = bool(row.get('modificato_da_staff'))
+    elif 'modificato_da_staff' in audit_meta:
+        is_mod = bool(audit_meta['modificato_da_staff'])
+    elif row.get('rpe_staff') is not None or row.get('durata_staff_min') is not None:
+        is_mod = True
+    else:
+        is_mod = False
+
+    # rpe_originale
+    rpe_orig = row.get('rpe_originale')
+    if rpe_orig is None and 'rpe_orig' in audit_meta:
+        rpe_orig = audit_meta['rpe_orig']
+    if rpe_orig is None and is_mod and row.get('rpe_staff') is not None:
+        rpe_orig = row.get('rpe')
+
+    # durata_originale_min
+    dur_orig = row.get('durata_originale_min')
+    if dur_orig is None and 'dur_orig' in audit_meta:
+        dur_orig = audit_meta['dur_orig']
+    if dur_orig is None and is_mod and row.get('durata_staff_min') is not None:
+        dur_orig = row.get('durata_minuti')
+
+    # wellness_originale_json
+    wel_orig = row.get('wellness_originale_json')
+    if wel_orig is None and 'wel_orig' in audit_meta:
+        wel_orig = audit_meta['wel_orig']
+    if isinstance(wel_orig, str):
+        try:
+            wel_orig = json.loads(wel_orig)
+        except Exception:
+            pass
+
+    return {
+        "is_valid": is_val,
+        "modificato_da_staff": is_mod,
+        "rpe_originale": rpe_orig,
+        "durata_originale_min": dur_orig,
+        "wellness_originale_json": wel_orig,
+        "clean_note": clean_note
+    }
+
+
+def encode_audit_into_note(clean_note, is_valid=True, modificato_da_staff=False, rpe_orig=None, dur_orig=None, wel_orig=None):
+    """
+    Rimuove eventuali vecchi tag audit da clean_note e vi prepende il tag [AUDIT:{...}]
+    se lo stato si discosta dai valori di default (is_valid=True, non modificato).
+    """
+    note_str = str(clean_note or '').strip()
+    if note_str.startswith('[AUDIT:') and ']' in note_str:
+        note_str = note_str[note_str.find(']')+1:].strip()
+
+    if is_valid is True and not modificato_da_staff and rpe_orig is None and dur_orig is None and wel_orig is None:
+        return note_str
+
+    audit_dict = {
+        "is_valid": bool(is_valid),
+        "modificato_da_staff": bool(modificato_da_staff)
+    }
+    if rpe_orig is not None:
+        audit_dict["rpe_orig"] = rpe_orig
+    if dur_orig is not None:
+        audit_dict["dur_orig"] = dur_orig
+    if wel_orig is not None:
+        audit_dict["wel_orig"] = wel_orig
+
+    tag = f"[AUDIT:{json.dumps(audit_dict)}]"
+    if note_str:
+        return f"{tag} {note_str}"
+    return tag
+
+
+_NATIVE_GOVERNANCE_AVAILABLE = None
+
+def check_native_governance_columns():
+    """Verifica se le colonne DDL di Data Governance sono presenti nelle tabelle Supabase."""
+    global _NATIVE_GOVERNANCE_AVAILABLE
+    if _NATIVE_GOVERNANCE_AVAILABLE is not None:
+        return _NATIVE_GOVERNANCE_AVAILABLE
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        db.table('rpe_sessioni').select('is_valid, modificato_da_staff').limit(1).execute()
+        _NATIVE_GOVERNANCE_AVAILABLE = True
+    except Exception:
+        _NATIVE_GOVERNANCE_AVAILABLE = False
+    return _NATIVE_GOVERNANCE_AVAILABLE
+
+
 @st.cache_data(ttl=60, show_spinner=False)
 def get_wellness_mattutino(atleta_id, data_str, solo_valido=True):
     """Carica la rilevazione di wellness mattutino per un atleta in una determinata data (Data Governance)."""
@@ -2044,7 +2171,8 @@ def get_wellness_mattutino(atleta_id, data_str, solo_valido=True):
         res = supabase.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id).eq('data', data_str).execute()
         if res.data and len(res.data) > 0:
             row = res.data[0]
-            if solo_valido and row.get('is_valid') is False:
+            audit = parse_audit_from_row(row)
+            if solo_valido and not audit['is_valid']:
                 return None
             return row
         return None
@@ -2094,7 +2222,7 @@ def get_rpe_sessioni(atleta_id, data_str, solo_valido=True):
         res = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id).eq('data', data_str).order('slot').execute()
         dati = res.data or []
         if solo_valido:
-            return [r for r in dati if r.get('is_valid') is not False]
+            return [r for r in dati if parse_audit_from_row(r)['is_valid']]
         return dati
     except Exception:
         return []
@@ -2287,10 +2415,30 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
 def soft_delete_rpe_sessione(session_id, is_valid=False):
     """
     Esegue il Soft-Delete (o Ripristino) su uno slot di sessione sRPE (GDPR Art. 9: nessuna eliminazione fisica).
+    Supporta schema nativo DDL e fallback strutturato via [AUDIT:{...}] nelle note.
     """
     try:
         db = supabase_admin if supabase_admin is not None else supabase
-        res = db.table('rpe_sessioni').update({"is_valid": is_valid}).eq('id', session_id).execute()
+        res_curr = db.table('rpe_sessioni').select('*').eq('id', session_id).execute()
+        if not res_curr.data:
+            return False, "Record non trovato nel database."
+        curr_row = res_curr.data[0]
+        curr_audit = parse_audit_from_row(curr_row)
+
+        encoded_note = encode_audit_into_note(
+            curr_audit['clean_note'],
+            is_valid=is_valid,
+            modificato_da_staff=curr_audit['modificato_da_staff'],
+            rpe_orig=curr_audit['rpe_originale'],
+            dur_orig=curr_audit['durata_originale_min']
+        )
+
+        update_payload = {"is_valid": is_valid, "note": encoded_note}
+        try:
+            res = db.table('rpe_sessioni').update(update_payload).eq('id', session_id).execute()
+        except Exception:
+            res = db.table('rpe_sessioni').update({"note": encoded_note}).eq('id', session_id).execute()
+
         try:
             get_rpe_sessioni.clear()
             get_athlete_master_calendar.clear()
@@ -2313,7 +2461,25 @@ def soft_delete_wellness_mattutino(record_id, is_valid=False):
     """
     try:
         db = supabase_admin if supabase_admin is not None else supabase
-        res = db.table('wellness_mattutino').update({"is_valid": is_valid}).eq('id', record_id).execute()
+        res_curr = db.table('wellness_mattutino').select('*').eq('id', record_id).execute()
+        if not res_curr.data:
+            return False, "Record non trovato nel database."
+        curr_row = res_curr.data[0]
+        curr_audit = parse_audit_from_row(curr_row)
+
+        encoded_note = encode_audit_into_note(
+            curr_audit['clean_note'],
+            is_valid=is_valid,
+            modificato_da_staff=curr_audit['modificato_da_staff'],
+            wel_orig=curr_audit['wellness_originale_json']
+        )
+
+        update_payload = {"is_valid": is_valid, "note": encoded_note}
+        try:
+            res = db.table('wellness_mattutino').update(update_payload).eq('id', record_id).execute()
+        except Exception:
+            res = db.table('wellness_mattutino').update({"note": encoded_note}).eq('id', record_id).execute()
+
         try:
             get_wellness_mattutino.clear()
             get_athlete_master_calendar.clear()
@@ -2343,6 +2509,7 @@ def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_t
     Motore di Modifica Tracciata per RPE (GDPR Art. 9):
     Se prima modifica (rpe_originale is None), archivia il voto originale inserito dall'atleta.
     Imposta modificato_da_staff = True e ricalcola il carico interno.
+    Supporta colonne native Supabase e fallback strutturato via note/rpe_staff.
     """
     try:
         db = supabase_admin if supabase_admin is not None else supabase
@@ -2351,11 +2518,13 @@ def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_t
             return False, "Record non trovato nel database."
         curr_row = res_curr.data[0]
 
-        rpe_orig = curr_row.get('rpe_originale')
+        curr_audit = parse_audit_from_row(curr_row)
+
+        rpe_orig = curr_audit['rpe_originale']
         if rpe_orig is None and curr_row.get('rpe') is not None:
             rpe_orig = curr_row.get('rpe')
 
-        dur_orig = curr_row.get('durata_originale_min')
+        dur_orig = curr_audit['durata_originale_min']
         if dur_orig is None and curr_row.get('durata_minuti') is not None:
             dur_orig = curr_row.get('durata_minuti')
 
@@ -2363,20 +2532,43 @@ def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_t
         rpe_finale = int(round(float(nuovo_rpe)))
         carico_finale = int(round(dur_finale * rpe_finale))
 
+        clean_note_body = nuove_note if nuove_note is not None else curr_audit['clean_note']
+        encoded_note = encode_audit_into_note(
+            clean_note_body,
+            is_valid=curr_audit['is_valid'],
+            modificato_da_staff=True,
+            rpe_orig=rpe_orig,
+            dur_orig=dur_orig
+        )
+
+        # Nota: carico_interno è colonna generata in PostgreSQL, non va inclusa nell'update
         update_payload = {
             "rpe": rpe_finale,
             "durata_minuti": dur_finale,
-            "carico_interno": carico_finale,
             "modificato_da_staff": True,
             "rpe_originale": rpe_orig,
-            "durata_originale_min": dur_orig
+            "durata_originale_min": dur_orig,
+            "rpe_staff": rpe_finale,
+            "durata_staff_min": dur_finale,
+            "note": encoded_note
         }
         if nuova_tipologia:
             update_payload["tipologia"] = nuova_tipologia
-        if nuove_note is not None:
-            update_payload["note"] = nuove_note
 
-        res_up = db.table('rpe_sessioni').update(update_payload).eq('id', session_id).execute()
+        try:
+            res_up = db.table('rpe_sessioni').update(update_payload).eq('id', session_id).execute()
+        except Exception:
+            fb_payload = {
+                "rpe": rpe_finale,
+                "durata_minuti": dur_finale,
+                "rpe_staff": rpe_finale,
+                "durata_staff_min": dur_finale,
+                "note": encoded_note
+            }
+            if nuova_tipologia:
+                fb_payload["tipologia"] = nuova_tipologia
+            res_up = db.table('rpe_sessioni').update(fb_payload).eq('id', session_id).execute()
+
         try:
             get_rpe_sessioni.clear()
             get_athlete_master_calendar.clear()
@@ -2385,30 +2577,15 @@ def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_t
             pass
         return True, res_up.data
     except Exception as e:
-        err_msg = str(e)
-        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
-            try:
-                fb_payload = {
-                    "rpe": int(round(float(nuovo_rpe))),
-                    "durata_minuti": int(round(float(nuova_durata_min))) if nuova_durata_min else 60
-                }
-                if nuova_tipologia: fb_payload["tipologia"] = nuova_tipologia
-                if nuove_note: fb_payload["note"] = nuove_note
-                db.table('rpe_sessioni').update(fb_payload).eq('id', session_id).execute()
-                st.cache_data.clear()
-                return True, "Salvato (modalità fallback senza colonne audit)"
-            except Exception as e2:
-                return False, str(e2)
-        return False, err_msg
+        return False, str(e)
 
 
 def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
     """
     Motore di Modifica Tracciata per Wellness Mattutino (GDPR Art. 9):
-    Se prima modifica (wellness_originale_json is None), archivia il dizionario dei 5 parametri dell'atleta.
-    Imposta modificato_da_staff = True.
+    Archivia il dizionario completo originale dei 5 parametri (wellness_originale_json)
+    e imposta modificato_da_staff = True.
     """
-    import json
     try:
         db = supabase_admin if supabase_admin is not None else supabase
         res_curr = db.table('wellness_mattutino').select('*').eq('id', record_id).execute()
@@ -2416,7 +2593,9 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
             return False, "Record non trovato nel database."
         curr_row = res_curr.data[0]
 
-        wel_orig = curr_row.get('wellness_originale_json')
+        curr_audit = parse_audit_from_row(curr_row)
+
+        wel_orig = curr_audit['wellness_originale_json']
         if wel_orig is None:
             wel_orig = {
                 "sonno": curr_row.get('sonno_qualita', curr_row.get('sonno', 5)),
@@ -2426,19 +2605,44 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
                 "umore": curr_row.get('umore', 5)
             }
 
-        update_payload = {
-            "sonno_qualita": int(nuovi_valori_dict.get('sonno', 5)),
-            "fatica": int(nuovi_valori_dict.get('fatica', 5)),
-            "doms": int(nuovi_valori_dict.get('doms', 5)),
-            "stress": int(nuovi_valori_dict.get('stress', 5)),
-            "umore": int(nuovi_valori_dict.get('umore', 5)),
-            "modificato_da_staff": True,
-            "wellness_originale_json": wel_orig if isinstance(wel_orig, dict) else json.loads(wel_orig) if isinstance(wel_orig, str) else wel_orig
-        }
-        if nuove_note is not None:
-            update_payload["note"] = nuove_note
+        clean_note_body = nuove_note if nuove_note is not None else curr_audit['clean_note']
+        encoded_note = encode_audit_into_note(
+            clean_note_body,
+            is_valid=curr_audit['is_valid'],
+            modificato_da_staff=True,
+            wel_orig=wel_orig
+        )
 
-        res_up = db.table('wellness_mattutino').update(update_payload).eq('id', record_id).execute()
+        sonno_v = int(nuovi_valori_dict.get('sonno_qualita', nuovi_valori_dict.get('sonno', 5)))
+        fatica_v = int(nuovi_valori_dict.get('fatica', 5))
+        doms_v = int(nuovi_valori_dict.get('doms', nuovi_valori_dict.get('dolore_muscolare', 5)))
+        stress_v = int(nuovi_valori_dict.get('stress', 5))
+        umore_v = int(nuovi_valori_dict.get('umore', 5))
+
+        update_payload = {
+            "sonno_qualita": sonno_v,
+            "fatica": fatica_v,
+            "doms": doms_v,
+            "stress": stress_v,
+            "umore": umore_v,
+            "modificato_da_staff": True,
+            "wellness_originale_json": wel_orig if isinstance(wel_orig, dict) else json.loads(wel_orig) if isinstance(wel_orig, str) else wel_orig,
+            "note": encoded_note
+        }
+
+        try:
+            res_up = db.table('wellness_mattutino').update(update_payload).eq('id', record_id).execute()
+        except Exception:
+            fb_payload = {
+                "sonno_qualita": sonno_v,
+                "fatica": fatica_v,
+                "doms": doms_v,
+                "stress": stress_v,
+                "umore": umore_v,
+                "note": encoded_note
+            }
+            res_up = db.table('wellness_mattutino').update(fb_payload).eq('id', record_id).execute()
+
         try:
             get_wellness_mattutino.clear()
             get_athlete_master_calendar.clear()
@@ -2447,23 +2651,7 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
             pass
         return True, res_up.data
     except Exception as e:
-        err_msg = str(e)
-        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
-            try:
-                fb_payload = {
-                    "sonno_qualita": int(nuovi_valori_dict.get('sonno', 5)),
-                    "fatica": int(nuovi_valori_dict.get('fatica', 5)),
-                    "doms": int(nuovi_valori_dict.get('doms', 5)),
-                    "stress": int(nuovi_valori_dict.get('stress', 5)),
-                    "umore": int(nuovi_valori_dict.get('umore', 5))
-                }
-                if nuove_note: fb_payload["note"] = nuove_note
-                db.table('wellness_mattutino').update(fb_payload).eq('id', record_id).execute()
-                st.cache_data.clear()
-                return True, "Salvato (modalità fallback senza colonne audit)"
-            except Exception as e2:
-                return False, str(e2)
-        return False, err_msg
+        return False, str(e)
 
 
 def get_governance_records(atleta_id=None, limit_days=90):
@@ -2492,10 +2680,7 @@ def get_governance_records(atleta_id=None, limit_days=90):
             q_r = q_r.eq('atleta_id', atleta_id)
         res_r = q_r.execute()
         for r in (res_r.data or []):
-            is_val = r.get('is_valid') if r.get('is_valid') is not None else True
-            is_mod = bool(r.get('modificato_da_staff', False))
-            rpe_orig = r.get('rpe_originale')
-            dur_orig = r.get('durata_originale_min')
+            audit = parse_audit_from_row(r, default_valid=True)
             atl_name = dict_id_to_name.get(r.get('atleta_id'), str(r.get('atleta_id', 'N/D'))[:8])
             records.append({
                 "id": str(r.get('id', '')),
@@ -2509,13 +2694,13 @@ def get_governance_records(atleta_id=None, limit_days=90):
                 "rpe": r.get('rpe', 0),
                 "durata_minuti": r.get('durata_minuti', 0),
                 "carico_interno": r.get('carico_interno', 0),
-                "is_valid": is_val,
-                "modificato_da_staff": is_mod,
-                "rpe_originale": rpe_orig,
-                "durata_originale_min": dur_orig,
+                "is_valid": audit['is_valid'],
+                "modificato_da_staff": audit['modificato_da_staff'],
+                "rpe_originale": audit['rpe_originale'],
+                "durata_originale_min": audit['durata_originale_min'],
                 "wellness_originale_json": None,
                 "raw_record": r,
-                "note": r.get('note', '')
+                "note": audit['clean_note']
             })
     except Exception:
         pass
@@ -2527,10 +2712,9 @@ def get_governance_records(atleta_id=None, limit_days=90):
             q_w = q_w.eq('atleta_id', atleta_id)
         res_w = q_w.execute()
         for w in (res_w.data or []):
-            is_val = w.get('is_valid') if w.get('is_valid') is not None else True
-            is_mod = bool(w.get('modificato_da_staff', False))
+            audit = parse_audit_from_row(w, default_valid=True)
             atl_name = dict_id_to_name.get(w.get('atleta_id'), str(w.get('atleta_id', 'N/D'))[:8])
-            
+
             sonno = w.get('sonno_qualita', w.get('sonno', 5))
             fatica = w.get('fatica', 5)
             stress = w.get('stress', 5)
@@ -2552,11 +2736,11 @@ def get_governance_records(atleta_id=None, limit_days=90):
                 "rpe": w_score,
                 "durata_minuti": "-",
                 "carico_interno": "-",
-                "is_valid": is_val,
-                "modificato_da_staff": is_mod,
+                "is_valid": audit['is_valid'],
+                "modificato_da_staff": audit['modificato_da_staff'],
                 "rpe_originale": None,
                 "durata_originale_min": None,
-                "wellness_originale_json": w.get('wellness_originale_json'),
+                "wellness_originale_json": audit['wellness_originale_json'],
                 "sonno": sonno,
                 "fatica": fatica,
                 "stress": stress,
@@ -2564,7 +2748,7 @@ def get_governance_records(atleta_id=None, limit_days=90):
                 "doms": doms,
                 "wellness_score": w_score,
                 "raw_record": w,
-                "note": w.get('note', '')
+                "note": audit['clean_note']
             })
     except Exception:
         pass
@@ -3933,8 +4117,9 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
         if atleta_id and not str(atleta_id).startswith("mock-"):
             res_rpe = db.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id).gte('data', str(d_start)).lte('data', str(d_end)).execute()
             for r in (res_rpe.data or []):
+                audit = parse_audit_from_row(r)
                 # Data Governance (GDPR Art. 9): record invalidati non partecipano ai calcoli
-                if r.get('is_valid') is False:
+                if not audit['is_valid']:
                     continue
 
                 d_str = str(r.get('data', ''))[:10]
@@ -3943,15 +4128,12 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
                     d_dict["srpe_presente"] = True
 
                     # Audit Trail: tracciamento modifiche staff
-                    is_mod = bool(r.get('modificato_da_staff', False))
-                    rpe_orig = r.get('rpe_originale')
-                    dur_orig = r.get('durata_originale_min')
-                    if is_mod:
+                    if audit['modificato_da_staff']:
                         d_dict["modificato_da_staff"] = True
-                        if rpe_orig is not None:
-                            d_dict["rpe_originale"] = rpe_orig
-                        if dur_orig is not None:
-                            d_dict["durata_originale_min"] = dur_orig
+                        if audit['rpe_originale'] is not None:
+                            d_dict["rpe_originale"] = audit['rpe_originale']
+                        if audit['durata_originale_min'] is not None:
+                            d_dict["durata_originale_min"] = audit['durata_originale_min']
 
                     # 1. Schema con colonne singole (tabella reale: slot, tipologia, durata_minuti, rpe, carico_interno)
                     if 'durata_minuti' in r or 'carico_interno' in r or 'rpe' in r:
@@ -4031,17 +4213,18 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
         if atleta_id and not str(atleta_id).startswith("mock-"):
             res_wel = db.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id).gte('data', str(d_start)).lte('data', str(d_end)).execute()
             for w in (res_wel.data or []):
+                audit_w = parse_audit_from_row(w)
                 # Data Governance (GDPR Art. 9): record invalidati non partecipano al calcolo Readiness
-                if w.get('is_valid') is False:
+                if not audit_w['is_valid']:
                     continue
 
                 d_str = str(w.get('data', ''))[:10]
                 if d_str in calendar_data:
                     d_dict = calendar_data[d_str]
                     d_dict["wellness_presente"] = True
-                    if w.get('modificato_da_staff'):
+                    if audit_w['modificato_da_staff']:
                         d_dict["wellness_modificato_da_staff"] = True
-                        d_dict["wellness_originale_json"] = w.get('wellness_originale_json')
+                        d_dict["wellness_originale_json"] = audit_w['wellness_originale_json']
 
                     sonno = float(w.get('sonno_qualita', 0) or w.get('sonno', 0) or 0)
                     fatica = float(w.get('fatica', 0) or 0)

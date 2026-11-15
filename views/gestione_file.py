@@ -58,6 +58,7 @@ from utils import (
     ripristina_wellness_mattutino,
     modifica_tracciata_rpe,
     modifica_tracciata_wellness,
+    check_native_governance_columns,
 )
 get_cloud_snapshot_status = getattr(
     _utils_mod,
@@ -380,6 +381,32 @@ def _render_data_governance_tab(t):
         f"</div></div>",
         unsafe_allow_html=True
     )
+
+    if not check_native_governance_columns():
+        lbl_exp = tr("Stato Database: Schema Supabase DDL (Opzionale / Consigliato)", "Database Status: Supabase DDL Schema (Optional / Recommended)")
+        with st.expander(lbl_exp, expanded=False):
+            info_sql = tr(
+                "<b>Data Governance Attiva in Modalità Ibrida Resiliente:</b><br>Le modifiche tracciate, l'Audit Trail dei valori originali dell'atleta e il Soft-Delete sono già attivi e persistiti in tempo reale. Per abilitare le colonne PostgreSQL native (is_valid, modificato_da_staff, rpe_originale) ed ottimizzare gli indici del database, copia ed esegui questa query nel <b>SQL Editor di Supabase</b>:",
+                "<b>Data Governance Active in Resilient Hybrid Mode:</b><br>Tracked edits, original athlete Audit Trail, and Soft-Deletes are already active and persisted in real-time. To enable native PostgreSQL columns (is_valid, modificato_da_staff, rpe_originale) and optimize database indexes, copy and run this query in the <b>Supabase SQL Editor</b>:"
+            )
+            st.markdown(f"<div style='font-size:12.5px; color:#334155; line-height:1.55; margin-bottom:10px;'>{info_sql}</div>", unsafe_allow_html=True)
+            sql_ddl = """-- M0V3 Analytics: Data Governance & Audit Trail Schema (GDPR Art. 9)
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS modificato_da_staff BOOLEAN DEFAULT FALSE;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS rpe_originale NUMERIC;
+ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS durata_originale_min NUMERIC;
+UPDATE rpe_sessioni SET is_valid = TRUE WHERE is_valid IS NULL;
+UPDATE rpe_sessioni SET modificato_da_staff = FALSE WHERE modificato_da_staff IS NULL;
+
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS modificato_da_staff BOOLEAN DEFAULT FALSE;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS wellness_originale_json JSONB;
+UPDATE wellness_mattutino SET is_valid = TRUE WHERE is_valid IS NULL;
+UPDATE wellness_mattutino SET modificato_da_staff = FALSE WHERE modificato_da_staff IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_rpe_is_valid ON rpe_sessioni(atleta_id, is_valid, data DESC);
+CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id, is_valid, data DESC);"""
+            st.code(sql_ddl, language="sql")
 
     user_role = st.session_state.get('role', 'Super-Admin')
     is_admin = (user_role in ['Super-Admin', 'Admin'])
@@ -760,6 +787,7 @@ def _render_data_governance_tab(t):
                             record_id=rec['id'],
                             nuovi_valori_dict={
                                 "sonno": w_sonno,
+                                "sonno_qualita": w_sonno,
                                 "fatica": w_fatica,
                                 "doms": w_doms,
                                 "stress": w_stress,

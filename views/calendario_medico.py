@@ -36,6 +36,7 @@ from utils import (
     render_athlete_hero_strip,
     calcola_e_salva_slot_rpe,
     set_notification,
+    parse_audit_from_row,
 )
 
 # =========================================================================
@@ -2139,7 +2140,7 @@ def render_allenamenti_gym_fisico(t, atleta_sel=None, atleta_id_sel=None, key_pr
     if atleta_id_sel and not str(atleta_id_sel).startswith("mock-"):
         try:
             res_r = supabase.table('rpe_sessioni').select('*').eq('atleta_id', atleta_id_sel).order('data', desc=True).limit(60).execute()
-            df_r = pd.DataFrame([r for r in (res_r.data or []) if r.get('is_valid') is not False])
+            df_r = pd.DataFrame([r for r in (res_r.data or []) if parse_audit_from_row(r)['is_valid']])
         except Exception:
             df_r = pd.DataFrame()
 
