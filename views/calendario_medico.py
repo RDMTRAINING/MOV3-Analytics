@@ -45,7 +45,7 @@ STATUS_COLORS = {
     "DISPONIBILE": "#10b981",       # Smeraldo (Full Training)
     "LIMITATO": "#f59e0b",          # Ambra (Modified / RTP)
     "INDISPONIBILE": "#e11d48",     # Rosso Rubino (Out / Stop Medico)
-    "RIPOSO_VIAGGIO": "#38bdf8",    # Blu / Ardesia (Off / Viaggio)
+    "RIPOSO_VIAGGIO": "#64748b",    # Ardesia / Grigio (Off / Viaggio / Riposo)
     "NESSUN_DATO": "#334155"        # Ardesia neutro
 }
 
@@ -1118,13 +1118,14 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#ef4444;'></span>Gym 70% Primario (AU)</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#fca5a5; border:1px dashed #ef4444;'></span>Gym 30% Compl. (AU)</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:14px; height:3px; border-radius:2px; background:#a855f7;'></span>Wellness Score</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#10b981; font-weight:900;'>&#9830;</span>Evento Clinico / Fisio</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#10b981; font-weight:900;'>&#9830;</span>{tr('Seduta Fisioterapica', 'Physio Session')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#f97316; font-weight:900;'>&#9650;</span>{tr('Segnalazione Fastidio', 'Discomfort Alert')}</span>"
         f"</div>"
         f"<div style='display:flex; align-items:center; gap:12px; flex-wrap:wrap;'>"
         f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>{tr('Bande Cliniche:', 'Clinical Zones:')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(225,29,72,0.2); border:1px solid #e11d48;'></span>Stop Medico</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b;'></span>Carico Adattato</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(56,189,248,0.2); border:1px solid #38bdf8;'></span>Viaggio / Off</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(225,29,72,0.2); border:1px solid #e11d48;'></span>{tr('Infortunio (Rosso)', 'Injury (Red)')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b;'></span>{tr('Carico Adattato (Giallo)', 'Modified Load (Yellow)')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(100,116,139,0.25); border:1px solid #64748b;'></span>{tr('Viaggio / Riposo (Grigio)', 'Travel / Rest (Gray)')}</span>"
         f"</div>"
         f"</div>",
         unsafe_allow_html=True
@@ -1203,7 +1204,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             hovertemplate="<b>WARNING OVERLOAD LIMITATO</b><br>%{x}: %{y:.0f} AU<extra></extra>"
         ), row=1, col=1, secondary_y=False)
 
-    # --- FASCIA CLINICA CENTRALE (Bande di Stato + Linee Verticali Tratteggiate + Marker Romboidali) ---
+    # --- FASCIA CLINICA CENTRALE (Bande di Stato: Sfondo Rosso, Giallo, Grigio) ---
     periods = []
     curr_p = None
     for d_str in date_list:
@@ -1227,68 +1228,139 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         dt_x0 = datetime.datetime.combine(p['start_date'], datetime.time(0, 0)) - datetime.timedelta(hours=12)
         dt_x1 = datetime.datetime.combine(p['end_date'], datetime.time(0, 0)) + datetime.timedelta(hours=12)
         if p['status'] == 'INDISPONIBILE':
+            # Infortunio / Stop Medico -> SFONDO ROSSO
             f_col = "rgba(225, 29, 72, 0.16)"
             l_col = "rgba(225, 29, 72, 0.55)"
         elif p['status'] == 'LIMITATO':
-            f_col = "rgba(245, 158, 11, 0.16)"
+            # Periodi di modificato / Carico Adattato -> SFONDO GIALLO
+            f_col = "rgba(245, 158, 11, 0.18)"
             l_col = "rgba(217, 119, 6, 0.55)"
         else:
-            f_col = "rgba(56, 189, 248, 0.14)"
-            l_col = "rgba(14, 165, 233, 0.55)"
+            # Viaggi / Riposo -> SFONDO GRIGIO
+            f_col = "rgba(100, 116, 139, 0.18)"
+            l_col = "rgba(100, 116, 139, 0.55)"
         fig_corr.add_vrect(
             x0=dt_x0, x1=dt_x1, fillcolor=f_col, layer="below",
             line=dict(color=l_col, width=1.2, dash="dot"),
             row="all"
         )
 
-    # Eventi Clinici & Fisioterapia (Linee verticali tratteggiate + Marker romboidali ♦ con etichetta e tooltip)
-    clin_x, clin_y, clin_texts, clin_hovers, clin_colors = [], [], [], [], []
+    # --- EVENTI CLINICI PUNTUALI: SEDUTE FISIOTERAPICHE & SEGNALAZIONI FASTIDIO ---
+    # L'infortunio aperto/prolungato è mostrato unicamente dalla banda a sfondo rosso,
+    # evitando marker duplicati sui singoli giorni dell'infortunio.
+    fisio_x, fisio_y, fisio_texts, fisio_hovers = [], [], [], []
+    fastidio_x, fastidio_y, fastidio_texts, fastidio_hovers = [], [], [], []
+    vlines_done = set()
+
     for d_str in date_list:
         d_info_c = corr_calendar[d_str]
-        evs_c = [e for e in d_info_c.get("medico_eventi", []) if e.get("tipo_scheda") in ("TRATTAMENTO", "SOVRACCARICO", "INFORTUNIO", "MALATTIA")]
-        if evs_c:
-            d_obj = d_info_c["date_obj"]
-            ev0 = evs_c[0]
-            t_sch = ev0.get("tipo_scheda", "FISIO")
-            tag_short = "FISIO" if t_sch == "TRATTAMENTO" else t_sch
+        d_obj = d_info_c["date_obj"]
+        all_evs = d_info_c.get("medico_eventi", [])
+
+        # 1. Seduta Fisioterapica (TRATTAMENTO)
+        fisio_evs = [e for e in all_evs if e.get("tipo_scheda") == "TRATTAMENTO"]
+        if fisio_evs:
+            ev0 = fisio_evs[0]
+            sott_c = ev0.get("sottotipo_evento") or tr("Trattamento Fisioterapico", "Physio Treatment")
+            distr_c = ev0.get("distretto_anatomico", "Sistemico")
+            lato_c = ev0.get("lato", "")
+            lato_s = f" {lato_c}" if lato_c and lato_c not in ("N/A", "-") else ""
+            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff Medico"
+            ind_c = ev0.get("indicazioni_staff") or "-"
+            vas_c = ev0.get("scala_dolore_vas")
+            vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
+
+            count_tag = f" ({len(fisio_evs)})" if len(fisio_evs) > 1 else ""
+            lbl_fisio = f"♦ [FISIO: {distr_c}{lato_s}{count_tag}]"
+
+            fisio_x.append(d_obj)
+            fisio_y.append(y1_max * 0.04)
+            fisio_texts.append(lbl_fisio)
+
+            dettagli_extra = ""
+            if len(fisio_evs) > 1:
+                dettagli_extra = "<br><b>Altre sedute nel giorno:</b><br>" + "<br>".join([
+                    f"&bull; {e.get('sottotipo_evento', 'Fisio')}: {e.get('distretto_anatomico', '')}"
+                    for e in fisio_evs[1:]
+                ])
+
+            fisio_hovers.append(
+                f"<b>{d_str} — Seduta Fisioterapica</b><br>"
+                f"Trattamento: <b>{sott_c}</b><br>"
+                f"Distretto: <b>{distr_c}{lato_s}</b>{vas_s}<br>"
+                f"Operatore: {op_name}<br>"
+                f"Indicazioni: {ind_c}"
+                f"{dettagli_extra}"
+            )
+            if (d_obj, "fisio") not in vlines_done:
+                fig_corr.add_vline(
+                    x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
+                    line=dict(color="#10b981", width=1.4, dash="dot"),
+                    row="all"
+                )
+                vlines_done.add((d_obj, "fisio"))
+
+        # 2. Segnalazione di Fastidio / Sovraccarico (SOVRACCARICO)
+        fastidio_evs = [e for e in all_evs if e.get("tipo_scheda") == "SOVRACCARICO"]
+        if fastidio_evs:
+            ev0 = fastidio_evs[0]
+            sott_c = ev0.get("sottotipo_evento") or tr("Fastidio / Sovraccarico", "Discomfort / Overload")
             distr_c = ev0.get("distretto_anatomico", "Sistemico")
             lato_c = ev0.get("lato", "")
             lato_s = f" {lato_c}" if lato_c and lato_c not in ("N/A", "-") else ""
             vas_c = ev0.get("scala_dolore_vas")
             vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
-            lbl_marker = f"♦ [{tag_short}: {distr_c}{lato_s}{vas_s}]"
-
-            col_m = "#e11d48" if t_sch in ("INFORTUNIO", "MALATTIA") else ("#f59e0b" if t_sch == "SOVRACCARICO" else "#10b981")
-            fig_corr.add_vline(
-                x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
-                line=dict(color=col_m, width=1.3, dash="dash"),
-                row="all"
-            )
-            clin_x.append(d_obj)
-            clin_y.append(y1_max * 0.04)
-            clin_texts.append(lbl_marker)
-            clin_colors.append(col_m)
-            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff Medico"
-            sott_c = ev0.get("sottotipo_evento", "-")
             ind_c = ev0.get("indicazioni_staff") or "-"
-            clin_hovers.append(
-                f"<b>{d_str} — {t_sch}</b><br>"
-                f"Distretto: <b>{distr_c}{lato_s}</b> ({sott_c}){vas_s}<br>"
-                f"Operatore: {op_name}<br>"
-                f"Indicazioni: {ind_c}"
-            )
+            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff"
 
-    if clin_x:
+            lbl_fastidio = f"▲ [FASTIDIO: {distr_c}{lato_s}{vas_s}]"
+
+            # Se nello stesso giorno c'è già la fisio, posiziona leggermente sopra per evitare collisione
+            y_pos = y1_max * 0.11 if fisio_evs else y1_max * 0.04
+
+            fastidio_x.append(d_obj)
+            fastidio_y.append(y_pos)
+            fastidio_texts.append(lbl_fastidio)
+            fastidio_hovers.append(
+                f"<b>{d_str} — Segnalazione Fastidio / Sovraccarico</b><br>"
+                f"Distretto: <b>{distr_c}{lato_s}</b> ({sott_c}){vas_s}<br>"
+                f"Operatore/Autore: {op_name}<br>"
+                f"Indicazioni Staff: {ind_c}"
+            )
+            if (d_obj, "fastidio") not in vlines_done:
+                fig_corr.add_vline(
+                    x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
+                    line=dict(color="#f97316", width=1.4, dash="dash"),
+                    row="all"
+                )
+                vlines_done.add((d_obj, "fastidio"))
+
+    # Aggiunta Tracce Plotly Distinte
+    if fisio_x:
         fig_corr.add_trace(go.Scatter(
-            x=clin_x,
-            y=clin_y,
+            x=fisio_x,
+            y=fisio_y,
             mode="markers+text",
-            name=tr("Evento Clinico / Seduta Fisio", "Clinical Event / Physio Session"),
-            text=clin_texts,
+            name=tr("Seduta Fisioterapica", "Physiotherapy Session"),
+            text=fisio_texts,
             textposition="top center",
-            textfont=dict(size=9, color="#0f172a", family="Inter"),
-            marker=dict(symbol="diamond", size=12, color=clin_colors, line=dict(width=1.8, color="#0f172a")),
-            customdata=clin_hovers,
+            textfont=dict(size=9.5, color="#047857", family="Inter", weight="bold"),
+            marker=dict(symbol="diamond", size=13, color="#10b981", line=dict(width=1.8, color="#065f46")),
+            customdata=fisio_hovers,
+            hovertemplate="%{customdata}<extra></extra>"
+        ), row=1, col=1, secondary_y=False)
+
+    if fastidio_x:
+        fig_corr.add_trace(go.Scatter(
+            x=fastidio_x,
+            y=fastidio_y,
+            mode="markers+text",
+            name=tr("Segnalazione Fastidio / Dolore", "Discomfort / Pain Alert"),
+            text=fastidio_texts,
+            textposition="top center",
+            textfont=dict(size=9.5, color="#c2410c", family="Inter", weight="bold"),
+            marker=dict(symbol="triangle-up", size=13, color="#f97316", line=dict(width=1.8, color="#9a3412")),
+            customdata=fastidio_hovers,
             hovertemplate="%{customdata}<extra></extra>"
         ), row=1, col=1, secondary_y=False)
 

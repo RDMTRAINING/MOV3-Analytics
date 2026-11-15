@@ -3743,6 +3743,17 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
 
         res_m = q_m.lte('data_inizio', str(d_end)).gte('data_fine', str(d_start)).execute()
         
+        all_recs = list(res_m.data or [])
+        try:
+            import streamlit as st
+            if 'mock_registro_medico' in st.session_state:
+                for mr in st.session_state['mock_registro_medico']:
+                    mr_nom = str(mr.get('nome_giocatore', '')).strip().lower()
+                    if not nome_giocatore or mr_nom == str(nome_giocatore).strip().lower():
+                        all_recs.append(mr)
+        except Exception:
+            pass
+
         PRIORITY_STATUS = {
             "INDISPONIBILE": 4,
             "LIMITATO": 3,
@@ -3750,7 +3761,7 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
             "DISPONIBILE": 1
         }
 
-        for rec in (res_m.data or []):
+        for rec in all_recs:
             rec_st = datetime.datetime.strptime(str(rec['data_inizio'])[:10], "%Y-%m-%d").date()
             rec_end = datetime.datetime.strptime(str(rec['data_fine'])[:10], "%Y-%m-%d").date()
             eff_st = max(rec_st, d_start)
