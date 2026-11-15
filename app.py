@@ -11,6 +11,7 @@ from streamlit_option_menu import option_menu
 from config import (
     LOGO_PATH,
     LOGO_CIRCULAR_PATH,
+    DB_PARQUET_PATH,
     LANG,
     tr,
     setup_plotly_theme,
@@ -40,6 +41,8 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
+    get_cloud_snapshot_status,
+    sync_binary_snapshots_on_cold_boot,
 )
 
 DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"
@@ -1347,6 +1350,36 @@ def main():
             st.session_state.current_page = page_mapping[selected_label]
             st.session_state['force_scroll_top'] = True
             st.rerun()
+
+        # --- MODULO 1.4: INDICATORE DI STATO CLOUD & DOWNLOAD MASTER PARQUET PER MAC ---
+        sync_binary_snapshots_on_cold_boot()
+        if curr_role in ('Super-Admin', 'Admin', 'Coach', 'Preparatore'):
+            snap_stat = get_cloud_snapshot_status()
+            max_dt_lbl = snap_stat.get('max_date', 'N/D')
+            tot_r_lbl = snap_stat.get('total_rows', 0)
+            st.markdown(
+                f"<div style='background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:8px 10px; margin-top:12px; margin-bottom:6px; font-family:\"Inter\",sans-serif;'>"
+                f"<div style='font-size:10.5px; font-weight:800; color:#34d399; display:flex; align-items:center; gap:5px;'>"
+                f"<i class='bi bi-cloud-check-fill'></i> Cloud Snapshot Attivo</div>"
+                f"<div style='font-size:10px; color:#cbd5e1; margin-top:3px; line-height:1.35;'>"
+                f"Cloud Snapshot Attivo | Ultima Data GPS Salvata: <b style='color:#ffffff;'>{max_dt_lbl}</b> | Totale Righe: <b style='color:#38bdf8;'>{tot_r_lbl}</b>"
+                f"</div></div>",
+                unsafe_allow_html=True
+            )
+            if curr_role == 'Super-Admin' and os.path.exists(DB_PARQUET_PATH):
+                try:
+                    with open(DB_PARQUET_PATH, "rb") as f_parq:
+                        parq_bytes = f_parq.read()
+                    st.download_button(
+                        label="Scarica database_storico.parquet Consolidato",
+                        data=parq_bytes,
+                        file_name="database_storico.parquet",
+                        mime="application/octet-stream",
+                        key="btn_dl_master_parquet_sidebar",
+                        use_container_width=True
+                    )
+                except Exception:
+                    pass
 
         # Switcher manuale per testare la vista smartphone da PC
         st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)

@@ -26,6 +26,7 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     render_athlete_hero_strip,
+    upload_binary_snapshot,
 )
 
 STORAGE_JSON_PATH = "data_supporto/move_tennis_tests.json"
@@ -70,6 +71,11 @@ def salva_test_sessione(test_dict):
     with open(STORAGE_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(dati, f, indent=2, ensure_ascii=False)
 
+    try:
+        upload_binary_snapshot(STORAGE_JSON_PATH, "move_tennis_tests.json")
+    except Exception:
+        pass
+
     # Tentativo sincronizzazione su Supabase (se tabella o connessione disponibile)
     try:
         db = supabase_admin if supabase_admin is not None else supabase
@@ -93,6 +99,10 @@ def elimina_test_sessione(test_id):
     dati_filtrati = [t for t in dati if t.get("id") != test_id]
     with open(STORAGE_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(dati_filtrati, f, indent=2, ensure_ascii=False)
+    try:
+        upload_binary_snapshot(STORAGE_JSON_PATH, "move_tennis_tests.json")
+    except Exception:
+        pass
     return True
 
 # =========================================================================

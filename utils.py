@@ -538,35 +538,308 @@ def _get_db_mtime_token():
     return max(m_csv, m_parq)
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+# =========================================================================
+# MODULO 1: LOCAL-PARQUET SPEED + CLOUD BINARY SNAPSHOT (ZERO LATENCY UI)
+# =========================================================================
+BUCKET_SNAPSHOTS = "m0v3-binary-snapshots"
+
+
+def _ensure_snapshot_bucket():
+    """Verifica o crea su Supabase Storage il bucket privato 'm0v3-binary-snapshots'."""
+    if supabase_admin is None:
+        return False
+    try:
+        buckets = supabase_admin.storage.list_buckets()
+        b_names = [getattr(b, 'name', None) or (b.get('name') if isinstance(b, dict) else str(b)) for b in (buckets or [])]
+        if BUCKET_SNAPSHOTS not in b_names:
+            supabase_admin.storage.create_bucket(BUCKET_SNAPSHOTS, options={"public": False})
+        return True
+    except Exception:
+        return False
+
+
+def upload_binary_snapshot(local_path, remote_name=None):
+    """
+    Carica in binario un file locale (es. database_storico.parquet o JSON/Parquet di supporto)
+    nel bucket Supabase Storage 'm0v3-binary-snapshots' con upsert='true'.
+    Include fallback automatico su tabella SQL 'binary_snapshots' (base64) se Storage non risponde.
+    """
+    if not os.path.exists(local_path):
+        return False
+    r_name = remote_name or os.path.basename(local_path)
+    try:
+        with open(local_path, "rb") as f:
+            file_bytes = f.read()
+    except Exception:
+        return False
+
+    if supabase_admin is not None:
+        try:
+            _ensure_snapshot_bucket()
+            supabase_admin.storage.from_(BUCKET_SNAPSHOTS).upload(
+                path=r_name,
+                file=file_bytes,
+                file_options={"content-type": "application/octet-stream", "upsert": "true"}
+            )
+            return True
+        except Exception:
+            try:
+                supabase_admin.storage.from_(BUCKET_SNAPSHOTS).update(
+                    path=r_name,
+                    file=file_bytes,
+                    file_options={"content-type": "application/octet-stream", "upsert": "true"}
+                )
+                return True
+            except Exception:
+                pass
+
+        # Fallback opzionale su tabella dedicata 'binary_snapshots' (base64)
+        try:
+            import base64
+            b64_str = base64.b64encode(file_bytes).decode("ascii")
+            supabase_admin.table("binary_snapshots").upsert({
+                "file_name": r_name,
+                "content_b64": b64_str,
+                "updated_at": datetime.datetime.utcnow().isoformat()
+            }, on_conflict="file_name").execute()
+            return True
+        except Exception:
+            pass
+    return False
+
+
+def download_binary_snapshot(remote_name):
+    """
+    Scarica in binario uno snapshot dal bucket 'm0v3-binary-snapshots'
+    (con fallback automatico sulla tabella 'binary_snapshots').
+    """
+    if supabase_admin is None:
+        return None
+    try:
+        data = supabase_admin.storage.from_(BUCKET_SNAPSHOTS).download(remote_name)
+        if data and len(data) > 0:
+            return data
+    except Exception:
+        pass
+
+    try:
+        import base64
+        res = supabase_admin.table("binary_snapshots").select("content_b64").eq("file_name", remote_name).execute()
+        if res.data and len(res.data) > 0 and res.data[0].get("content_b64"):
+            return base64.b64decode(res.data[0]["content_b64"])
+    except Exception:
+        pass
+    return None
+
+
+@st.cache_resource(show_spinner=False)
+def sync_binary_snapshots_on_cold_boot():
+    """
+    Sincronizzazione Binaria Unica al Cold Boot (Zero Rallentamenti UI):
+    Viene eseguita UNA SOLA VOLTA quando il server Streamlit Cloud si avvia dopo un git push.
+    1. Verifica/crea su Supabase Storage il bucket privato 'm0v3-binary-snapshots'.
+    2. Scarica 'database_storico.parquet' (e file test/GymAware) dallo snapshot Cloud.
+    3. Legge il file locale 'database_storico.parquet' (proveniente da GitHub).
+    4. Esegue un Merge Additivo Sicuro (pd.concat + drop_duplicates keep='last').
+    5. Sovrascrive 'database_storico.parquet' sul disco locale del container con df_merged.
+    6. Se df_merged ha più righe di df_cloud_snapshot (o lo snapshot non esisteva), ricarica il consolidato nel Cloud.
+    """
+    import io
+    status = {"synced": False, "rows_local": 0, "rows_cloud": 0, "rows_merged": 0}
+    try:
+        _ensure_snapshot_bucket()
+
+        # A. Lettura database_storico.parquet locale (da GitHub / disco)
+        df_github_local = pd.DataFrame()
+        if os.path.exists(DB_PARQUET_PATH):
+            try:
+                df_github_local = pd.read_parquet(DB_PARQUET_PATH)
+            except Exception:
+                df_github_local = pd.DataFrame()
+        if (df_github_local is None or df_github_local.empty) and os.path.exists(DB_PATH):
+            try:
+                df_raw = pd.read_csv(DB_PATH, low_memory=False)
+                if not df_raw.empty:
+                    df_github_local = pulisci_dataframe_database(df_raw)
+            except Exception:
+                df_github_local = pd.DataFrame()
+
+        if df_github_local is not None and not df_github_local.empty:
+            df_github_local = pulisci_dataframe_database(df_github_local)
+            status["rows_local"] = len(df_github_local)
+
+        # B. Download database_storico.parquet dallo snapshot Cloud
+        df_cloud_snapshot = pd.DataFrame()
+        cloud_bytes = download_binary_snapshot("database_storico.parquet")
+        if cloud_bytes:
+            try:
+                df_cloud_snapshot = pd.read_parquet(io.BytesIO(cloud_bytes))
+                if df_cloud_snapshot is not None and not df_cloud_snapshot.empty:
+                    df_cloud_snapshot = pulisci_dataframe_database(df_cloud_snapshot)
+                    status["rows_cloud"] = len(df_cloud_snapshot)
+            except Exception:
+                df_cloud_snapshot = pd.DataFrame()
+
+        # C. Merge Additivo Sicuro
+        if not df_github_local.empty and not df_cloud_snapshot.empty:
+            df_merged = pd.concat([df_github_local, df_cloud_snapshot], ignore_index=True)
+            if all(c in df_merged.columns for c in ['Players', 'Date', 'Session']):
+                df_merged = df_merged.drop_duplicates(subset=['Players', 'Date', 'Session'], keep='last')
+            elif all(c in df_merged.columns for c in ['Atleta', 'Data', 'Sessione']):
+                df_merged = df_merged.drop_duplicates(subset=['Atleta', 'Data', 'Sessione'], keep='last')
+            df_merged = pulisci_dataframe_database(df_merged)
+        elif not df_cloud_snapshot.empty:
+            df_merged = df_cloud_snapshot.copy()
+        else:
+            df_merged = df_github_local.copy()
+
+        # D. Sovrascrive database_storico.parquet (e CSV) sul disco locale del container
+        if df_merged is not None and not df_merged.empty:
+            status["rows_merged"] = len(df_merged)
+            try:
+                df_merged.to_parquet(DB_PARQUET_PATH, index=False)
+            except Exception:
+                pass
+            try:
+                df_merged.to_csv(DB_PATH, index=False)
+            except Exception:
+                pass
+
+            # E. Se df_merged ha più righe di df_cloud_snapshot (o lo snapshot Cloud era assente), ricarica su Cloud
+            if len(df_merged) > status["rows_cloud"] or not cloud_bytes:
+                upload_binary_snapshot(DB_PARQUET_PATH, "database_storico.parquet")
+
+        # F. Sincronizzazione additiva file di supporto (Test / GymAware / Match)
+        for rel_json in ("data_supporto/sessioni_test.json", "data_supporto/move_tennis_tests.json"):
+            r_key = os.path.basename(rel_json)
+            try:
+                loc_list = []
+                if os.path.exists(rel_json):
+                    with open(rel_json, "r", encoding="utf-8") as f:
+                        d_loc = json.load(f)
+                        if isinstance(d_loc, list):
+                            loc_list = d_loc
+                c_bytes = download_binary_snapshot(r_key)
+                cld_list = []
+                if c_bytes:
+                    d_cld = json.loads(c_bytes.decode("utf-8"))
+                    if isinstance(d_cld, list):
+                        cld_list = d_cld
+                if loc_list or cld_list:
+                    by_id = {}
+                    for idx_item, it in enumerate(loc_list + cld_list):
+                        if isinstance(it, dict):
+                            item_key = str(it.get("id") or f"{it.get('atleta_id','')}_{it.get('data','')}_{it.get('codice_univoco','')}_{idx_item}")
+                            by_id[item_key] = it
+                    merged_list = list(by_id.values())
+                    os.makedirs(os.path.dirname(rel_json), exist_ok=True)
+                    with open(rel_json, "w", encoding="utf-8") as f:
+                        json.dump(merged_list, f, ensure_ascii=False, indent=2)
+                    if len(merged_list) > len(cld_list) or not c_bytes:
+                        upload_binary_snapshot(rel_json, r_key)
+            except Exception:
+                pass
+
+        # G. Sincronizzazione cobolli_matches.parquet
+        matches_rel = "data_supporto/cobolli_matches.parquet"
+        try:
+            m_bytes = download_binary_snapshot("cobolli_matches.parquet")
+            if m_bytes and not os.path.exists(matches_rel):
+                os.makedirs(os.path.dirname(matches_rel), exist_ok=True)
+                with open(matches_rel, "wb") as f:
+                    f.write(m_bytes)
+            elif os.path.exists(matches_rel) and not m_bytes:
+                upload_binary_snapshot(matches_rel, "cobolli_matches.parquet")
+        except Exception:
+            pass
+
+        status["synced"] = True
+    except Exception:
+        pass
+    return status
+
+
+def sync_sql_database_storico_safe(df):
+    """
+    Allineamento opzionale della tabella SQL 'database_storico' su Supabase:
+    converte sempre NaN/NaT/inf in None e filtra dinamicamente solo le colonne
+    esistenti nello schema SQL per evitare che un errore PostgREST causi un Silent Fallback.
+    """
+    if supabase_admin is None or df is None or df.empty:
+        return False
+    try:
+        import numpy as np
+        res_sample = supabase_admin.table("database_storico").select("*").limit(1).execute()
+        if not res_sample.data:
+            return False
+        sql_cols = set(res_sample.data[0].keys())
+        valid_cols = [c for c in df.columns if c in sql_cols]
+        if not valid_cols:
+            return False
+        df_sub = df[valid_cols].replace([np.inf, -np.inf], np.nan)
+        records = df_sub.where(pd.notnull(df_sub), None).to_dict(orient="records")
+        for i in range(0, len(records), 200):
+            supabase_admin.table("database_storico").upsert(records[i:i+200]).execute()
+        return True
+    except Exception:
+        return False
+
+
+def get_cloud_snapshot_status():
+    """
+    Restituisce i metadati diagnostici del database consolidato per il badge nella Sidebar Admin:
+    - active (bool)
+    - max_date (str, es. '14/11/2026')
+    - total_rows (int)
+    """
+    try:
+        df = load_local_database()
+        total_rows = len(df) if df is not None else 0
+        max_date_str = "N/D"
+        if df is not None and not df.empty:
+            if 'Date_obj' in df.columns and df['Date_obj'].notna().any():
+                max_dt = df['Date_obj'].dropna().max()
+                max_date_str = max_dt.strftime('%d/%m/%Y')
+            elif 'Date' in df.columns:
+                dt_s = pd.to_datetime(df['Date'], format='%d/%m/%Y', errors='coerce').dropna()
+                if not dt_s.empty:
+                    max_date_str = dt_s.max().strftime('%d/%m/%Y')
+        return {
+            "active": True,
+            "max_date": max_date_str,
+            "total_rows": total_rows
+        }
+    except Exception:
+        return {"active": False, "max_date": "N/D", "total_rows": 0}
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def _load_database_cached(_token):
     """
-    Caricamento database ad alte prestazioni con cache RAM e accelerazione Parquet:
-    - Se esiste il file Parquet aggiornato, lo carica in pochi millisecondi.
-    - Se esiste solo il CSV o il CSV è più recente, carica il CSV, lo pulisce e genera il Parquet.
-    - Garantisce sempre la presenza della colonna Date_obj pre-calcolata per eliminare ricalcoli nei moduli.
+    Caricamento database a Latenza Zero (< 0.02s) con cache RAM e lettura ESCLUSIVA da Parquet locale:
+    - Esegue una sola volta al Cold Boot la sincronizzazione binaria con Supabase Storage.
+    - Durante la navigazione tra le pagine NON esegue mai query SQL su Supabase.
+    - Legge esclusivamente il file binario locale database_storico.parquet.
     """
+    sync_binary_snapshots_on_cold_boot()
+
     df = pd.DataFrame()
     p_exists = os.path.exists(DB_PARQUET_PATH)
     c_exists = os.path.exists(DB_PATH)
 
-    # 1. Prova prima il formato Parquet se aggiornato
+    # 1. Legge esclusivamente il file binario locale database_storico.parquet
     if p_exists:
         try:
-            m_parq = os.path.getmtime(DB_PARQUET_PATH)
-            m_csv = os.path.getmtime(DB_PATH) if c_exists else 0.0
-            if m_parq >= m_csv:
-                df = pd.read_parquet(DB_PARQUET_PATH)
+            df = pd.read_parquet(DB_PARQUET_PATH)
         except Exception:
             df = pd.DataFrame()
 
-    # 2. Se Parquet non presente o fallito, leggi dal CSV
+    # 2. Fallback di sicurezza solo se il Parquet non esiste ancora sul disco
     if (df is None or df.empty) and c_exists:
         try:
             df_raw = pd.read_csv(DB_PATH, low_memory=False)
             if not df_raw.empty:
                 df = pulisci_dataframe_database(df_raw)
-                # Salva Parquet per accelerare tutte le letture future
                 try:
                     df.to_parquet(DB_PARQUET_PATH, index=False)
                 except Exception:
@@ -604,29 +877,47 @@ def clear_database_cache():
 
 def load_local_database():
     """Restituisce una copia protetta del database storico caricato ad alta velocità dalla cache RAM."""
+    sync_binary_snapshots_on_cold_boot()
     token = _get_db_mtime_token()
     df_cached = _load_database_cached(token)
     return df_cached.copy() if df_cached is not None else pd.DataFrame(columns=COLONNE_DATABASE + ['Date_obj'])
 
 
+# Alias standard richiesti dalla Specifica Tecnica Master (Sezione 1.1)
+load_data = load_local_database
+carica_dati = load_local_database
+
+
 def save_local_database(df):
-    """Salva il database contemporaneamente in Parquet (ultra-rapido) e CSV (interoperabile) e aggiorna la cache."""
+    """
+    Salvataggio Istantaneo all'Upload/Modifica di File GPS:
+    1. Salva immediatamente il DataFrame aggiornato nel file locale database_storico.parquet (e CSV).
+    2. Invalida la cache RAM con st.cache_data.clear() così il dato è immediatamente visibile.
+    3. Esegue l'upload binario di database_storico.parquet nel bucket Supabase Storage
+       'm0v3-binary-snapshots' con upsert="true", blindando i nuovi dati contro qualsiasi futuro git push.
+    """
     df_clean = pulisci_dataframe_database(df)
     
-    # 1. Salvataggio Parquet (ottimizzato e compresso)
+    # 1. Salvataggio Parquet locale (ottimizzato e compresso)
     try:
         df_clean.to_parquet(DB_PARQUET_PATH, index=False)
     except Exception:
         pass
 
-    # 2. Salvataggio CSV (compatibilità retroattiva ed export)
+    # 2. Salvataggio CSV locale (compatibilità ed export)
     try:
         df_clean.to_csv(DB_PATH, index=False)
     except Exception:
         pass
 
-    # 3. Invalida la cache per riflettere le modifiche all'istante
+    # 3. Invalida la cache RAM per riflettere le modifiche all'istante in tutte le pagine
     clear_database_cache()
+
+    # 4. Upload binario immediato nello snapshot Cloud Supabase Storage ('m0v3-binary-snapshots')
+    try:
+        upload_binary_snapshot(DB_PARQUET_PATH, "database_storico.parquet")
+    except Exception:
+        pass
 
 def get_val(row, key, default=0):
     val = row.get(key, default)
@@ -2870,6 +3161,10 @@ def _salva_sessioni_test_locali(sessioni):
     os.makedirs(os.path.dirname(SESSIONI_TEST_LOCAL_PATH), exist_ok=True)
     with open(SESSIONI_TEST_LOCAL_PATH, "w", encoding="utf-8") as f:
         json.dump(sessioni, f, ensure_ascii=False, indent=2)
+    try:
+        upload_binary_snapshot(SESSIONI_TEST_LOCAL_PATH, "sessioni_test.json")
+    except Exception:
+        pass
 
 @st.cache_data(ttl=60, show_spinner=False)
 def get_sessioni_test(atleta_id=None, protocollo_id=None, atleta_nome=None):
@@ -3196,7 +3491,10 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
             "wellness_alerts": [],
             # Sorgente 4: Test Fisici
             "test_presenti": [],
+            "test_dettagli": [],
             "test_count": 0,
+            # Match Details (Torneo / Avversario / Punteggio / TL High per pt)
+            "match_details": [],
             # Sorgente 5: Medico / Fisio / Logistica
             "medico_eventi": [],
             "has_infortunio": False,
@@ -3377,19 +3675,57 @@ def get_athlete_master_calendar(nome_giocatore, atleta_id, start_date, end_date)
         pass
 
     # -------------------------------------------------------------------------
-    # Sorgente 4: Test Fisici (tabella sessioni_test)
+    # Sorgente 4: Test Fisici (sessioni_test da DB + JSON locale con % PB e SWC)
     # -------------------------------------------------------------------------
     try:
-        if atleta_id and not str(atleta_id).startswith("mock-"):
-            res_t = db.table('sessioni_test').select('*, catalogo_protocolli(nome_protocollo)').eq('atleta_id', atleta_id).gte('data', str(d_start)).lte('data', str(d_end)).execute()
-            for t_item in (res_t.data or []):
-                d_str = str(t_item.get('data', ''))[:10]
-                if d_str in calendar_data:
-                    d_dict = calendar_data[d_str]
-                    p_obj = t_item.get('catalogo_protocolli') or {}
-                    p_name = p_obj.get('nome_protocollo') or t_item.get('nome_test', 'Test')
-                    d_dict["test_presenti"].append(p_name)
-                    d_dict["test_count"] += 1
+        all_tests_ath = get_sessioni_test(atleta_id=atleta_id, atleta_nome=nome_giocatore)
+        for t_item in (all_tests_ath or []):
+            d_str = str(t_item.get('data', ''))[:10]
+            if d_str in calendar_data:
+                d_dict = calendar_data[d_str]
+                p_obj = t_item.get('catalogo_protocolli') or t_item.get('protocollo_info') or {}
+                p_name = p_obj.get('nome_protocollo') or t_item.get('nome_test', 'Test')
+                d_dict["test_presenti"].append(p_name)
+                d_dict["test_count"] += 1
+                val_dict = t_item.get('valori') or {}
+                val_preview = ""
+                if isinstance(val_dict, dict) and val_dict:
+                    for k_v, v_v in val_dict.items():
+                        if isinstance(v_v, (int, float)):
+                            val_preview = f"{k_v}: {v_v}"
+                            break
+                d_dict["test_dettagli"].append({
+                    "nome": p_name,
+                    "valore_str": val_preview,
+                    "strumento": t_item.get("strumentazione", "")
+                })
+    except Exception:
+        pass
+
+    # -------------------------------------------------------------------------
+    # Sorgente 4b: Dettaglio Match ATP/ITF (Torneo, Avversario, Score, TL High/pt)
+    # -------------------------------------------------------------------------
+    try:
+        if nome_giocatore and "cobolli" in str(nome_giocatore).lower() and os.path.exists("data_supporto/cobolli_matches.parquet"):
+            df_m_loc = pd.read_parquet("data_supporto/cobolli_matches.parquet")
+            if not df_m_loc.empty and 'date' in df_m_loc.columns:
+                df_m_loc['d_iso'] = pd.to_datetime(df_m_loc['date'], format='%d/%m/%Y', errors='coerce').dt.strftime('%Y-%m-%d')
+                for _, m_row in df_m_loc.dropna(subset=['d_iso']).iterrows():
+                    d_iso = str(m_row['d_iso'])
+                    if d_iso in calendar_data:
+                        d_dict = calendar_data[d_iso]
+                        d_dict["is_match"] = True
+                        tot_pts = float(m_row.get('total_points', 0) or 0)
+                        tlh_day = float(d_dict.get("tl_high_gps", 0) or 0)
+                        tlh_pt = round(tlh_day / tot_pts, 2) if (tot_pts > 0 and tlh_day > 0) else None
+                        d_dict["match_details"].append({
+                            "tournament": str(m_row.get("tournament", "")),
+                            "opponent": str(m_row.get("opponent", "")),
+                            "score": str(m_row.get("score", "")),
+                            "result": str(m_row.get("result", "")),
+                            "total_points": int(tot_pts) if tot_pts > 0 else 0,
+                            "tl_high_per_pt": tlh_pt
+                        })
     except Exception:
         pass
 

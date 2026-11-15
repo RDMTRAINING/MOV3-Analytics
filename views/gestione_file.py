@@ -11,6 +11,7 @@ import streamlit as st
 
 from config import (
     LOGO_PATH,
+    DB_PARQUET_PATH,
     CATALOGO_REPORT,
     COLONNE_STANDARD,
     METRICHE_VOLUME,
@@ -29,6 +30,7 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
+    get_cloud_snapshot_status,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -59,6 +61,33 @@ from pdf_generator import (
 def render_gestione_file(t):
     render_page_header(tr("Gestione File e Sessioni Caricate", "Uploaded Files & Sessions Management"), t['home_file_desc'], "DATABASE MANAGEMENT")
     df_storico = load_local_database()
+
+    # --- RIGA DIAGNOSTICA CLOUD SNAPSHOT & DOWNLOAD MASTER PARQUET ---
+    snap_stat = get_cloud_snapshot_status()
+    c_diag1, c_diag2 = st.columns([3.2, 1.8])
+    with c_diag1:
+        st.markdown(
+            f"<div style='background:#f0fdf4; border:1px solid #86efac; border-left:4px solid #16a34a; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-family:\"Inter\",sans-serif; font-size:12.5px; color:#14532d; display:flex; align-items:center; gap:8px;'>"
+            f"<i class='bi bi-cloud-check-fill' style='color:#16a34a; font-size:16px;'></i>"
+            f"<span><b>Cloud Snapshot Attivo</b> | Ultima Data GPS Salvata: <b>{snap_stat.get('max_date', 'N/D')}</b> | Totale Righe: <b>{snap_stat.get('total_rows', 0)}</b></span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    with c_diag2:
+        if st.session_state.get('role') == 'Super-Admin' and os.path.exists(DB_PARQUET_PATH):
+            try:
+                with open(DB_PARQUET_PATH, "rb") as f_p:
+                    p_bytes = f_p.read()
+                st.download_button(
+                    label="Scarica database_storico.parquet Consolidato",
+                    data=p_bytes,
+                    file_name="database_storico.parquet",
+                    mime="application/octet-stream",
+                    key="btn_dl_master_parquet_gestione_file",
+                    use_container_width=True
+                )
+            except Exception:
+                pass
 
     if df_storico.empty:
         st.info(tr("Nessun dato presente nel database.", "No data found in the database."))

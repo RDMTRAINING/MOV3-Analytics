@@ -124,20 +124,32 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
 
     has_content = False
 
-    # 1. Tennis & GPS
+    # 1. Tennis & GPS (+ eventuale Match ATP/ITF con Torneo/Avversario/Score + TL High/pt)
     has_tennis_srpe = any(sl.get('tipo') == 'Tennis' for sl in d_info.get('srpe_slots', []))
-    if d_info.get('gps_presente') or has_tennis_srpe:
+    match_details = d_info.get('match_details', [])
+    if d_info.get('gps_presente') or has_tennis_srpe or match_details:
         has_content = True
         gps_parts = []
         if d_info.get('gps_presente'):
             tl_v = int(round(d_info.get('training_load_gps', 0)))
-            tlh_v = int(round(d_info.get('tl_high', 0)))
+            tlh_v = int(round(d_info.get('tl_high_gps', d_info.get('tl_high', 0))))
             acc_dec = int(round(d_info.get('high_accel_imu', 0) + d_info.get('high_decel_imu', 0)))
+            min_gps = d_info.get('minuti_gps', 0)
+            tipi_str = ", ".join(dict.fromkeys(d_info.get('gps_tipi', []))) if d_info.get('gps_tipi') else "Sessione GPS"
             match_str = " [MATCH]" if d_info.get('is_match') else ""
-            gps_parts.append(f"TL: <b>{tl_v}</b>{match_str} | TL-High: <b>{tlh_v}</b> | Acc+Dec: <b>{acc_dec}</b>")
+            gps_parts.append(f"<b>{tipi_str}</b> ({min_gps:.0f}m){match_str}<br>TL: <b>{tl_v}</b> | TL-High: <b>{tlh_v}</b> | Acc+Dec: <b>{acc_dec}</b>")
+        for m_det in match_details:
+            t_name = m_det.get('tournament', '')
+            opp_n = m_det.get('opponent', '')
+            sc_str = m_det.get('score', '')
+            res_str = m_det.get('result', '')
+            tlh_pt = m_det.get('tl_high_per_pt')
+            tlh_pt_str = f" | TL High/pt: <b style='color:#38bdf8;'>{tlh_pt:.2f}</b>" if tlh_pt is not None else ""
+            gps_parts.append(f"Match: <b>{t_name}</b> vs <b>{opp_n}</b> ({res_str} {sc_str}){tlh_pt_str}")
         for sl in d_info.get('srpe_slots', []):
             if sl.get('tipo') == 'Tennis':
-                gps_parts.append(f"sRPE Tennis: {sl.get('minuti', 0):.0f}m @ RPE {sl.get('rpe', 0):.0f} &rarr; <b>{sl.get('carico', 0):.0f} AU</b>")
+                no_gps_tag = " <span style='color:#fbbf24; font-weight:800;'>[NO-GPS]</span>" if not d_info.get('gps_presente') else ""
+                gps_parts.append(f"sRPE Tennis: {sl.get('minuti', 0):.0f}m @ RPE {sl.get('rpe', 0):.0f} &rarr; <b>{sl.get('carico', 0):.0f} AU</b>{no_gps_tag}")
         lbl_ten = tr("Tennis & Campo GPS", "Tennis & GPS Court")
         gps_html = "<br>".join(gps_parts)
         lines.append(
@@ -160,8 +172,8 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
             rpe_v = sl.get('rpe', 0)
             carico_tot = sl.get('carico', 0)
 
-            if dur_atl is not None and dur_stf is not None and float(dur_atl) > 0 and float(dur_stf) > 0 and abs(float(dur_atl) - float(dur_stf)) > 0:
-                time_info = f"Media {dur_m:.0f}m (Atl {float(dur_atl):.0f}m / Stf {float(dur_stf):.0f}m)"
+            if dur_atl is not None and dur_stf is not None and float(dur_atl) > 0 and float(dur_stf) > 0:
+                time_info = f"{dur_m:.0f}m [Media Atl {float(dur_atl):.0f}' / Staff {float(dur_stf):.0f}']"
             else:
                 time_info = f"{dur_m:.0f}m"
 
@@ -170,19 +182,21 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
             p_prim = sl.get('peso_primario_pct', 100) or 100
             c_prim = sl.get('carico_primario', carico_tot)
 
-            entry_p = f"<b>{tipo_sl}:</b> {time_info} @ RPE {rpe_v:.0f} = <b>{carico_tot:.0f} AU</b>"
-            entry_p += f"<br>&bull; <i>{p_prim}% Primario:</i> {s_prim} ({d_prim}) &rarr; <b>{c_prim:.0f} AU</b>"
+            entry_p = f"<b>{tipo_sl}:</b> {carico_tot:.0f} AU = RPE {rpe_v:.0f} &times; {time_info}"
+            entry_p += f"<br>&bull; <i>{p_prim}% Primario:</i> <b>{c_prim:.0f} AU</b> — {s_prim} ({d_prim})"
 
             s_sec = sl.get('stimolo_secondario')
             if s_sec:
                 d_sec = sl.get('distretto_secondario') or ''
                 p_sec = 100 - p_prim
                 c_sec = sl.get('carico_secondario', 0)
-                entry_p += f"<br>&bull; <i>{p_sec}% Complementare:</i> {s_sec} ({d_sec}) &rarr; <b>{c_sec:.0f} AU</b>"
+                entry_p += f"<br>&bull; <i>{p_sec}% Complementare:</i> <b>{c_sec:.0f} AU</b> — {s_sec} ({d_sec})"
 
             stress_e = sl.get('stress_eccentrico_atteso', 'Moderato')
             stress_col = "#f87171" if stress_e == 'Elevato' else ("#fbbf24" if stress_e == 'Moderato' else "#34d399")
             entry_p += f"<br>&bull; Stress Eccentrico: <span style='color:{stress_col}; font-weight:700;'>{stress_e}</span>"
+            if sl.get('note'):
+                entry_p += f"<br>&bull; Note: <i>{sl.get('note')}</i>"
             gym_parts.append(entry_p)
 
         lbl_gym = tr("Palestra & Preparazione Fisica (70/30)", "Gym & Conditioning (70/30)")
@@ -203,10 +217,14 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
         for ev in evs:
             t_ev = ev.get('tipo_scheda', 'EVENTO')
             distr = ev.get('distretto_anatomico', 'Sistemico')
+            lato_ev = ev.get('lato', '')
+            lato_txt = f" {lato_ev}" if lato_ev and lato_ev not in ('N/A', '-') else ""
             vas = ev.get('scala_dolore_vas')
             vas_txt = f" | VAS: <b style='color:#f87171;'>{vas}/10</b>" if vas is not None else ""
             sottotipo = ev.get('sottotipo_evento', '')
-            ev_parts.append(f"[{t_ev}] {distr} ({sottotipo}){vas_txt}")
+            operatore = ev.get('autore_nome') or ev.get('operatore') or 'Staff Medico'
+            st_ev = ev.get('status_operativo', 'DISPONIBILE')
+            ev_parts.append(f"[{t_ev}] <b>{distr}{lato_txt}</b> ({sottotipo}){vas_txt}<br><span style='color:#94a3b8;'>Op: {operatore} | Status: {st_ev}</span>")
         lbl_med = tr("Clinica & Fisioterapia", "Clinical & Physio")
         ev_html = "<br>".join(ev_parts)
         lines.append(
@@ -220,27 +238,42 @@ def _build_day_tooltip_html(d_key, d_info, st_col, is_en, g_sett):
     if d_info.get('test_count', 0) > 0:
         has_content = True
         n_t = d_info.get('test_count')
-        lbl_test = tr("Test Fisici", "Physical Tests")
+        t_dets = d_info.get('test_dettagli', [])
+        if t_dets:
+            t_lines = []
+            for td in t_dets[:3]:
+                v_s = f" ({td['valore_str']})" if td.get('valore_str') else ""
+                t_lines.append(f"&bull; <b>{td.get('nome', 'Test')}</b>{v_s}")
+            t_html = "<br>".join(t_lines)
+        else:
+            t_names = ", ".join(d_info.get('test_presenti', [])[:3])
+            t_html = f"{n_t} test: <b>{t_names}</b>"
+        lbl_test = tr("Test & Valutazioni", "Physical Tests")
         lines.append(
             f"<div style='margin-bottom:6px;'>"
             f"<div style='color:#60a5fa; font-weight:800; font-size:10.5px;'><i class='bi bi-clipboard2-pulse'></i> {lbl_test}</div>"
-            f"<div style='color:#cbd5e1; font-size:10px; margin-left:14px;'>{n_t} {tr('test registrati in archivio', 'tests logged')}</div>"
+            f"<div style='color:#cbd5e1; font-size:10px; margin-left:14px;'>{t_html}</div>"
             f"</div>"
         )
 
-    # 5. Wellness
+    # 5. Wellness (Score complessivo + tutti i 5 item)
     if d_info.get('wellness_presente') and d_info.get('wellness_score') is not None:
         has_content = True
         w_sc = d_info.get('wellness_score')
         w_det = d_info.get('wellness_dettagli', {})
         doms_v = w_det.get('doms', 0)
+        sonno_v = w_det.get('sonno', w_det.get('sonno_qualita', 0))
+        fatica_v = w_det.get('fatica', 0)
+        stress_v = w_det.get('stress', 0)
+        umore_v = w_det.get('umore', 0)
         doms_c = "#f87171" if doms_v >= 7 else ("#fbbf24" if doms_v >= 5 else "#34d399")
         lbl_wel = tr("Wellness Mattutino", "Morning Wellness")
         lines.append(
             f"<div style='margin-bottom:4px;'>"
             f"<div style='color:#c084fc; font-weight:800; font-size:10.5px;'><i class='bi bi-heart-pulse'></i> {lbl_wel}</div>"
-            f"<div style='color:#cbd5e1; font-size:10px; margin-left:14px;'>Score: <b>{w_sc:.1f}/10</b> | DOMS: <b style='color:{doms_c};'>{doms_v}/10</b> | Sonno: <b>{w_det.get('sonno_qualita', '-')}</b></div>"
-            f"</div>"
+            f"<div style='color:#cbd5e1; font-size:10px; margin-left:14px;'>"
+            f"Score: <b>{w_sc:.1f}/10</b> | DOMS: <b style='color:{doms_c};'>{doms_v:.0f}/10</b> | Sonno: <b>{sonno_v:.0f}</b> | Fatica: <b>{fatica_v:.0f}</b> | Stress: <b>{stress_v:.0f}</b> | Umore: <b>{umore_v:.0f}</b>"
+            f"</div></div>"
         )
 
     if not has_content:
@@ -970,11 +1003,20 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
     dates_dt = [datetime.datetime.strptime(d, "%Y-%m-%d").date() for d in date_list]
     tl_gps_list = [corr_calendar[d]['training_load_gps'] for d in date_list]
     
-    # Carico Tennis sRPE (AU)
+    # Carico Tennis sRPE (AU) + Etichetta fissa sopra la barra (incluso [NO-GPS])
     tennis_srpe_list = []
+    tennis_srpe_texts = []
     for d in date_list:
         t_load = sum(sl.get('carico', 0) for sl in corr_calendar[d].get('srpe_slots', []) if sl.get('tipo') == 'Tennis')
         tennis_srpe_list.append(t_load)
+        if t_load > 0:
+            tl_g = corr_calendar[d].get('training_load_gps', 0) or 0
+            if tl_g == 0:
+                tennis_srpe_texts.append(f"sRPE: {t_load:.0f} AU [NO-GPS]")
+            else:
+                tennis_srpe_texts.append(f"sRPE: {t_load:.0f} AU")
+        else:
+            tennis_srpe_texts.append("")
 
     wellness_list = [corr_calendar[d]['wellness_score'] if corr_calendar[d]['wellness_score'] is not None else np.nan for d in date_list]
 
@@ -999,7 +1041,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             gym_sec_colors.append('#38bdf8')
             gym_opacities.append(0.85)
             gym_labels.append("")
-            gym_customdata.append(["-", "-", "-", "-", "-"])
+            gym_customdata.append(["-", "-", "-", "-", "-", "-", "-", "0 AU", "0 AU", "0 AU"])
         else:
             c_p_sum = sum(sl.get('carico_primario', sl.get('carico', 0)) for sl in gym_slots)
             c_s_sum = sum(sl.get('carico_secondario', 0) for sl in gym_slots)
@@ -1014,10 +1056,22 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             stim_2 = first_sl.get('stimolo_secondario') or '-'
             dist_2 = first_sl.get('distretto_secondario') or '-'
             stress_e = first_sl.get('stress_eccentrico_atteso', 'Moderato')
+            dur_m = first_sl.get('minuti', 60) or 60
+            rpe_v = first_sl.get('rpe', 5) or 5
+            dur_atl = first_sl.get('durata_atleta_min')
+            dur_stf = first_sl.get('durata_staff_min')
+            if dur_atl is not None and dur_stf is not None and float(dur_atl) > 0 and float(dur_stf) > 0:
+                calc_str = f"{tot_g:.0f} AU = RPE {rpe_v:.0f} × {dur_m:.0f} min [Media Atleta {float(dur_atl):.0f}' / Staff {float(dur_stf):.0f}']"
+            else:
+                calc_str = f"{tot_g:.0f} AU = RPE {rpe_v:.0f} × {dur_m:.0f} min"
+            note_sl = first_sl.get('note') or '-'
 
             gym_prim_colors.append(get_stimolo_color(stim_1, is_secondary=False))
             gym_sec_colors.append(get_stimolo_color(stim_2, is_secondary=True) if stim_2 != '-' else '#94a3b8')
-            gym_customdata.append([stim_1, dist_1, stim_2, dist_2, stress_e])
+            gym_customdata.append([
+                stim_1, dist_1, stim_2, dist_2, stress_e, calc_str, note_sl,
+                f"{tot_g:.0f} AU", f"{c_p_sum:.0f} AU", f"{c_s_sum:.0f} AU"
+            ])
 
             # Lente Clinica: Opacità selettiva
             if lente_sel != opz_lente[0]:
@@ -1032,14 +1086,15 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             else:
                 gym_opacities.append(0.88)
 
-            # Alert DOMS: controlla giorno corrente o giorno successivo (T+1)
+            # Alert DOMS: controlla Stress Eccentrico Elevato oppure DOMS >= 6 nel giorno corrente / successivo (T+1)
             doms_oggi = d_val.get('wellness_dettagli', {}).get('doms', 0)
             doms_domani = 0
             if idx_d + 1 < len(date_list):
                 d_next_str = date_list[idx_d + 1]
                 doms_domani = corr_calendar[d_next_str].get('wellness_dettagli', {}).get('doms', 0)
 
-            has_doms_alert = (doms_oggi >= 6 or doms_domani >= 6)
+            has_ecc_elevato = any(sl.get('stress_eccentrico_atteso') == 'Elevato' for sl in gym_slots)
+            has_doms_alert = (has_ecc_elevato or doms_oggi >= 6 or doms_domani >= 6)
             if tot_g > 0:
                 doms_tag = " [! DOMS]" if has_doms_alert else ""
                 gym_labels.append(f"{tot_g:.0f} AU{doms_tag}")
@@ -1060,10 +1115,10 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'><i class='bi bi-activity' style='color:#0ea5e9; margin-right:4px;'></i>{tr('Metriche:', 'Metrics:')}</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#0ea5e9;'></span>Training Load GPS</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#f97316;'></span>sRPE Tennis (AU)</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#0284c7;'></span>Gym (70% Primario)</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#38bdf8;'></span>Gym (30% Compl.)</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#ef4444;'></span>Gym 70% Primario (AU)</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#fca5a5; border:1px dashed #ef4444;'></span>Gym 30% Compl. (AU)</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:14px; height:3px; border-radius:2px; background:#a855f7;'></span>Wellness Score</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><i class='bi bi-plus-lg' style='color:#10b981; font-weight:900;'></i>Seduta Fisio</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#10b981; font-weight:900;'>&#9830;</span>Evento Clinico / Fisio</span>"
         f"</div>"
         f"<div style='display:flex; align-items:center; gap:12px; flex-wrap:wrap;'>"
         f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>{tr('Bande Cliniche:', 'Clinical Zones:')}</span>"
@@ -1075,14 +1130,14 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         unsafe_allow_html=True
     )
 
-    # Inizializzazione Subplots a Doppia Corsia Sincronizzata
-    t_lane1 = tr("Corsia Superiore: Carico Esterno GPS, sRPE Tennis & Readiness Clinica", "Upper Lane: GPS External Load, Tennis sRPE & Clinical Readiness")
-    t_lane2 = tr("Corsia Inferiore: Carico Extra-Campo (Palestra & Prep. Fisica — 70/30 Split)", "Lower Lane: Extra-Court Load (Gym & Conditioning — 70/30 Split)")
+    # Inizializzazione Subplots a Doppia Corsia Sincronizzata (Sezione 3.1: row_heights=[0.62, 0.38], vertical_spacing=0.12)
+    t_lane1 = tr("Corsia Superiore: Carico Esterno GPS, sRPE Tennis (AU) & Readiness Clinica", "Upper Lane: GPS External Load, Tennis sRPE (AU) & Clinical Readiness")
+    t_lane2 = tr("Corsia Inferiore: Carico Extra-Campo in AU (Palestra & Prep. Fisica — 70/30 Split)", "Lower Lane: Extra-Court Load in AU (Gym & Conditioning — 70/30 Split)")
     fig_corr = make_subplots(
         rows=2, cols=1,
         shared_xaxes=True,
-        row_heights=[0.60, 0.40],
-        vertical_spacing=0.10,
+        row_heights=[0.62, 0.38],
+        vertical_spacing=0.12,
         specs=[[{"secondary_y": True}], [{"secondary_y": False}]],
         subplot_titles=(t_lane1, t_lane2)
     )
@@ -1106,7 +1161,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         name="sRPE Tennis (AU)",
         marker=dict(color="#f97316", opacity=0.85, cornerradius=3),
         offsetgroup=2,
-        text=[f"{v:.0f}" if v > 0 else "" for v in tennis_srpe_list],
+        text=tennis_srpe_texts,
         textposition="outside",
         textfont=dict(size=9, color="#c2410c", family="Inter"),
         hovertemplate="<b>%{x|%d %b %Y}</b><br>sRPE Tennis: <b>%{y:.0f} AU</b><extra></extra>"
@@ -1148,7 +1203,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             hovertemplate="<b>WARNING OVERLOAD LIMITATO</b><br>%{x}: %{y:.0f} AU<extra></extra>"
         ), row=1, col=1, secondary_y=False)
 
-    # --- FASCIA CLINICA CENTRALE (Bande di Stato) ---
+    # --- FASCIA CLINICA CENTRALE (Bande di Stato + Linee Verticali Tratteggiate + Marker Romboidali) ---
     periods = []
     curr_p = None
     for d_str in date_list:
@@ -1186,40 +1241,98 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             row="all"
         )
 
-    # Marker Trattamenti Fisioterapici su Row 1
-    date_trattamenti = [corr_calendar[d]['date_obj'] for d in date_list if corr_calendar[d]['has_trattamento']]
-    if date_trattamenti:
+    # Eventi Clinici & Fisioterapia (Linee verticali tratteggiate + Marker romboidali ♦ con etichetta e tooltip)
+    clin_x, clin_y, clin_texts, clin_hovers, clin_colors = [], [], [], [], []
+    for d_str in date_list:
+        d_info_c = corr_calendar[d_str]
+        evs_c = [e for e in d_info_c.get("medico_eventi", []) if e.get("tipo_scheda") in ("TRATTAMENTO", "SOVRACCARICO", "INFORTUNIO", "MALATTIA")]
+        if evs_c:
+            d_obj = d_info_c["date_obj"]
+            ev0 = evs_c[0]
+            t_sch = ev0.get("tipo_scheda", "FISIO")
+            tag_short = "FISIO" if t_sch == "TRATTAMENTO" else t_sch
+            distr_c = ev0.get("distretto_anatomico", "Sistemico")
+            lato_c = ev0.get("lato", "")
+            lato_s = f" {lato_c}" if lato_c and lato_c not in ("N/A", "-") else ""
+            vas_c = ev0.get("scala_dolore_vas")
+            vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
+            lbl_marker = f"♦ [{tag_short}: {distr_c}{lato_s}{vas_s}]"
+
+            col_m = "#e11d48" if t_sch in ("INFORTUNIO", "MALATTIA") else ("#f59e0b" if t_sch == "SOVRACCARICO" else "#10b981")
+            fig_corr.add_vline(
+                x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
+                line=dict(color=col_m, width=1.3, dash="dash"),
+                row="all"
+            )
+            clin_x.append(d_obj)
+            clin_y.append(y1_max * 0.04)
+            clin_texts.append(lbl_marker)
+            clin_colors.append(col_m)
+            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff Medico"
+            sott_c = ev0.get("sottotipo_evento", "-")
+            ind_c = ev0.get("indicazioni_staff") or "-"
+            clin_hovers.append(
+                f"<b>{d_str} — {t_sch}</b><br>"
+                f"Distretto: <b>{distr_c}{lato_s}</b> ({sott_c}){vas_s}<br>"
+                f"Operatore: {op_name}<br>"
+                f"Indicazioni: {ind_c}"
+            )
+
+    if clin_x:
         fig_corr.add_trace(go.Scatter(
-            x=date_trattamenti,
-            y=[y1_max * 0.02] * len(date_trattamenti),
-            mode="markers",
-            name=tr("Seduta Fisioterapia", "Physio Session"),
-            marker=dict(symbol="cross", size=13, color="#10b981", line=dict(width=2, color="#047857")),
-            hovertemplate="<b>%{x|%d %b %Y}</b><br>Seduta Fisioterapica Eseguita<extra></extra>"
+            x=clin_x,
+            y=clin_y,
+            mode="markers+text",
+            name=tr("Evento Clinico / Seduta Fisio", "Clinical Event / Physio Session"),
+            text=clin_texts,
+            textposition="top center",
+            textfont=dict(size=9, color="#0f172a", family="Inter"),
+            marker=dict(symbol="diamond", size=12, color=clin_colors, line=dict(width=1.8, color="#0f172a")),
+            customdata=clin_hovers,
+            hovertemplate="%{customdata}<extra></extra>"
         ), row=1, col=1, secondary_y=False)
 
-    # --- ROW 2: CARICO INTERNO EXTRA-CAMPO (PALESTRA & PREP. FISICA 70/30) ---
+    # --- ROW 2: CARICO INTERNO EXTRA-CAMPO IN AU (PALESTRA & PREP. FISICA 70/30) ---
     # Blocco Primario (70% o 100%)
     fig_corr.add_trace(go.Bar(
         x=dates_dt,
         y=gym_prim_list,
-        name=tr("Gym Blocco Primario (70%)", "Gym Primary Block (70%)"),
+        name=tr("Gym Blocco Primario (70% AU)", "Gym Primary Block (70% AU)"),
         marker=dict(color=gym_prim_colors, opacity=gym_opacities, cornerradius=3),
         offsetgroup=3,
         customdata=gym_customdata,
-        hovertemplate="<b>%{x|%d %b %Y}</b><br>Blocco Primario: <b>%{y:.0f} AU</b><br>Stimolo: %{customdata[0]}<br>Catena: %{customdata[1]}<br>Stress Eccentrico: %{customdata[4]}<extra></extra>"
+        hovertemplate=(
+            "<b>%{x|%d %b %Y} — Palestra & Prep. Fisica</b><br>"
+            "<b>%{customdata[5]}</b><br>"
+            "&bull; 70% Primario: <b>%{customdata[8]}</b> — %{customdata[0]} (%{customdata[1]})<br>"
+            "&bull; 30% Complementare: <b>%{customdata[9]}</b> — %{customdata[2]} (%{customdata[3]})<br>"
+            "&bull; Stress Eccentrico: <b>%{customdata[4]}</b><br>"
+            "&bull; Note: %{customdata[6]}<extra></extra>"
+        )
     ), row=2, col=1)
 
-    # Blocco Complementare (30%) - Impilato sul Primario tramite base
+    # Blocco Complementare (30%) - Impilato sul Primario tramite base e pattern tratteggiato
     fig_corr.add_trace(go.Bar(
         x=dates_dt,
         y=gym_sec_list,
         base=gym_prim_list,
-        name=tr("Gym Blocco Complementare (30%)", "Gym Complementary Block (30%)"),
-        marker=dict(color=gym_sec_colors, opacity=gym_opacities, cornerradius=3),
+        name=tr("Gym Blocco Complementare (30% AU)", "Gym Complementary Block (30% AU)"),
+        marker=dict(
+            color=gym_sec_colors,
+            opacity=gym_opacities,
+            cornerradius=3,
+            pattern=dict(shape="/", solidity=0.35, fgcolor="rgba(15,23,42,0.35)")
+        ),
         offsetgroup=3,
         customdata=gym_customdata,
-        hovertemplate="<b>%{x|%d %b %Y}</b><br>Blocco Complementare: <b>%{y:.0f} AU</b><br>Stimolo: %{customdata[2]}<br>Catena: %{customdata[3]}<extra></extra>"
+        hovertemplate=(
+            "<b>%{x|%d %b %Y} — Blocco Complementare (30%)</b><br>"
+            "<b>%{customdata[5]}</b><br>"
+            "&bull; 30% Complementare: <b>%{customdata[9]}</b> — %{customdata[2]} (%{customdata[3]})<br>"
+            "&bull; 70% Primario: <b>%{customdata[8]}</b> — %{customdata[0]} (%{customdata[1]})<br>"
+            "&bull; Stress Eccentrico: <b>%{customdata[4]}</b><br>"
+            "&bull; Note: %{customdata[6]}<extra></extra>"
+        )
     ), row=2, col=1)
 
     # Etichetta Carico Totale AU in cima alla barra impilata + Alert [! DOMS]
@@ -2065,22 +2178,26 @@ def render_calendario_medico(t):
     # Tab Navigazione con controllo permessi utente
     lbl_et_1 = tr("Inserimento & Gestione Registro", "Data Entry & Registry")
     lbl_et_2 = tr("Allenamenti GYM e Fisico", "GYM & Fitness Sessions")
+    lbl_et_3 = tr("Correlazione Carichi & Clinica (AU)", "Loads & Clinical Correlation (AU)")
+    lbl_et_4 = tr("Master Timeline & Calendario", "Master Timeline & Calendar")
+    all_et_tabs = [lbl_et_1, lbl_et_2, lbl_et_3, lbl_et_4]
 
     user_perms = st.session_state.get('user_permessi_moduli')
     tabs_disponibili_et = []
     if st.session_state.get('role') == 'Super-Admin' or user_perms is None:
-        tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+        tabs_disponibili_et = list(all_et_tabs)
     else:
         et_perms = {r for (ar, r) in user_perms if ar in ['Medico & Extra Tennis', 'Calendario & Area Medica', 'Inserimento Sessioni Extra Tennis']}
         if not et_perms:
-            tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+            tabs_disponibili_et = list(all_et_tabs)
         else:
             if "Inserimento & Gestione Registro" in et_perms or any("Registro" in r for r in et_perms):
                 tabs_disponibili_et.append(lbl_et_1)
             if "Allenamenti GYM e Fisico" in et_perms or any("GYM" in r or "Fisico" in r for r in et_perms):
                 tabs_disponibili_et.append(lbl_et_2)
+            tabs_disponibili_et.extend([lbl_et_3, lbl_et_4])
             if not tabs_disponibili_et:
-                tabs_disponibili_et = [lbl_et_1, lbl_et_2]
+                tabs_disponibili_et = list(all_et_tabs)
 
     active_et_tab = render_tab_navigation(tabs_disponibili_et, key="nav_extra_tennis")
 
@@ -2457,3 +2574,15 @@ def render_calendario_medico(t):
     # =========================================================================
     elif active_et_tab == lbl_et_2:
         render_allenamenti_gym_fisico(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="et_gym")
+
+    # =========================================================================
+    # TAB 3: CORRELAZIONE CARICHI & CLINICA (AU)
+    # =========================================================================
+    elif active_et_tab == lbl_et_3:
+        render_correlazione_clinica(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="et_corr")
+
+    # =========================================================================
+    # TAB 4: MASTER TIMELINE & CALENDARIO
+    # =========================================================================
+    elif active_et_tab == lbl_et_4:
+        render_master_timeline(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="et_mt")
