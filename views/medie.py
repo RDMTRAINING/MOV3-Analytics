@@ -130,15 +130,16 @@ def render_medie(t):
 
     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
 
-    # Mostra le sei sottopagine (PERSISTENTI & REATTIVE M0V3)
+    # Mostra le sottopagine (PERSISTENTI & REATTIVE M0V3)
     T_SING = tr("Analisi Singolo Atleta", "Single Athlete Analysis")
+    T_CONF_IND = tr("Confronto Individuale", "Individual Comparison")
     T_COMP_M = tr("Testa a Testa Medie", "Head-to-Head Averages")
     T_COMP_W = tr("Testa a Testa Settimana", "Head-to-Head Weekly")
     T_RANK = tr("Ranking Roster Atleti", "Athlete Roster Ranking")
     T_DIST_R = tr("Distribuzione Lavoro Roster", "Roster Workload Distribution")
     T_STRESS_R = tr("Stress Roster 8 Settimane", "Roster Stress 8 Weeks")
 
-    medie_tabs = [T_SING, T_COMP_M, T_COMP_W, T_RANK, T_DIST_R, T_STRESS_R]
+    medie_tabs = [T_SING, T_CONF_IND, T_COMP_M, T_COMP_W, T_RANK, T_DIST_R, T_STRESS_R]
     active_medie_tab = render_tab_navigation(medie_tabs, key="nav_medie_master")
 
     if active_medie_tab == T_SING:
@@ -303,6 +304,679 @@ def render_medie(t):
                             yaxis=dict(showgrid=True, gridcolor="#f1f5f9", range=[0, max_tlh_g], zeroline=False)
                         )
                         st.plotly_chart(fig_b_tlh, use_container_width=True, key="avg_bar_tlh")
+
+    elif active_medie_tab == T_CONF_IND:
+        if "Confronto Individuale" not in report_abilitati and st.session_state.get('role') != 'Super-Admin':
+            st.info(tr("Il modulo 'Confronto Individuale' non è abilitato per questo account. Contatta l'amministratore.", "The 'Individual Comparison' module is not enabled for this account. Contact admin."))
+        else:
+            lbl_conf_h = tr("Confronto Individuale — Analisi Multi-Sessione e Multi-Settimana", "Individual Comparison — Multi-Session & Multi-Week Analysis")
+            st.markdown(f"<h3 style='color:#0f172a; margin-top:10px;'>{lbl_conf_h}</h3>", unsafe_allow_html=True)
+
+            glob_ath = st.session_state.get('selected_athlete')
+            if glob_ath in atleti_consentiti:
+                atleta_sel = glob_ath
+            elif 'conf_ind_ath' in st.session_state and st.session_state['conf_ind_ath'] in atleti_consentiti:
+                atleta_sel = st.session_state['conf_ind_ath']
+            else:
+                atleta_sel = atleti_consentiti[0] if atleti_consentiti else None
+            st.session_state['conf_ind_ath'] = atleta_sel
+
+            df_ath = df_reale[df_reale['Players'] == atleta_sel].copy() if atleta_sel else pd.DataFrame()
+
+            if atleta_sel:
+                render_athlete_hero_strip(atleta_sel, df_atleta=df_ath)
+
+            if df_ath.empty:
+                st.info(tr("Nessun dato reale disponibile per l'atleta selezionato.", "No real data available for the selected athlete."))
+            else:
+                # Selettore Modalità: Allenamenti vs Settimane
+                M_SESS = tr("🏋️ Confronto tra Allenamenti", "🏋️ Compare Sessions")
+                M_WEEK = tr("📅 Confronto tra Settimane", "📅 Compare Weeks")
+                sub_modes = [M_SESS, M_WEEK]
+                active_conf_mode = render_tab_navigation(sub_modes, key="nav_conf_ind_mode")
+
+                PALETTE = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#f97316', '#06b6d4', '#6366f1', '#14b8a6', '#d946ef', '#84cc16']
+
+                # -------------------------------------------------------------
+                # 1. MODALITÀ: CONFRONTO TRA ALLENAMENTI (SESSIONI)
+                # -------------------------------------------------------------
+                if active_conf_mode == M_SESS:
+                    df_ath_sorted = df_ath.sort_values(by='Date_obj', ascending=False).reset_index(drop=True)
+
+                    c_flt_t, c_flt_ms = st.columns([1, 2.3])
+                    with c_flt_t:
+                        tipi_disponibili = [tr("Tutte le Tipologie", "All Session Types")] + sorted(df_ath_sorted['Tipologia Sessione'].dropna().unique().tolist())
+                        sel_tipo_filter = st.selectbox(tr("Filtra per Tipologia", "Filter by Session Type"), tipi_disponibili, key="conf_ind_tipo_flt")
+
+                    if sel_tipo_filter != tr("Tutte le Tipologie", "All Session Types"):
+                        df_ath_filtered = df_ath_sorted[df_ath_sorted['Tipologia Sessione'] == sel_tipo_filter].reset_index(drop=True)
+                    else:
+                        df_ath_filtered = df_ath_sorted
+
+                    sess_options = []
+                    sess_idx_map = {}
+                    for i, r in df_ath_filtered.iterrows():
+                        d_str = str(r['Date'])
+                        s_name = str(r.get('Session', r['Tipologia Sessione']) or 'Sessione')
+                        t_tipo = str(r.get('Tipologia Sessione', ''))
+                        dur = float(r.get('Minuti', 0))
+                        tl = float(r.get('Training Load', 0))
+                        lbl = f"{d_str} • {s_name} ({t_tipo} | {dur:.0f} min | TL {tl:.0f})"
+                        if lbl in sess_idx_map:
+                            lbl = f"{lbl} #{i+1}"
+                        sess_options.append(lbl)
+                        sess_idx_map[lbl] = i
+
+                    def_sess = sess_options[:min(2, len(sess_options))]
+                    with c_flt_ms:
+                        sel_sess_labels = st.multiselect(
+                            tr("Seleziona 2 o più Allenamenti da confrontare", "Select 2 or more Sessions to compare"),
+                            options=sess_options,
+                            default=def_sess,
+                            key="conf_ind_sess_ms"
+                        )
+
+                    if len(sel_sess_labels) < 2:
+                        st.info(tr("👆 Seleziona almeno 2 allenamenti dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "👆 Select at least 2 sessions from the dropdown above to display charts and comparison tables."))
+                    else:
+                        sel_indices = [sess_idx_map[lbl] for lbl in sel_sess_labels]
+                        df_comp_sess = df_ath_filtered.iloc[sel_indices].copy().reset_index(drop=True)
+                        df_comp_sess['Session_Color'] = [PALETTE[i % len(PALETTE)] for i in range(len(df_comp_sess))]
+                        df_comp_sess['Short_Name'] = [
+                            f"{r['Date']} - {str(r.get('Session', r['Tipologia Sessione']))[:15]}"
+                            for _, r in df_comp_sess.iterrows()
+                        ]
+                        df_comp_sess['Work Rate'] = [
+                            (float(r['Training Load']) / float(r['Minuti'])) if float(r['Minuti']) > 0 else 0.0
+                            for _, r in df_comp_sess.iterrows()
+                        ]
+                        df_comp_sess['TL_High_min'] = [
+                            (float(r['TL_High']) / float(r['Minuti'])) if float(r['Minuti']) > 0 else 0.0
+                            for _, r in df_comp_sess.iterrows()
+                        ]
+                        df_comp_sess['Mech_Density'] = [
+                            ((float(r['High Accel IMU']) + float(r['High Decel IMU'])) / float(r['Minuti'])) if float(r['Minuti']) > 0 else 0.0
+                            for _, r in df_comp_sess.iterrows()
+                        ]
+
+                        render_action_bar(
+                            meta_items=[
+                                (tr("Atleta", "Athlete"), atleta_sel),
+                                (tr("Allenamenti a Confronto", "Compared Workouts"), str(len(df_comp_sess))),
+                                (tr("Tipologie Coinvolte", "Session Types"), ", ".join(sorted(df_comp_sess['Tipologia Sessione'].unique()))),
+                            ],
+                            pdf_options={tr("Report PDF Confronto Allenamenti", "Sessions Comparison PDF Report"): "Conf_Sess"},
+                            pdf_key="pdf_conf_sess_action",
+                            generate_fn=lambda _: crea_pdf_medie_m0v3("confronto_individuale_sessioni", atleta=atleta_sel, df_sess=df_comp_sess),
+                            filename_fn=lambda _: f"M0V3_Confronto_Allenamenti_{slugify_name(atleta_sel)}.pdf"
+                        )
+
+                        # KPI Mini-Cards
+                        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                        card_cols = st.columns(min(len(df_comp_sess), 4))
+                        for idx_c, r in df_comp_sess.iterrows():
+                            col_idx = idx_c % len(card_cols)
+                            with card_cols[col_idx]:
+                                c_col = r['Session_Color']
+                                st.html(
+                                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-top:4px solid {c_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                                    f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
+                                    f"<span style='font-size:10px; font-weight:800; color:{c_col}; background:{c_col}14; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>{r['Tipologia Sessione']}</span>"
+                                    f"<span style='font-size:11px; font-weight:700; color:#64748b;'>{r['Date']}</span>"
+                                    f"</div>"
+                                    f"<div style='font-size:13px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{str(r.get('Session', r['Tipologia Sessione']))}</div>"
+                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;'>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA', 'DURATION')}</div><div style='font-size:14px; font-weight:900; color:#0f172a;'>{float(r['Minuti']):.0f} min</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#0ea5e9;'>{float(r['Training Load']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH', 'TL HIGH')}</div><div style='font-size:14px; font-weight:900; color:#ef4444;'>{float(r['TL_High']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('WORK RATE', 'WORK RATE')}</div><div style='font-size:14px; font-weight:900; color:#8b5cf6;'>{float(r['Work Rate']):.1f} <span style='font-size:10px; font-weight:600;'>TL/m</span></div></div>"
+                                    f"</div>"
+                                    f"</div>"
+                                )
+
+                        # Grafico Radar Multifattoriale + Grafici Volume e Intensità
+                        c_rad, c_bars = st.columns([1.25, 1])
+                        with c_rad:
+                            with st.container(border=True):
+                                st.markdown(render_executive_chart_header(
+                                    tr("PROFILO POLARE MULTIFATTORIALE (% MASSIMO RELATIVO)", "MULTIDIMENSIONAL POLAR PROFILE (% RELATIVE MAXIMUM)"),
+                                    pills=[(tr("Sessioni", "Sessions"), str(len(df_comp_sess)), "#38bdf8")],
+                                    accent="#0ea5e9"
+                                ), unsafe_allow_html=True)
+
+                                radar_metrics = [
+                                    ("Minuti", tr("Durata", "Duration")),
+                                    ("Training Load", "Training Load"),
+                                    ("TL_High", "TL High"),
+                                    ("High Accel IMU", "High Accel"),
+                                    ("High Decel IMU", "High Decel"),
+                                    ("Azioni Int. IMU >2", tr('Azioni >2"', 'Actions >2"')),
+                                    ("Work Rate", tr("Work Rate", "Work Rate"))
+                                ]
+                                radar_labels = [m[1] for m in radar_metrics]
+                                radar_labels_closed = radar_labels + [radar_labels[0]]
+
+                                max_vals = {}
+                                for col_k, _ in radar_metrics:
+                                    mv = df_comp_sess[col_k].max()
+                                    max_vals[col_k] = float(mv) if mv > 0 else 1.0
+
+                                fig_radar_sess = go.Figure()
+                                for _, r in df_comp_sess.iterrows():
+                                    r_norm = []
+                                    custom_txt = []
+                                    for col_k, m_lbl in radar_metrics:
+                                        val = float(r[col_k])
+                                        pct = (val / max_vals[col_k] * 100.0) if max_vals[col_k] > 0 else 0.0
+                                        r_norm.append(min(pct, 120.0))
+                                        custom_txt.append(f"{m_lbl}: {val:.1f}")
+                                    r_norm_closed = r_norm + [r_norm[0]]
+                                    custom_txt_closed = custom_txt + [custom_txt[0]]
+
+                                    c_hex = r['Session_Color']
+                                    h_clean = c_hex.lstrip('#')
+                                    rgb = tuple(int(h_clean[i:i+2], 16) for i in (0, 2, 4))
+                                    fill_col = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.12)"
+
+                                    fig_radar_sess.add_trace(go.Scatterpolar(
+                                        r=r_norm_closed,
+                                        theta=radar_labels_closed,
+                                        fill='toself',
+                                        fillcolor=fill_col,
+                                        line=dict(color=c_hex, width=2.5),
+                                        marker=dict(size=6, color=c_hex),
+                                        name=r['Short_Name'],
+                                        customdata=custom_txt_closed,
+                                        hovertemplate="<b>%{theta}</b><br>% Raggiunta: %{r:.0f}%<br>Valore Reale: %{customdata}<extra></extra>"
+                                    ))
+
+                                fig_radar_sess.update_layout(
+                                    polar=dict(
+                                        domain=dict(x=[0.05, 0.95], y=[0.05, 0.95]),
+                                        gridshape='linear',
+                                        bgcolor='#f8fafc',
+                                        radialaxis=dict(
+                                            visible=True, range=[0, 105],
+                                            tickvals=[25, 50, 75, 100],
+                                            ticktext=['25%', '50%', '75%', '100%'],
+                                            tickfont=dict(size=9, color='#64748b'),
+                                            gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                        ),
+                                        angularaxis=dict(
+                                            tickfont=dict(size=10, color='#0f172a', family='Inter', weight='bold'),
+                                            rotation=90, direction='clockwise',
+                                            gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                        )
+                                    ),
+                                    showlegend=True,
+                                    legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5, font=dict(size=10, color="#0f172a")),
+                                    height=430,
+                                    margin=dict(l=35, r=35, t=30, b=45),
+                                    paper_bgcolor='rgba(0,0,0,0)',
+                                    plot_bgcolor='rgba(0,0,0,0)'
+                                )
+                                st.plotly_chart(fig_radar_sess, use_container_width=True, key="conf_ind_radar_sess")
+
+                        with c_bars:
+                            with st.container(border=True):
+                                st.markdown(render_executive_chart_header(
+                                    tr("CONFRONTO VOLUME: TRAINING LOAD (AU)", "VOLUME COMPARISON: TRAINING LOAD (AU)"),
+                                    accent="#0ea5e9"
+                                ), unsafe_allow_html=True)
+
+                                fig_vol_sess = go.Figure()
+                                fig_vol_sess.add_trace(go.Bar(
+                                    x=df_comp_sess['Short_Name'],
+                                    y=df_comp_sess['Training Load'],
+                                    marker_color=df_comp_sess['Session_Color'],
+                                    text=[f"{v:,.0f}" for v in df_comp_sess['Training Load']],
+                                    textposition='outside',
+                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    name='Training Load (AU)'
+                                ))
+                                fig_vol_sess.update_layout(
+                                    height=190,
+                                    margin=dict(l=10, r=10, t=20, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#475569')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL (AU)', font=dict(size=10, color='#64748b'))),
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig_vol_sess, use_container_width=True, key="conf_ind_bar_vol_sess")
+
+                                st.markdown(render_executive_chart_header(
+                                    tr("CONFRONTO ALTA INTENSITÀ: TL HIGH (AU)", "HIGH INTENSITY COMPARISON: TL HIGH (AU)"),
+                                    accent="#ef4444"
+                                ), unsafe_allow_html=True)
+
+                                fig_int_sess = go.Figure()
+                                fig_int_sess.add_trace(go.Bar(
+                                    x=df_comp_sess['Short_Name'],
+                                    y=df_comp_sess['TL_High'],
+                                    marker_color='#ef4444',
+                                    name='TL High (AU)',
+                                    text=[f"{v:,.0f}" for v in df_comp_sess['TL_High']],
+                                    textposition='outside',
+                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                ))
+                                fig_int_sess.update_layout(
+                                    height=190,
+                                    margin=dict(l=10, r=10, t=20, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#475569')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL High', font=dict(size=10, color='#64748b'))),
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig_int_sess, use_container_width=True, key="conf_ind_bar_int_sess")
+
+                        # Sezione Densità di Lavoro & Carico Meccanico
+                        with st.container(border=True):
+                            st.markdown(render_executive_chart_header(
+                                tr("DENSITÀ DI LAVORO & CARICO MECCANICO AL MINUTO", "WORK RATE & MECHANICAL DENSITY PER MINUTE"),
+                                pills=[(tr("Normalizzazione", "Normalization"), tr("Carico per minuto effettivo di attività", "Workload per active minute"), "#38bdf8")],
+                                accent="#8b5cf6"
+                            ), unsafe_allow_html=True)
+
+                            c_wr1, c_wr2 = st.columns(2)
+                            with c_wr1:
+                                fig_wr = go.Figure(go.Bar(
+                                    x=df_comp_sess['Short_Name'],
+                                    y=df_comp_sess['Work Rate'],
+                                    marker_color='#8b5cf6',
+                                    text=[f"{v:.1f}" for v in df_comp_sess['Work Rate']],
+                                    textposition='outside',
+                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    name='Work Rate (TL/min)'
+                                ))
+                                fig_wr.update_layout(
+                                    title=dict(text=tr("Work Rate (Training Load / min)", "Work Rate (Training Load / min)"), font=dict(size=12, color='#0f172a', weight='bold')),
+                                    height=220, margin=dict(l=10, r=10, t=35, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+                                )
+                                st.plotly_chart(fig_wr, use_container_width=True, key="conf_ind_bar_wr")
+
+                            with c_wr2:
+                                fig_mech = go.Figure(go.Bar(
+                                    x=df_comp_sess['Short_Name'],
+                                    y=df_comp_sess['Mech_Density'],
+                                    marker_color='#0ea5e9',
+                                    text=[f"{v:.2f}" for v in df_comp_sess['Mech_Density']],
+                                    textposition='outside',
+                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    name='Accel + Decel / min'
+                                ))
+                                fig_mech.update_layout(
+                                    title=dict(text=tr("Carico Meccanico (High Accel + Decel / min)", "Mechanical Density (High Accel + Decel / min)"), font=dict(size=12, color='#0f172a', weight='bold')),
+                                    height=220, margin=dict(l=10, r=10, t=35, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+                                )
+                                st.plotly_chart(fig_mech, use_container_width=True, key="conf_ind_bar_mech")
+
+                        # Tabella Comparativa Dettagliata
+                        params_table_sess = [
+                            ("Minuti", tr("Durata (min)", "Duration (min)"), "VOLUME", "#f59e0b", "{:.1f}"),
+                            ("Training Load", "Training Load (AU)", "VOLUME", "#f59e0b", "{:,.0f}"),
+                            ("TL_High", "TL High (AU)", "ALTA INTENSITÀ", "#ef4444", "{:,.0f}"),
+                            ("High Accel IMU", "High Accelerations", "MECCANICO", "#0ea5e9", "{:.0f}"),
+                            ("High Decel IMU", "High Decelerations", "MECCANICO", "#0ea5e9", "{:.0f}"),
+                            ("Azioni Int. IMU >2", tr('Azioni Intense >2"', 'Intense Actions >2"'), "VOLUME", "#f59e0b", "{:.0f}"),
+                            ("Azioni Int. IMU >10", tr('Azioni Intense >10"', 'Intense Actions >10"'), "VOLUME", "#f59e0b", "{:.0f}"),
+                            ("Recuperi IMU 1-5m", tr("Recuperi 1-5m", "Recoveries 1-5m"), "RECUPERO", "#10b981", "{:.0f}"),
+                            ("Work Rate", tr("Work Rate (TL/min)", "Work Rate (TL/min)"), "DENSITÀ", "#8b5cf6", "{:.2f}"),
+                            ("TL_High_min", tr("TL High al Minuto", "TL High per Min"), "DENSITÀ", "#ef4444", "{:.2f}"),
+                            ("Mech_Density", tr("Accel + Decel / min", "Accel + Decel / min"), "MECCANICO", "#0ea5e9", "{:.2f}"),
+                        ]
+
+                        lbl_table_header = tr(f"TABELLA COMPARATIVA ANALITICA ALLENAMENTI — {atleta_sel.upper()}", f"ANALYTICAL WORKOUT COMPARISON TABLE — {atleta_sel.upper()}")
+                        lbl_table_sub = tr(f"Confronto simultaneo tra {len(df_comp_sess)} sessioni", f"Simultaneous comparison across {len(df_comp_sess)} sessions")
+
+                        th_headers_sess = ""
+                        for _, r in df_comp_sess.iterrows():
+                            c_col = r['Session_Color']
+                            s_short = f"{r['Date']}<br><span style='font-size:9.5px; opacity:0.9;'>{str(r.get('Session', r['Tipologia Sessione']))[:12]}</span>"
+                            th_headers_sess += f"<th style='text-align:center; padding:11px 8px; color:{c_col}; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{s_short}</th>"
+
+                        rows_html_sess = ""
+                        for idx_p, (col_k, col_lbl, cat_t, cat_c, fmt_str) in enumerate(params_table_sess):
+                            vals_row = [float(r[col_k]) for _, r in df_comp_sess.iterrows()]
+                            mean_v = sum(vals_row) / len(vals_row) if vals_row else 0.0
+                            max_v = max(vals_row) if vals_row else 0.0
+                            min_v = min(vals_row) if vals_row else 0.0
+                            delta_pct = ((max_v - min_v) / min_v * 100.0) if min_v > 0 else (100.0 if max_v > 0 else 0.0)
+
+                            tds_sess = ""
+                            for v in vals_row:
+                                is_max = (v == max_v and max_v != min_v)
+                                cell_bg = "background:rgba(14,165,233,0.08);" if is_max else ""
+                                cell_col = "#0ea5e9" if is_max else "#0f172a"
+                                cell_fw = "900" if is_max else "700"
+                                tds_sess += f"<td style='padding:11px 8px; font-size:14px; font-weight:{cell_fw}; color:{cell_col}; text-align:center; {cell_bg}'>{fmt_str.format(v)}</td>"
+
+                            bg_tr = "#ffffff" if idx_p % 2 == 0 else "#f8fafc"
+                            delta_badge = f"<span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#94a3b8; font-size:10px;'>-</span>"
+
+                            rows_html_sess += (
+                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #f1f5f9;'>"
+                                f"<td style='text-align:left; padding:11px 16px;'>"
+                                f"<div style='font-weight:700; color:#0f172a; font-size:13px;'>{col_lbl}</div>"
+                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
+                                f"</td>"
+                                f"{tds_sess}"
+                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#64748b; text-align:center; background:#f8fafc;'>{fmt_str.format(mean_v)}</td>"
+                                f"<td style='padding:11px 12px; text-align:center; white-space:nowrap;'>{delta_badge}</td>"
+                                f"</tr>"
+                            )
+
+                        html_table_sess = (
+                            "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
+                            "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            "<div style='display:flex; align-items:center; gap:10px;'>"
+                            "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
+                            f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_table_header}</span>"
+                            "</div>"
+                            f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_table_sub}</span>"
+                            "</div>"
+                            "<table style='width:100%; border-collapse:collapse;'>"
+                            "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
+                            f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
+                            f"{th_headers_sess}"
+                            f"<th style='text-align:center; padding:12px 8px; color:#64748b; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
+                            f"<th style='text-align:center; padding:12px 12px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
+                            "</tr></thead>"
+                            f"<tbody>{rows_html_sess}</tbody></table></div>"
+                        )
+                        st.html(html_table_sess)
+
+                # -------------------------------------------------------------
+                # 2. MODALITÀ: CONFRONTO TRA SETTIMANE DI CARICO
+                # -------------------------------------------------------------
+                elif active_conf_mode == M_WEEK:
+                    df_ath_weeks = df_ath.groupby(['Week_Label', 'Week_Start', 'Week_End']).agg({
+                        'Minuti': 'sum',
+                        'Training Load': 'sum',
+                        'TL_High': 'sum',
+                        'High Accel IMU': 'sum',
+                        'High Decel IMU': 'sum',
+                        'Azioni Int. IMU >2': 'sum',
+                        'Azioni Int. IMU >10': 'sum',
+                        'Recuperi IMU 1-5m': 'sum',
+                        'Date': lambda d: len(d.unique()),
+                        'Session': 'count'
+                    }).rename(columns={'Date': 'Giorni_Allenati', 'Session': 'N_Sessioni'}).reset_index()
+
+                    df_ath_weeks = df_ath_weeks.sort_values(by='Week_Start', ascending=False).reset_index(drop=True)
+                    week_opts = df_ath_weeks['Week_Label'].tolist()
+
+                    def_weeks = week_opts[:min(2, len(week_opts))]
+                    sel_weeks = st.multiselect(
+                        tr("Seleziona 2 o più Settimane di carico da confrontare", "Select 2 or more Load Weeks to compare"),
+                        options=week_opts,
+                        default=def_weeks,
+                        key="conf_ind_week_ms"
+                    )
+
+                    if len(sel_weeks) < 2:
+                        st.info(tr("👆 Seleziona almeno 2 settimane di carico dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "👆 Select at least 2 load weeks from the dropdown above to display charts and comparison tables."))
+                    else:
+                        df_comp_weeks = df_ath_weeks[df_ath_weeks['Week_Label'].isin(sel_weeks)].copy().reset_index(drop=True)
+                        df_raw_weeks = df_ath[df_ath['Week_Label'].isin(sel_weeks)].copy()
+
+                        # Calcolo Monotonia e Training Strain Foster
+                        weekly_monotony = {}
+                        weekly_strain = {}
+                        for w_lbl in sel_weeks:
+                            w_sub = df_raw_weeks[df_raw_weeks['Week_Label'] == w_lbl]
+                            daily_loads = np.zeros(7)
+                            for _, row_s in w_sub.iterrows():
+                                dow = row_s['Date_obj'].dayofweek
+                                if 0 <= dow <= 6:
+                                    daily_loads[dow] += float(row_s['Training Load'])
+                            mean_l = float(np.mean(daily_loads))
+                            std_l = float(np.std(daily_loads, ddof=1)) if np.std(daily_loads) > 0 else 1.0
+                            monotony = (mean_l / std_l) if std_l > 0 else 1.0
+                            strain = float(np.sum(daily_loads)) * monotony
+                            weekly_monotony[w_lbl] = monotony
+                            weekly_strain[w_lbl] = strain
+
+                        df_comp_weeks['Monotonia'] = [weekly_monotony.get(w, 1.0) for w in df_comp_weeks['Week_Label']]
+                        df_comp_weeks['Strain'] = [weekly_strain.get(w, 0.0) for w in df_comp_weeks['Week_Label']]
+                        df_comp_weeks['Week_Color'] = [PALETTE[i % len(PALETTE)] for i in range(len(df_comp_weeks))]
+
+                        render_action_bar(
+                            meta_items=[
+                                (tr("Atleta", "Athlete"), atleta_sel),
+                                (tr("Settimane a Confronto", "Compared Weeks"), str(len(df_comp_weeks))),
+                                (tr("Sessioni Totali", "Total Sessions"), str(int(df_comp_weeks['N_Sessioni'].sum()))),
+                            ],
+                            pdf_options={tr("Report PDF Confronto Settimane", "Weeks Comparison PDF Report"): "Conf_Week"},
+                            pdf_key="pdf_conf_week_action",
+                            generate_fn=lambda _: crea_pdf_medie_m0v3("confronto_individuale_settimane", atleta=atleta_sel, df_weeks=df_comp_weeks),
+                            filename_fn=lambda _: f"M0V3_Confronto_Settimane_{slugify_name(atleta_sel)}.pdf"
+                        )
+
+                        # KPI Mini-Cards Settimana
+                        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                        card_cols_w = st.columns(min(len(df_comp_weeks), 4))
+                        for idx_w, r in df_comp_weeks.iterrows():
+                            col_idx = idx_w % len(card_cols_w)
+                            with card_cols_w[col_idx]:
+                                w_col = r['Week_Color']
+                                pct_tlh = (float(r['TL_High']) / float(r['Training Load']) * 100.0) if float(r['Training Load']) > 0 else 0.0
+                                st.html(
+                                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-top:4px solid {w_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                                    f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
+                                    f"<span style='font-size:10px; font-weight:800; color:{w_col}; background:{w_col}14; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>SETTIMANA</span>"
+                                    f"<span style='font-size:10.5px; font-weight:700; color:#64748b;'>{r['N_Sessioni']} sess. • {r['Giorni_Allenati']} gg</span>"
+                                    f"</div>"
+                                    f"<div style='font-size:13px; font-weight:800; color:#0f172a;'>{r['Week_Label']}</div>"
+                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;'>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#0ea5e9;'>{float(r['Training Load']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH (% TL)', 'TL HIGH (% TL)')}</div><div style='font-size:14px; font-weight:900; color:#ef4444;'>{float(r['TL_High']):,.0f} <span style='font-size:10px; font-weight:600;'>({pct_tlh:.0f}%)</span></div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA TOT.', 'TOTAL TIME')}</div><div style='font-size:14px; font-weight:900; color:#0f172a;'>{float(r['Minuti'])/60:.1f} h</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('MONOTONIA', 'MONOTONY')}</div><div style='font-size:14px; font-weight:900; color:#8b5cf6;'>{float(r['Monotonia']):.2f}</div></div>"
+                                    f"</div>"
+                                    f"</div>"
+                                )
+
+                        # Grafico 1: Confronto Volumi e Intensità Settimanali (Barre Raggruppate)
+                        col_gw1, col_gw2 = st.columns([1, 1.35])
+                        with col_gw1:
+                            with st.container(border=True):
+                                st.markdown(render_executive_chart_header(
+                                    tr("CARICO CUMULATO SETTIMANALE (TL & TL HIGH)", "CUMULATIVE WEEKLY WORKLOAD (TL & TL HIGH)"),
+                                    accent="#0ea5e9"
+                                ), unsafe_allow_html=True)
+
+                                fig_w_bars = go.Figure()
+                                fig_w_bars.add_trace(go.Bar(
+                                    x=df_comp_weeks['Week_Label'],
+                                    y=df_comp_weeks['Training Load'],
+                                    marker_color='#0ea5e9',
+                                    name='Training Load (AU)',
+                                    text=[f"{v:,.0f}" for v in df_comp_weeks['Training Load']],
+                                    textposition='outside',
+                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                ))
+                                fig_w_bars.add_trace(go.Bar(
+                                    x=df_comp_weeks['Week_Label'],
+                                    y=df_comp_weeks['TL_High'],
+                                    marker_color='#ef4444',
+                                    name='TL High (AU)',
+                                    text=[f"{v:,.0f}" for v in df_comp_weeks['TL_High']],
+                                    textposition='outside',
+                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                ))
+                                fig_w_bars.update_layout(
+                                    barmode='group',
+                                    height=340,
+                                    margin=dict(l=10, r=10, t=20, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='AU', font=dict(size=10, color='#64748b'))),
+                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10, color="#0f172a"))
+                                )
+                                st.plotly_chart(fig_w_bars, use_container_width=True, key="conf_ind_w_bars")
+
+                        with col_gw2:
+                            with st.container(border=True):
+                                st.markdown(render_executive_chart_header(
+                                    tr("DISTRIBUZIONE GIORNALIERA MICROCICLO (LUNEDÌ - DOMENICA)", "MICROCICLY DAILY DISTRIBUTION (MONDAY - SUNDAY)"),
+                                    pills=[(tr("Overlay", "Overlay"), tr("Sovrapposizione dinamica del carico giornaliero", "Dynamic daily load overlay"), "#38bdf8")],
+                                    accent="#10b981"
+                                ), unsafe_allow_html=True)
+
+                                giorni_it_nomi = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
+                                fig_w_overlay = go.Figure()
+
+                                for _, r_w in df_comp_weeks.iterrows():
+                                    w_lbl = r_w['Week_Label']
+                                    w_col = r_w['Week_Color']
+                                    w_sub = df_raw_weeks[df_raw_weeks['Week_Label'] == w_lbl]
+                                    d_loads = np.zeros(7)
+                                    for _, row_s in w_sub.iterrows():
+                                        dow = row_s['Date_obj'].dayofweek
+                                        if 0 <= dow <= 6:
+                                            d_loads[dow] += float(row_s['Training Load'])
+
+                                    h_clean = w_col.lstrip('#')
+                                    rgb = tuple(int(h_clean[i:i+2], 16) for i in (0, 2, 4))
+                                    fill_rgba = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.08)"
+
+                                    fig_w_overlay.add_trace(go.Scatter(
+                                        x=giorni_it_nomi,
+                                        y=d_loads,
+                                        mode='lines+markers',
+                                        name=w_lbl,
+                                        line=dict(color=w_col, width=3),
+                                        marker=dict(size=8, color=w_col, line=dict(width=1.5, color='#ffffff')),
+                                        fill='tozeroy',
+                                        fillcolor=fill_rgba,
+                                        hovertemplate="<b>%{x}</b><br>Settimana: " + w_lbl + "<br>TL: <b>%{y:,.0f} AU</b><extra></extra>"
+                                    ))
+
+                                fig_w_overlay.update_layout(
+                                    height=340,
+                                    margin=dict(l=10, r=10, t=20, b=10),
+                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#0f172a', weight='bold')),
+                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL Giornaliero (AU)', font=dict(size=10, color='#64748b'))),
+                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=9.5, color="#0f172a"))
+                                )
+                                st.plotly_chart(fig_w_overlay, use_container_width=True, key="conf_ind_w_overlay")
+
+                        # Grafico 3: Ripartizione Tipologie di Allenamento nelle Settimane
+                        with st.container(border=True):
+                            st.markdown(render_executive_chart_header(
+                                tr("RIPARTIZIONE DEL CARICO PER TIPOLOGIA DI SESSIONE NELLE SETTIMANE", "LOAD BREAKDOWN BY SESSION TYPE ACROSS WEEKS"),
+                                pills=[(tr("Tipologie", "Types"), tr("Composizione tecnica, tattica e fisica del microciclo", "Technical, tactical and physical composition"), "#38bdf8")],
+                                accent="#8b5cf6"
+                            ), unsafe_allow_html=True)
+
+                            df_w_tipo = df_raw_weeks.groupby(['Week_Label', 'Tipologia Sessione'])['Training Load'].sum().reset_index()
+                            all_tipi = sorted(df_w_tipo['Tipologia Sessione'].dropna().unique().tolist())
+
+                            fig_w_stack = go.Figure()
+                            for tip in all_tipi:
+                                sub_tip = df_w_tipo[df_w_tipo['Tipologia Sessione'] == tip]
+                                tip_map = dict(zip(sub_tip['Week_Label'], sub_tip['Training Load']))
+                                y_vals = [tip_map.get(w, 0.0) for w in df_comp_weeks['Week_Label']]
+                                t_col = COLORI_TIPOLOGIE_SESSIONE.get(tip, '#64748b')
+
+                                fig_w_stack.add_trace(go.Bar(
+                                    x=df_comp_weeks['Week_Label'],
+                                    y=y_vals,
+                                    name=tip,
+                                    marker_color=t_col,
+                                    hovertemplate="<b>" + tip + "</b><br>TL: <b>%{y:,.0f} AU</b><extra></extra>"
+                                ))
+
+                            fig_w_stack.update_layout(
+                                barmode='stack',
+                                height=280,
+                                margin=dict(l=10, r=10, t=20, b=10),
+                                plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#0f172a')),
+                                yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL Totale (AU)', font=dict(size=10, color='#64748b'))),
+                                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=10, color="#0f172a"))
+                            )
+                            st.plotly_chart(fig_w_stack, use_container_width=True, key="conf_ind_w_stack")
+
+                        # Tabella Comparativa Settimanale
+                        params_table_week = [
+                            ("Training Load", "Training Load Totale (AU)", "VOLUME", "#f59e0b", "{:,.0f}"),
+                            ("TL_High", "TL High Totale (AU)", "ALTA INTENSITÀ", "#ef4444", "{:,.0f}"),
+                            ("Minuti", tr("Durata Totale (min)", "Total Duration (min)"), "VOLUME", "#f59e0b", "{:,.0f}"),
+                            ("High Accel IMU", "High Accelerations Totali", "MECCANICO", "#0ea5e9", "{:,.0f}"),
+                            ("High Decel IMU", "High Decelerations Totali", "MECCANICO", "#0ea5e9", "{:,.0f}"),
+                            ("Azioni Int. IMU >2", tr('Azioni Intense >2" Totali', 'Total Actions >2"'), "VOLUME", "#f59e0b", "{:,.0f}"),
+                            ("N_Sessioni", tr("Numero Sessioni Svolte", "Completed Sessions"), "FREQUENZA", "#64748b", "{:.0f}"),
+                            ("Giorni_Allenati", tr("Giorni Attivi (su 7)", "Active Days (out of 7)"), "FREQUENZA", "#64748b", "{:.0f}"),
+                            ("Monotonia", tr("Indice di Monotonia Foster", "Foster Monotony Index"), "STRESS", "#8b5cf6", "{:.2f}"),
+                            ("Strain", tr("Training Strain Foster (AU)", "Foster Training Strain (AU)"), "STRESS", "#8b5cf6", "{:,.0f}"),
+                        ]
+
+                        lbl_table_w_header = tr(f"TABELLA COMPARATIVA SETTIMANALE — {atleta_sel.upper()}", f"WEEKLY COMPARISON TABLE — {atleta_sel.upper()}")
+                        lbl_table_w_sub = tr(f"Confronto tra {len(df_comp_weeks)} microcicli settimanali", f"Comparison across {len(df_comp_weeks)} weekly microcycles")
+
+                        th_headers_w = ""
+                        for _, r in df_comp_weeks.iterrows():
+                            w_col = r['Week_Color']
+                            th_headers_w += f"<th style='text-align:center; padding:11px 8px; color:{w_col}; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{r['Week_Label']}</th>"
+
+                        rows_html_w = ""
+                        for idx_p, (col_k, col_lbl, cat_t, cat_c, fmt_str) in enumerate(params_table_week):
+                            vals_row = [float(r[col_k]) for _, r in df_comp_weeks.iterrows()]
+                            mean_v = sum(vals_row) / len(vals_row) if vals_row else 0.0
+                            max_v = max(vals_row) if vals_row else 0.0
+                            min_v = min(vals_row) if vals_row else 0.0
+                            delta_pct = ((max_v - min_v) / min_v * 100.0) if min_v > 0 else (100.0 if max_v > 0 else 0.0)
+
+                            tds_w = ""
+                            for v in vals_row:
+                                is_max = (v == max_v and max_v != min_v)
+                                cell_bg = "background:rgba(14,165,233,0.08);" if is_max else ""
+                                cell_col = "#0ea5e9" if is_max else "#0f172a"
+                                cell_fw = "900" if is_max else "700"
+                                tds_w += f"<td style='padding:11px 8px; font-size:14px; font-weight:{cell_fw}; color:{cell_col}; text-align:center; {cell_bg}'>{fmt_str.format(v)}</td>"
+
+                            bg_tr = "#ffffff" if idx_p % 2 == 0 else "#f8fafc"
+                            delta_badge = f"<span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#94a3b8; font-size:10px;'>-</span>"
+
+                            rows_html_w += (
+                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #f1f5f9;'>"
+                                f"<td style='text-align:left; padding:11px 16px;'>"
+                                f"<div style='font-weight:700; color:#0f172a; font-size:13px;'>{col_lbl}</div>"
+                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
+                                f"</td>"
+                                f"{tds_w}"
+                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#64748b; text-align:center; background:#f8fafc;'>{fmt_str.format(mean_v)}</td>"
+                                f"<td style='padding:11px 12px; text-align:center; white-space:nowrap;'>{delta_badge}</td>"
+                                f"</tr>"
+                            )
+
+                        html_table_w = (
+                            "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
+                            "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            "<div style='display:flex; align-items:center; gap:10px;'>"
+                            "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
+                            f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_table_w_header}</span>"
+                            "</div>"
+                            f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_table_w_sub}</span>"
+                            "</div>"
+                            "<table style='width:100%; border-collapse:collapse;'>"
+                            "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
+                            f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
+                            f"{th_headers_w}"
+                            f"<th style='text-align:center; padding:12px 8px; color:#64748b; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
+                            f"<th style='text-align:center; padding:12px 12px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
+                            "</tr></thead>"
+                            f"<tbody>{rows_html_w}</tbody></table></div>"
+                        )
+                        st.html(html_table_w)
 
     elif active_medie_tab == T_COMP_M:
         lbl_t2_h = tr("Testa a Testa Medie — Confronto Storico tra Atleti", "Head to Head Averages — Historical Athlete Comparison")

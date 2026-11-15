@@ -889,7 +889,7 @@ MANUALE_ANALISI = [
     },
 
     # ---------------------------------------------------------------------
-    # 6. MEDIE & CONFRONTI (7 Moduli)
+    # 6. MEDIE & CONFRONTI (8 Moduli)
     # ---------------------------------------------------------------------
     {
         "nome": "Analisi Singolo Atleta",
@@ -911,6 +911,40 @@ MANUALE_ANALISI = [
         ],
         "bibliografia": [
             "Foster, C. et al. (2001)."
+        ]
+    },
+    {
+        "nome": "Confronto Individuale",
+        "nome_it": "Confronto Multi-Sessione e Multi-Settimana dell'Atleta",
+        "area": "Medie",
+        "icona": "bi-sliders2-vertical",
+        "colore": "#0284c7",
+        "cosa_analizza": (
+            "Consente il confronto diretto analitico e visivo tra 2 o più allenamenti (sessioni) o tra 2 o più "
+            "settimane di carico per l'atleta selezionato nel menu laterale. "
+            "Permette di evidenziare differenze di volume (Durata, Training Load, Distanza), intensità specifica "
+            "(TL High, Work Rate) e carico meccanico (Accelerazioni e Decelerazioni ad alta intensità), "
+            "nonché la progressione periodizzata e la distribuzione giornaliera (Lunedì-Domenica) dei microcicli a confronto."
+        ),
+        "a_cosa_serve": (
+            "Permette a preparatori e coach di verificare i progressi prestativi dell'atleta tra sessioni analoghe, "
+            "comparare l'impatto di diverse tipologie di lavoro sul campo, e valutare la gestione del carico tra differenti "
+            "settimane di allenamento (es. settimana di carico vs settimana di scarico, o settimane di tornei differenti)."
+        ),
+        "azioni_consentite": [
+            "Selettore modalità: Confronto Allenamenti vs Confronto Settimane",
+            "Selezione multipla interattiva (minimo 2 sessioni o 2 settimane)",
+            "Grafico radar multifattoriale di intensità e volume relativo",
+            "Grafici a barre comparative su metriche chiave (Volume, Intensità, Meccanica)",
+            "Overlay della distribuzione giornaliera del microciclo (Lunedì - Domenica)",
+            "Grafico a barre impilate per tipologia di sessione nelle settimane",
+            "Tabella comparativa analitica con valori assoluti, medie e delta percentuali",
+            "Generazione Report PDF Confronto Individuale"
+        ],
+        "bibliografia": [
+            "Gabbett, T. J. (2016). The training—injury prevention paradox: should athletes be training smarter and harder? BJSM, 50(5), 273-280.",
+            "Impellizzeri, F. M. et al. (2004). Use of RPE-based training load in soccer. MSSE, 36(6), 1042-1047.",
+            "Foster, C. et al. (1998). Athletic performance in relation to training load. MSSE, 30(5), 818-821."
         ]
     },
     {

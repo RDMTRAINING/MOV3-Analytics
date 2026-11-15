@@ -2051,6 +2051,138 @@ def crea_pdf_medie_m0v3(modalita, **kwargs):
                 t_charts = Table([[fig_to_rl_image(f_tl, 770, 175)]], colWidths=[792])
             t_charts.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0'))]))
             elements.append(KeepTogether([t_charts]))
+    elif modalita == "confronto_individuale_sessioni":
+        atleta = kwargs.get('atleta', '')
+        df_sess = kwargs.get('df_sess', pd.DataFrame())
+        header_title = [
+            Paragraph("M0V3 ANALYTICS — CONFRONTO INDIVIDUALE ALLENAMENTI", title_style),
+            Paragraph(f"ATLETA: {atleta.upper()}   |   CONFRONTO ANALITICO TRA {len(df_sess)} SESSIONI", sub_style)
+        ]
+        if os.path.exists(LOGO_PATH):
+            logo_img = RLImage(LOGO_PATH, width=55, height=55)
+            t_head = Table([[header_title, logo_img]], colWidths=[715, 75])
+            t_head.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT')]))
+            elements.append(t_head)
+        else: elements.extend(header_title)
+
+        headers = ["PARAMETRO"] + [f"{r['Date']}\n{str(r.get('Session', r['Tipologia Sessione']))[:14]}" for _, r in df_sess.iterrows()] + ["MEDIA"]
+        metrics = [
+            ("Durata (min)", "Minuti", "{:.1f}"),
+            ("Training Load (AU)", "Training Load", "{:.1f}"),
+            ("TL High (AU)", "TL_High", "{:.1f}"),
+            ("High Accel IMU", "High Accel IMU", "{:.0f}"),
+            ("High Decel IMU", "High Decel IMU", "{:.0f}"),
+            ('Azioni Int. >2"', "Azioni Int. IMU >2", "{:.0f}"),
+            ("Recuperi 1-5m", "Recuperi IMU 1-5m", "{:.0f}"),
+            ("Work Rate (TL/min)", "Work Rate", "{:.2f}")
+        ]
+        rows_data = []
+        for lbl, col_k, fmt in metrics:
+            row_vals = []
+            vals_for_mean = []
+            for _, r in df_sess.iterrows():
+                if col_k == "Work Rate":
+                    dur = float(r.get('Minuti', 0))
+                    tl = float(r.get('Training Load', 0))
+                    v = (tl / dur) if dur > 0 else 0
+                else:
+                    v = float(r.get(col_k, 0)) if col_k in r and not pd.isna(r[col_k]) else 0
+                vals_for_mean.append(v)
+                row_vals.append(fmt.format(v))
+            mean_v = sum(vals_for_mean) / len(vals_for_mean) if vals_for_mean else 0
+            rows_data.append([lbl] + row_vals + [fmt.format(mean_v)])
+
+        n_c = len(headers)
+        col_w = [180] + [max(55, int(580 / max(1, n_c - 1)))] * (n_c - 1)
+        t_style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ])
+        elements.extend(genera_blocco_tabella_paginata(rows_data, col_w, headers, t_style, max_righe_p1=11, max_righe_pn=15))
+
+        sess_labels = [f"{r['Date']} {str(r.get('Session', r['Tipologia Sessione']))[:10]}" for _, r in df_sess.iterrows()]
+        tl_v = [float(r.get('Training Load', 0)) for _, r in df_sess.iterrows()]
+        tlh_v = [float(r.get('TL_High', 0)) for _, r in df_sess.iterrows()]
+        fig_p = go.Figure(data=[
+            go.Bar(name='Training Load', x=sess_labels, y=tl_v, marker_color='#0ea5e9'),
+            go.Bar(name='TL High', x=sess_labels, y=tlh_v, marker_color='#ef4444')
+        ])
+        fig_p.update_layout(
+            title="Confronto Carichi (Training Load e TL High)", barmode='group',
+            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
+            margin=dict(l=35, r=20, t=40, b=35), showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        elements.append(Spacer(1, 12))
+        elements.append(fig_to_rl_image(fig_p, 770, 185))
+
+    elif modalita == "confronto_individuale_settimane":
+        atleta = kwargs.get('atleta', '')
+        df_weeks = kwargs.get('df_weeks', pd.DataFrame())
+        header_title = [
+            Paragraph("M0V3 ANALYTICS — CONFRONTO INDIVIDUALE SETTIMANE DI CARICO", title_style),
+            Paragraph(f"ATLETA: {atleta.upper()}   |   CONFRONTO TRA {len(df_weeks)} SETTIMANE DI CARICO", sub_style)
+        ]
+        if os.path.exists(LOGO_PATH):
+            logo_img = RLImage(LOGO_PATH, width=55, height=55)
+            t_head = Table([[header_title, logo_img]], colWidths=[715, 75])
+            t_head.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT')]))
+            elements.append(t_head)
+        else: elements.extend(header_title)
+
+        headers = ["METRICA SETTIMANALE"] + [str(r['Week_Label']) for _, r in df_weeks.iterrows()] + ["MEDIA"]
+        metrics_w = [
+            ("Training Load Totale (AU)", "Training Load", "{:,.0f}"),
+            ("TL High Totale (AU)", "TL_High", "{:,.0f}"),
+            ("Durata Totale (min)", "Minuti", "{:,.0f}"),
+            ("High Accel Totali", "High Accel IMU", "{:,.0f}"),
+            ("High Decel Totali", "High Decel IMU", "{:,.0f}"),
+            ('Azioni Int. >2" Totali', "Azioni Int. IMU >2", "{:,.0f}"),
+            ("N° Sessioni Svolte", "N_Sessioni", "{:.0f}"),
+            ("Giorni Allenati (su 7)", "Giorni_Allenati", "{:.0f}"),
+        ]
+        rows_data = []
+        for lbl, col_k, fmt in metrics_w:
+            row_vals = []
+            vals_for_mean = []
+            for _, r in df_weeks.iterrows():
+                v = float(r.get(col_k, 0)) if col_k in r and not pd.isna(r[col_k]) else 0
+                vals_for_mean.append(v)
+                row_vals.append(fmt.format(v))
+            mean_v = sum(vals_for_mean) / len(vals_for_mean) if vals_for_mean else 0
+            rows_data.append([lbl] + row_vals + [fmt.format(mean_v)])
+
+        n_c = len(headers)
+        col_w = [200] + [max(60, int(560 / max(1, n_c - 1)))] * (n_c - 1)
+        t_style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0A192F')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#38bdf8')),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ])
+        elements.extend(genera_blocco_tabella_paginata(rows_data, col_w, headers, t_style, max_righe_p1=11, max_righe_pn=15))
+
+        w_labels = [str(r['Week_Label']) for _, r in df_weeks.iterrows()]
+        w_tl = [float(r.get('Training Load', 0)) for _, r in df_weeks.iterrows()]
+        w_tlh = [float(r.get('TL_High', 0)) for _, r in df_weeks.iterrows()]
+        fig_pw = go.Figure(data=[
+            go.Bar(name='Training Load Totale', x=w_labels, y=w_tl, marker_color='#0ea5e9'),
+            go.Bar(name='TL High Totale', x=w_labels, y=w_tlh, marker_color='#ef4444')
+        ])
+        fig_pw.update_layout(
+            title="Confronto Volumi e Intensità Settimanali", barmode='group',
+            paper_bgcolor='white', plot_bgcolor='white', font=dict(color='#0f172a', size=10),
+            margin=dict(l=35, r=20, t=40, b=35), showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        elements.append(Spacer(1, 12))
+        elements.append(fig_to_rl_image(fig_pw, 770, 185))
     else:
         ath_a, ath_b, sess_sel = kwargs.get('ath_a', ''), kwargs.get('ath_b', ''), kwargs.get('sess_sel', '')
         mean_a, mean_b, col_analisi = kwargs.get('mean_a'), kwargs.get('mean_b'), kwargs.get('col_analisi', [])
