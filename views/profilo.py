@@ -27,6 +27,8 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
+    set_notification,
+    notify_success,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -184,6 +186,11 @@ def render_profilo(t):
                     else:
                         try:
                             supabase.auth.update_user({"password": nuova_pw})
+                            notify_success(
+                                title=tr("Password Aggiornata", "Password Updated"),
+                                message=t['succ_pwd'],
+                                tipo="toast"
+                            )
                             st.success(t['succ_pwd'])
                         except Exception as e:
                             st.error(f"Errore durante l'aggiornamento password: {e}")
@@ -313,7 +320,15 @@ def render_profilo(t):
                 st.session_state['user'] = None
                 st.session_state['role'] = None
                 st.session_state['privacy_accettata'] = False
-                st.success("Account eliminato con successo. Arrivederci.")
+                set_notification(
+                    title=tr("Account Eliminato Definitivamente", "Account Permanently Deleted"),
+                    message=tr("Il tuo account è stato eliminato con successo. Arrivederci.", "Your account has been deleted successfully. Goodbye."),
+                    tipo="modal",
+                    details=[
+                        tr("Profilo rimosso definitivamente", "Profile permanently removed"),
+                        tr("Sessione utente terminata", "User session terminated")
+                    ]
+                )
                 st.rerun()
             except Exception as e:
                 st.error(f"Errore durante l'eliminazione dell'account: {e}")

@@ -4031,3 +4031,109 @@ def render_m0v3_footer(is_sidebar=False):
     st.markdown(html, unsafe_allow_html=True)
 
 
+# =========================================================================
+# SISTEMA NOTIFICHE GLOBALE M0V3 ANALYTICS (OPZIONE 3: MODAL & TOAST HUD)
+# =========================================================================
+
+@st.dialog("M0V3 ANALYTICS — CONFERMA OPERAZIONE", width="small")
+def _render_m0v3_modal_dialog(title, message, details=None):
+    """
+    Finestra Pop-up Modale ufficiale M0V3 Analytics per conferme di operazioni strutturali
+    (importazione CSV, eliminazioni definitive, generazioni simulate, nuovi atleti).
+    """
+    st.markdown(
+        f"""
+        <div style="text-align:center; padding:8px 4px 16px 4px; font-family:'Inter', sans-serif;">
+            <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(16, 185, 129, 0.12); border:2px solid #10b981; margin-bottom:14px; box-shadow:0 0 25px rgba(16, 185, 129, 0.35);">
+                <span style="font-size:32px; color:#10b981; line-height:1; font-weight:900;">✓</span>
+            </div>
+            <div style="color:#0f172a; font-weight:800; font-size:1.22rem; margin-bottom:8px; letter-spacing:-0.2px;">
+                {title}
+            </div>
+            <div style="color:#475569; font-size:0.92rem; line-height:1.5; margin-bottom:14px;">
+                {message}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if details:
+        if isinstance(details, (list, tuple)):
+            items_html = "".join([f"<li style='margin-bottom:5px; color:#334155; font-size:0.84rem; line-height:1.4;'>{d}</li>" for d in details])
+        elif isinstance(details, dict):
+            items_html = "".join([f"<li style='margin-bottom:5px; color:#334155; font-size:0.84rem; line-height:1.4;'><b style='color:#0f172a;'>{k}:</b> {v}</li>" for k, v in details.items()])
+        else:
+            items_html = f"<li style='color:#334155; font-size:0.84rem;'>{details}</li>"
+            
+        st.markdown(
+            f"""
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Inter', sans-serif;">
+                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:6px;">Dettagli Operazione</div>
+                <ul style="margin:0; padding-left:20px;">
+                    {items_html}
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+    if st.button("✓ OK, Continua", type="primary", use_container_width=True, key="btn_m0v3_modal_ok"):
+        st.rerun()
+
+
+def set_notification(title, message, tipo="toast", details=None):
+    """
+    Imposta una notifica univoca in session_state che verrà consumata ed eliminata al prossimo rendering.
+    - tipo='toast': Floating Toast HUD (auto-dismiss dopo 4s) per salvataggi veloci (diario clinico, permessi, mapping, password).
+    - tipo='modal': Pop-up modale centrale (st.dialog) per operazioni strutturali (upload CSV, eliminazione definitiva, nuovi atleti).
+    Garantisce zero falsi positivi quando l'utente cambia atleta, data o selezione di menu a tendina.
+    """
+    st.session_state['_m0v3_pending_notification'] = {
+        "title": title,
+        "message": message,
+        "tipo": tipo,
+        "details": details
+    }
+
+
+def notify_success(title, message, tipo="toast", details=None, rerun=False):
+    """
+    Emette una notifica o la accoda per il rerun immediato.
+    Se rerun=True, salva la notifica e invoca st.rerun().
+    Se rerun=False e siamo a runtime:
+    - Per 'toast': invoca direttamente st.toast(...)
+    - Per 'modal': apre direttamente il modale _render_m0v3_modal_dialog(...)
+    """
+    if rerun:
+        set_notification(title, message, tipo=tipo, details=details)
+        st.rerun()
+    else:
+        if tipo == "modal":
+            _render_m0v3_modal_dialog(title, message, details=details)
+        else:
+            st.toast(f"✅ **{title}**\n\n{message}", icon="⚡")
+
+
+def check_and_render_notifications():
+    """
+    Verifica se vi è una notifica pendente in st.session_state['_m0v3_pending_notification'].
+    Se presente, la estrae (consumandola con .pop per azzerarla istantaneamente)
+    e renderizza il Modale st.dialog o lo st.toast.
+    Non si attiva mai al cambio di dropdown, filtri o atleta.
+    """
+    notif = st.session_state.pop('_m0v3_pending_notification', None)
+    if not notif:
+        return
+        
+    tipo = notif.get("tipo", "toast")
+    title = notif.get("title", "Operazione Completata")
+    message = notif.get("message", "Modifiche salvate con successo.")
+    details = notif.get("details")
+    
+    if tipo == "modal":
+        _render_m0v3_modal_dialog(title, message, details=details)
+    else:
+        st.toast(f"✅ **{title}**\n\n{message}", icon="⚡")
+
+
+

@@ -23,6 +23,7 @@ from utils import (
     get_sessioni_test,
     get_catalogo_protocolli,
     valuta_readiness_test,
+    set_notification,
 )
 try:
     from utils import render_m0v3_footer
@@ -815,7 +816,11 @@ def render_atleta_mobile(t=None):
                 }
                 ok, res = upsert_wellness_mattutino(payload)
                 if ok:
-                    st.success(tr("Wellness registrato correttamente!", "Wellness saved successfully!"))
+                    set_notification(
+                        title=tr("Wellness Registrato", "Wellness Recorded"),
+                        message=tr("Questionario del benessere salvato con successo!", "Wellness questionnaire saved successfully!"),
+                        tipo="toast"
+                    )
                     st.rerun()
                 else:
                     st.error(f"{tr('Errore:', 'Error:')} {res}")
@@ -989,7 +994,11 @@ def render_atleta_mobile(t=None):
                     }
                     ok, res = calcola_e_salva_slot_rpe(payload1, autore='atleta')
                     if ok:
-                        st.success(tr("Seduta 1 registrata!", "Session 1 saved!"))
+                        set_notification(
+                            title=tr("Seduta 1 Registrata", "Session 1 Recorded"),
+                            message=tr("Carico sRPE della Seduta 1 salvato correttamente!", "sRPE load for Session 1 saved successfully!"),
+                            tipo="toast"
+                        )
                         st.rerun()
                     else:
                         st.error(f"{tr('Errore:', 'Error:')} {res}")
@@ -998,7 +1007,11 @@ def render_atleta_mobile(t=None):
                 with col_s1_del:
                     if st.button(tr("Elimina", "Delete"), key="btn_del_s1_direct", use_container_width=True):
                         delete_rpe_sessione(slot1_data['id'])
-                        st.success(tr("Seduta 1 eliminata!", "Session 1 deleted!"))
+                        set_notification(
+                            title=tr("Seduta 1 Eliminata", "Session 1 Deleted"),
+                            message=tr("La Seduta 1 è stata rimossa.", "Session 1 was removed."),
+                            tipo="toast"
+                        )
                         st.rerun()
 
             st.markdown("<hr style='border: none; border-top: 1px dashed rgba(255,255,255,0.12); margin: 16px 0;'>", unsafe_allow_html=True)
@@ -1152,7 +1165,11 @@ def render_atleta_mobile(t=None):
                         }
                         ok, res = calcola_e_salva_slot_rpe(payload2, autore='atleta')
                         if ok:
-                            st.success(tr("Seduta 2 registrata!", "Session 2 saved!"))
+                            set_notification(
+                                title=tr("Seduta 2 Registrata", "Session 2 Recorded"),
+                                message=tr("Carico sRPE della Seduta 2 salvato correttamente!", "sRPE load for Session 2 saved successfully!"),
+                                tipo="toast"
+                            )
                             st.rerun()
                         else:
                             st.error(f"{tr('Errore:', 'Error:')} {res}")
@@ -1161,7 +1178,11 @@ def render_atleta_mobile(t=None):
                     with col_s2_del:
                         if st.button(tr("Elimina", "Delete"), key="btn_del_s2_direct", use_container_width=True):
                             delete_rpe_sessione(slot2_data['id'])
-                            st.success(tr("Seduta 2 eliminata!", "Session 2 deleted!"))
+                            set_notification(
+                                title=tr("Seduta 2 Eliminata", "Session 2 Deleted"),
+                                message=tr("La Seduta 2 è stata rimossa.", "Session 2 was removed."),
+                                tipo="toast"
+                            )
                             st.rerun()
 
     # =========================================================================

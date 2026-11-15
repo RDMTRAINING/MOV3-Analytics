@@ -43,6 +43,7 @@ from utils import (
     upsert_protocollo_custom,
     delete_protocollo_custom,
     render_athlete_hero_strip,
+    set_notification,
 )
 
 
@@ -2068,7 +2069,11 @@ def render_test_fisici(t):
                                             }
                                             ok_upd, res_upd = update_sessione_test_completa(target_sess_mod['id'], payload_update)
                                             if ok_upd:
-                                                st.success(tr("Test aggiornato con successo!", "Test updated successfully!"))
+                                                set_notification(
+                                                    title=tr("Test Aggiornato", "Test Updated"),
+                                                    message=tr("La misurazione del test è stata aggiornata con successo.", "Test measurement was updated successfully."),
+                                                    tipo="toast"
+                                                )
                                                 st.rerun()
                                             else:
                                                 st.error(f"Errore durante l'aggiornamento: {res_upd}")
@@ -2076,7 +2081,11 @@ def render_test_fisici(t):
                                 with c_act_del:
                                     if st.button(tr("Elimina Test", "Delete Test"), type="secondary", use_container_width=True, key=f"btn_del_mod_{target_sess_mod.get('id')}"):
                                         if delete_sessione_test(target_sess_mod['id']):
-                                            st.success(tr("Test eliminato con successo!", "Test deleted successfully!"))
+                                            set_notification(
+                                                title=tr("Test Eliminato", "Test Deleted"),
+                                                message=tr("La misurazione del test è stata rimossa.", "Test measurement was removed."),
+                                                tipo="toast"
+                                            )
                                             st.rerun()
                                         else:
                                             st.error(tr("Errore durante l'eliminazione.", "Error deleting test."))
@@ -2186,7 +2195,16 @@ def render_test_fisici(t):
                                     imported_count += 1
                                     
                                 st.cache_data.clear()
-                                st.success(f"🎉 **{imported_count} test salvati con successo per {atleta_dest}!**")
+                                set_notification(
+                                    title=tr("Test Fisici Importati con Successo", "Physical Tests Imported Successfully"),
+                                    message=tr(f"{imported_count} misurazioni test salvate con successo per {atleta_dest}!", f"{imported_count} test measurements saved successfully for {atleta_dest}!"),
+                                    tipo="modal",
+                                    details=[
+                                        tr(f"Atleta destinatario: {atleta_dest}", f"Target athlete: {atleta_dest}"),
+                                        tr(f"Totale test importati: {imported_count}", f"Total imported tests: {imported_count}"),
+                                        tr("Database test e baseline aggiornati", "Test database and baseline updated")
+                                    ]
+                                )
                                 st.rerun()
 
             # -------------------------------------------------------------
@@ -2320,7 +2338,11 @@ def render_test_fisici(t):
                             }
                             ok, res = upsert_sessione_test(payload)
                             if ok:
-                                st.success(f"Test {target_prot['nome_protocollo']} salvato con successo per {atleta_ins}!")
+                                set_notification(
+                                    title=tr("Test Fisico Registrato", "Physical Test Recorded"),
+                                    message=tr(f"Test '{target_prot['nome_protocollo']}' salvato con successo per {atleta_ins}!", f"Test '{target_prot['nome_protocollo']}' saved successfully for {atleta_ins}!"),
+                                    tipo="toast"
+                                )
                                 st.rerun()
                             else:
                                 if "PGRST205" in str(res) or "Could not find the table" in str(res):
@@ -2436,7 +2458,11 @@ def render_test_fisici(t):
                         }
                         ok, res = upsert_protocollo_custom(payload_cust)
                         if ok:
-                            st.success(f"Protocollo '{cust_nome}' creato e integrato nel catalogo!")
+                            set_notification(
+                                title=tr("Nuovo Protocollo Creato", "New Protocol Created"),
+                                message=tr(f"Protocollo '{cust_nome}' creato e integrato nel catalogo!", f"Protocol '{cust_nome}' created and added to catalog!"),
+                                tipo="toast"
+                            )
                             st.rerun()
                         else:
                             st.error(f"Errore durante la creazione del protocollo: {res}")

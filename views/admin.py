@@ -32,6 +32,8 @@ from utils import (
     load_local_database,
     save_local_database,
     clear_atleti_cache,
+    set_notification,
+    notify_success,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -93,7 +95,15 @@ def render_admin(t):
             if nuovo_nome and nuovo_cognome:
                 supabase_admin.table('atleti').insert({"nome": nuovo_nome, "cognome": nuovo_cognome}).execute()
                 clear_atleti_cache()
-                st.success(f"Atleta {nuovo_nome} {nuovo_cognome} OK!")
+                set_notification(
+                    title=tr("Atleta Aggiunto con Successo", "Athlete Added Successfully"),
+                    message=tr(f"L'atleta {nuovo_nome} {nuovo_cognome} è stato registrato nel database.", f"Athlete {nuovo_nome} {nuovo_cognome} was registered in the database."),
+                    tipo="modal",
+                    details=[
+                        tr(f"Nome completo: {nuovo_nome} {nuovo_cognome}", f"Full name: {nuovo_nome} {nuovo_cognome}"),
+                        tr("Database atleti e cache aggiornati", "Athletes database and cache updated")
+                    ]
+                )
                 st.rerun()
 
         st.divider()
@@ -116,7 +126,15 @@ def render_admin(t):
                         supabase_admin.table('associazioni').delete().eq('atleta_id', id_da_eliminare).execute()
                         supabase_admin.table('atleti').delete().eq('id', id_da_eliminare).execute()
                         clear_atleti_cache()
-                        st.success(f"{atleta_da_eliminare} OK!")
+                        set_notification(
+                            title=tr("Atleta Eliminato Definitivamente", "Athlete Permanently Deleted"),
+                            message=tr(f"L'atleta {atleta_da_eliminare} e le relative associazioni sono stati rimossi dal sistema.", f"Athlete {atleta_da_eliminare} and associated records were removed."),
+                            tipo="modal",
+                            details=[
+                                tr(f"Atleta rimosso: {atleta_da_eliminare}", f"Removed athlete: {atleta_da_eliminare}"),
+                                tr("Associazioni e permessi aggiornati", "Associations and permissions updated")
+                            ]
+                        )
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error: {e}")
@@ -318,6 +336,11 @@ def render_admin(t):
                             "ruolo": db_ruolo,
                             "privacy_accettata": False
                         }).execute()
+                        notify_success(
+                            title=tr("Utente Registrato", "User Registered"),
+                            message=tr(f"Profilo creato per {target_email} con ruolo '{db_ruolo}'.", f"Profile created for {target_email} with role '{db_ruolo}'."),
+                            tipo="toast"
+                        )
                         st.success(f"✓ Utente registrato con successo nel database: {target_email} (Ruolo: {db_ruolo})")
 
                         # Invio Email con credenziali, link di accesso e nota cambio password
@@ -437,7 +460,11 @@ def render_admin(t):
                         if nuove_assoc:
                             supabase_admin.table('associazioni').insert(nuove_assoc).execute()
                         clear_atleti_cache()
-                        st.success(f"Permessi aggiornati per {utente_selezionato}!")
+                        set_notification(
+                            title=tr("Permessi Atleti Aggiornati", "Athlete Permissions Updated"),
+                            message=tr(f"I permessi di accesso per {utente_selezionato} sono stati salvati.", f"Access permissions for {utente_selezionato} were saved."),
+                            tipo="toast"
+                        )
                         st.rerun()
 
                 # Sezione Sicurezza e Reset Password
@@ -510,7 +537,16 @@ def render_admin(t):
                                 if st.button("Elimina Tutti i Dati e CSV", type="primary", disabled=not chk_del_u_data, key=f"btn_del_data_{p_id}"):
                                     df_nuovo_admin = df_storico_admin[df_storico_admin['Uploader_Email'] != utente_selezionato].copy()
                                     save_local_database(df_nuovo_admin)
-                                    st.success(f"Eliminate con successo tutte le {tot_u_sess} sessioni di {utente_selezionato} dal database!")
+                                    set_notification(
+                                        title=tr("Sessioni Utente Eliminate", "User Sessions Deleted"),
+                                        message=tr(f"Eliminate tutte le {tot_u_sess} sessioni caricate da {utente_selezionato}.", f"Deleted all {tot_u_sess} sessions uploaded by {utente_selezionato}."),
+                                        tipo="modal",
+                                        details=[
+                                            f"Utente: {utente_selezionato}",
+                                            tr(f"Totale sessioni eliminate: {tot_u_sess}", f"Total sessions deleted: {tot_u_sess}"),
+                                            tr("Database aggiornato e ripulito", "Database updated and cleaned")
+                                        ]
+                                    )
                                     st.rerun()
                         else:
                             st.caption("Nessun dato da cancellare per questo utente.")
@@ -545,7 +581,15 @@ def render_admin(t):
                                     idx_to_drop = opzioni_singola[sel_singola_lbl]
                                     df_nuovo_sing = df_storico_admin.drop(index=idx_to_drop).copy()
                                     save_local_database(df_nuovo_sing)
-                                    st.success(f"Sessione '{sel_singola_lbl}' eliminata con successo!")
+                                    set_notification(
+                                        title=tr("Sessione Eliminata Definitivamente", "Session Permanently Deleted"),
+                                        message=tr(f"La sessione selezionata è stata rimossa dal database.", f"The selected session was removed from the database."),
+                                        tipo="modal",
+                                        details=[
+                                            f"Utente: {utente_selezionato}",
+                                            f"Sessione: {sel_singola_lbl}"
+                                        ]
+                                    )
                                     st.rerun()
 
         st.markdown("---")
@@ -606,7 +650,11 @@ def render_admin(t):
                                     for c_std in COLONNE_STANDARD:
                                         for k_pref in ("sel_", "f_"):
                                             st.session_state.pop(f"{k_pref}{profilo_mappa_id}_{c_std}", None)
-                                    st.success(f"Mappatura copiata con successo su {utente_mappa}!")
+                                    set_notification(
+                                        title=tr("Mappatura Copiata", "Mapping Copied"),
+                                        message=tr(f"Mappatura colonne clonata con successo su {utente_mappa}!", f"Column mapping successfully cloned to {utente_mappa}!"),
+                                        tipo="toast"
+                                    )
                                     st.rerun()
                                 except Exception as err_cl:
                                     st.error(f"Errore durante la clonazione: {err_cl}")
@@ -731,6 +779,11 @@ def render_admin(t):
                 if st.button(t['btn_save_map'], type="primary", key="save_mapping_btn"):
                     try:
                         supabase_admin.table('mappatura_csv').upsert({"profilo_id": profilo_mappa_id, "mapping": nuovo_mapping}).execute()
+                        notify_success(
+                            title=tr("Mappatura Colonne CSV Salvata", "CSV Column Mapping Saved"),
+                            message=tr("La mappatura delle colonne GPS è stata registrata con successo.", "GPS column mapping was registered successfully."),
+                            tipo="toast"
+                        )
                         st.success("Mappatura salvata con successo! / Mapping saved!")
                     except Exception as e:
                         st.error(f"Error: {e}")
@@ -917,7 +970,11 @@ def render_admin(t):
                                     supabase_admin.table('moduli_report').insert(selezioni_nuove[b_i:b_i+50]).execute()
                             
                             st.session_state['refresh_permessi'] = True
-                            st.success(f"✓ Permessi e visibilità menu aggiornati con successo per {utente_report}!")
+                            set_notification(
+                                title=tr("Permessi Menu Aggiornati", "Menu Permissions Updated"),
+                                message=tr(f"Visibilità moduli e report aggiornata per {utente_report}!", f"Menu visibility and reports updated for {utente_report}!"),
+                                tipo="toast"
+                            )
                             st.rerun()
                         except Exception as e:
                             st.error(f"Errore durante il salvataggio dei permessi: {e}")

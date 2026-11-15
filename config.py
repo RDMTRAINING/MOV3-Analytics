@@ -525,6 +525,43 @@ def add_custom_css(image_file=None):
         color: #475569 !important;
     }}
 
+    /* =========================================================================
+       SISTEMA DI NOTIFICHE GLOBALE M0V3 ANALYTICS (OPZIONE 3: MODAL & TOAST HUD)
+       ========================================================================= */
+    /* Floating Toast HUD: Dark glassmorphism, bordo verde smeraldo e ombra ad alta visibilità */
+    div[data-testid="stToast"] {
+        background: rgba(15, 23, 42, 0.95) !important;
+        border: 1px solid rgba(16, 185, 129, 0.5) !important;
+        box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 0 16px rgba(16, 185, 129, 0.3) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        color: #f8fafc !important;
+        padding: 12px 18px !important;
+    }
+    div[data-testid="stToast"] div {
+        color: #e2e8f0 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    div[data-testid="stToast"] b, 
+    div[data-testid="stToast"] strong {
+        color: #34d399 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Stile Modale Streamlit (st.dialog) con bordo M0V3 e accenti emerald */
+    div[data-testid="stModal"] > div[role="dialog"] {
+        border-radius: 16px !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.5), 0 0 25px rgba(16, 185, 129, 0.25) !important;
+        overflow: hidden !important;
+    }
+    div[data-testid="stModal"] header {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 14px 20px !important;
+    }
+
     .report-table table, .report-table th, .report-table td {{ font-size: 14px !important; font-weight: bold !important; font-family: 'Inter', sans-serif !important; }}
     @media screen {{ .print-only {{ display: none !important; }} }}
     @media print {{

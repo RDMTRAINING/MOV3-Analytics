@@ -35,6 +35,7 @@ from utils import (
     delete_registro_medico,
     render_athlete_hero_strip,
     calcola_e_salva_slot_rpe,
+    set_notification,
 )
 
 # =========================================================================
@@ -896,12 +897,20 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                                          st.session_state['mock_registro_medico'] = []
                                     new_pay['id'] = f"mock-reg-{len(st.session_state['mock_registro_medico']) + 1}"
                                     st.session_state['mock_registro_medico'].insert(0, new_pay)
-                                    st.success(f"{tr('Trattamento duplicato per il', 'Treatment duplicated for')} {d_target_insp}!")
+                                    set_notification(
+                                        title=tr("Trattamento Duplicato", "Treatment Duplicated"),
+                                        message=f"{tr('Trattamento duplicato per il', 'Treatment duplicated for')} {d_target_insp}!",
+                                        tipo="toast"
+                                    )
                                     st.rerun()
                                 else:
                                     succ_d, res_db_d = upsert_registro_medico(new_pay)
                                     if succ_d:
-                                        st.success(f"{tr('Trattamento duplicato per il', 'Treatment duplicated for')} {d_target_insp}!")
+                                        set_notification(
+                                            title=tr("Trattamento Duplicato", "Treatment Duplicated"),
+                                            message=f"{tr('Trattamento duplicato per il', 'Treatment duplicated for')} {d_target_insp}!",
+                                            tipo="toast"
+                                        )
                                         st.rerun()
                                     else:
                                         st.error(f"{tr('Errore', 'Error')}: {res_db_d}")
@@ -2135,7 +2144,11 @@ def render_allenamenti_gym_fisico(t, atleta_sel=None, atleta_id_sel=None, key_pr
             }
             ok_st, res_st = calcola_e_salva_slot_rpe(staff_payload, autore='staff')
             if ok_st:
-                st.success(tr("Seduta validata e salvata con successo dallo Staff!", "Session successfully validated and saved by Staff!"))
+                set_notification(
+                    title=tr("Seduta Validata dallo Staff", "Session Validated by Staff"),
+                    message=tr("La seduta di preparazione/palestra è stata salvata con successo.", "Gym/prep session was successfully saved."),
+                    tipo="toast"
+                )
                 st.rerun()
             else:
                 st.error(f"{tr('Errore nel salvataggio:', 'Error saving:')} {res_st}")
@@ -2485,12 +2498,20 @@ def render_calendario_medico(t):
                         st.session_state['mock_registro_medico'] = []
                     payload['id'] = f"mock-reg-{len(st.session_state['mock_registro_medico']) + 1}"
                     st.session_state['mock_registro_medico'].insert(0, payload)
-                    st.success(f"Voce registrata con successo nel diario clinico di {atleta_sel} (Modalità Demo)!")
+                    set_notification(
+                        title=tr("Diario Clinico Aggiornato", "Clinical Diary Updated"),
+                        message=tr(f"Voce registrata con successo nel diario clinico di {atleta_sel} (Modalità Demo)!", f"Entry successfully recorded in clinical diary of {atleta_sel} (Demo Mode)!"),
+                        tipo="toast"
+                    )
                     st.rerun()
                 else:
                     success, res_db = upsert_registro_medico(payload)
                     if success:
-                        st.success(f"Voce registrata con successo nel diario clinico di {atleta_sel}!")
+                        set_notification(
+                            title=tr("Diario Clinico Aggiornato", "Clinical Diary Updated"),
+                            message=tr(f"Voce registrata con successo nel diario clinico di {atleta_sel}!", f"Entry successfully recorded in clinical diary of {atleta_sel}!"),
+                            tipo="toast"
+                        )
                         st.rerun()
                     else:
                         st.error(f"Errore durante il salvataggio su database: {res_db}")
@@ -2607,12 +2628,20 @@ def render_calendario_medico(t):
                                 st.session_state['mock_registro_medico'] = []
                             new_pay['id'] = f"mock-reg-{len(st.session_state['mock_registro_medico']) + 1}"
                             st.session_state['mock_registro_medico'].insert(0, new_pay)
-                            st.success(f"Trattamento duplicato con successo per il {data_ripetizione}!")
+                            set_notification(
+                                title=tr("Trattamento Duplicato", "Treatment Duplicated"),
+                                message=tr(f"Trattamento duplicato con successo per il {data_ripetizione}!", f"Treatment duplicated successfully for {data_ripetizione}!"),
+                                tipo="toast"
+                            )
                             st.rerun()
                         else:
                             succ_d, res_db_d = upsert_registro_medico(new_pay)
                             if succ_d:
-                                st.success(f"Trattamento duplicato con successo per il {data_ripetizione}!")
+                                set_notification(
+                                    title=tr("Trattamento Duplicato", "Treatment Duplicated"),
+                                    message=tr(f"Trattamento duplicato con successo per il {data_ripetizione}!", f"Treatment duplicated successfully for {data_ripetizione}!"),
+                                    tipo="toast"
+                                )
                                 st.rerun()
                             else:
                                 st.error(f"Errore duplicazione: {res_db_d}")
@@ -2630,12 +2659,20 @@ def render_calendario_medico(t):
                     if str(id_to_del).startswith("mock-"):
                         if 'mock_registro_medico' in st.session_state:
                             st.session_state['mock_registro_medico'] = [r for r in st.session_state['mock_registro_medico'] if r.get('id') != id_to_del]
-                        st.success("Registrazione demo eliminata con successo!")
+                        set_notification(
+                            title=tr("Registrazione Eliminata", "Entry Deleted"),
+                            message=tr("Registrazione demo eliminata con successo!", "Demo entry deleted successfully!"),
+                            tipo="toast"
+                        )
                         st.rerun()
                     else:
                         succ = delete_registro_medico(id_to_del)
                         if succ:
-                            st.success("Registrazione eliminata dal database!")
+                            set_notification(
+                                title=tr("Registrazione Eliminata", "Entry Deleted"),
+                                message=tr("Registrazione rimossa dal database!", "Entry removed from database!"),
+                                tipo="toast"
+                            )
                             st.rerun()
                         else:
                             st.error("Errore durante l'eliminazione del record.")

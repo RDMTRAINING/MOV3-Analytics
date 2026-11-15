@@ -31,6 +31,7 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
+    set_notification,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -283,7 +284,11 @@ def render_gestione_file(t):
                             df_storico.loc[idx_target, c_gps] = 0.0
 
                 save_local_database(df_storico)
-                st.success(tr("Informazioni della sessione aggiornate con successo!", "Session info successfully updated!"))
+                set_notification(
+                    title=tr("Informazioni Sessione Aggiornate", "Session Info Updated"),
+                    message=tr("Le informazioni della sessione sono state salvate con successo.", "Session info was successfully saved."),
+                    tipo="toast"
+                )
                 st.rerun()
 
     st.divider()
@@ -295,7 +300,15 @@ def render_gestione_file(t):
         idx_del = mappa_sessioni_idx[etichetta_da_eliminare]
         df_pulito = df_storico.drop(index=idx_del).reset_index(drop=True)
         save_local_database(df_pulito)
-        st.success(tr(f"Sessione '{etichetta_da_eliminare}' eliminata definitivamente!", f"Session '{etichetta_da_eliminare}' permanently deleted!"))
+        set_notification(
+            title=tr("Sessione Eliminata Definitivamente", "Session Permanently Deleted"),
+            message=tr(f"La sessione '{etichetta_da_eliminare}' è stata rimossa dal database.", f"Session '{etichetta_da_eliminare}' was permanently removed from database."),
+            tipo="modal",
+            details=[
+                tr(f"Sessione: {etichetta_da_eliminare}", f"Session: {etichetta_da_eliminare}"),
+                tr("Database aggiornato e ricalcolato", "Database updated and recalculated")
+            ]
+        )
         st.rerun()
 
     st.divider()
@@ -314,5 +327,13 @@ def render_gestione_file(t):
             df_storico_restante = df_storico.drop(index=df_vista.index)
             df_nuovo_completo = pd.concat([df_storico_restante, df_modificato], ignore_index=True)
             save_local_database(df_nuovo_completo)
-            st.success(tr("Database aggiornato e ripulito con successo!", "Database updated and cleaned successfully!"))
+            set_notification(
+                title=tr("Database Aggiornato", "Database Updated"),
+                message=tr("Le modifiche alla tabella database sono state salvate con successo.", "Database table modifications were saved successfully."),
+                tipo="modal",
+                details=[
+                    tr(f"Totale sessioni nel database: {len(df_nuovo_completo)}", f"Total sessions in database: {len(df_nuovo_completo)}"),
+                    tr("Snapshot e cache sincronizzati", "Snapshot and cache synchronized")
+                ]
+            )
             st.rerun()

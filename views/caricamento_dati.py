@@ -31,6 +31,7 @@ from utils import (
     applica_mappatura_csv,
     load_local_database,
     save_local_database,
+    set_notification,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -294,10 +295,18 @@ def render_caricamento_dati(t):
                     dedup_cols.append('File_Name')
                 db_aggiornato.drop_duplicates(subset=dedup_cols, keep='last', inplace=True)
                 save_local_database(db_aggiornato)
-                st.success(
-                    tr(
-                        f"Elaborazione completata! Importate {tot_righe_importate} sessioni pulite e salvate nel database.",
-                        f"Processing complete! Imported {tot_righe_importate} clean sessions into the database."
-                    )
+                set_notification(
+                    title=tr("Importazione CSV Completata con Successo", "CSV Import Completed Successfully"),
+                    message=tr(
+                        f"Importate {tot_righe_importate} sessioni pulite e integrate nel database di M0V3 Analytics.",
+                        f"Successfully imported and integrated {tot_righe_importate} clean sessions into the M0V3 Analytics database."
+                    ),
+                    tipo="modal",
+                    details=[
+                        tr(f"File elaborati: {len(dataframes)}", f"Processed files: {len(dataframes)}"),
+                        tr(f"Nuove sessioni/righe salvate: {tot_righe_importate}", f"New saved sessions/rows: {tot_righe_importate}"),
+                        tr("Database storico sincronizzato e ricalcolato", "Historical database synchronized and recalculated")
+                    ]
                 )
+                st.rerun()
 

@@ -53,6 +53,7 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
+    check_and_render_notifications,
 )
 get_cloud_snapshot_status = getattr(
     utils,
@@ -123,6 +124,11 @@ if 'terms_accepted_at' not in st.session_state: st.session_state['terms_accepted
 if 'terms_version' not in st.session_state: st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
 
 add_custom_css(LOGO_CIRCULAR_PATH)
+
+# =========================================================================
+# GESTIONE NOTIFICHE UNIFICATE M0V3 (OPZIONE 3: MODAL & TOAST HUD)
+# =========================================================================
+check_and_render_notifications()
 
 # =========================================================================
 # AUTENTICAZIONE E RICHIESTA SUPPORTO PASSWORD A M0V3
@@ -1545,7 +1551,8 @@ def main():
                     st.session_state.current_page = "Diario Atleta"
                     st.rerun()
 
-    # ==================== ROUTING PAGINE ====================
+    # ==================== ROUTING PAGINE & NOTIFICHE M0V3 ====================
+    check_and_render_notifications()
     import pdf_generator
     if DEV_MODE:
         importlib.reload(pdf_generator)

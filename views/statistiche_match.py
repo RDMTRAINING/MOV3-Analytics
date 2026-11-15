@@ -26,6 +26,7 @@ from utils import (
     get_lista_atleti_disponibili,
     get_val,
     render_athlete_hero_strip,
+    set_notification,
 )
 from utils_tennis_matches import (
     load_cobolli_matches,
@@ -1502,7 +1503,11 @@ def render_statistiche_match(t):
 
                         if is_linked and st.button(tr("Scollega Sessione GPS", "Unlink GPS Session"), key=f"unlink_{m_id}", icon=":material/link_off:"):
                             remove_match_gps_link(m_id)
-                            st.success(tr("Sessione scollegata con successo.", "GPS session unlinked successfully."))
+                            set_notification(
+                                title=tr("Sessione GPS Scollegata", "GPS Session Unlinked"),
+                                message=tr("La sessione GPS è stata scollegata con successo dal match.", "GPS session was unlinked successfully from match."),
+                                tipo="toast"
+                            )
                             st.rerun()
 
                     else:

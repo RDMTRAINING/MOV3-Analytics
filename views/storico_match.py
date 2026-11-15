@@ -30,6 +30,7 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
+    set_notification,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -350,7 +351,11 @@ def render_storico_match(t):
                                 nuovi_pesi = {'w_min': nw_min, 'w_tl': nw_tl, 'w_az2': nw_az2, 'w_mech': nw_mech, 'w_tlmin': nw_tlmin, 'w_tlhmin': nw_tlhmin, 'w_accmin': nw_accmin, 'w_decmin': nw_decmin, 'w_az2min': nw_az2min}
                                 try:
                                     supabase.table('impostazioni_pesi').upsert({"profilo_id": st.session_state['user'].id, "pesi": nuovi_pesi}).execute()
-                                    st.success(tr("Pesi aggiornati con successo!", "Weights updated successfully!"))
+                                    set_notification(
+                                        title=tr("Pesi Match Aggiornati", "Match Weights Updated"),
+                                        message=tr("Impostazioni e pesi formula salvati con successo!", "Formula weight settings saved successfully!"),
+                                        tipo="toast"
+                                    )
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"DB Error: {e}")

@@ -28,6 +28,7 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
+    set_notification,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -248,11 +249,20 @@ def render_generatore_dati(t):
         db_aggiornato.drop_duplicates(subset=['Date', 'Session', 'Players'], keep='last', inplace=True)
         save_local_database(db_aggiornato)
         
-        if usato_media_generale: 
-            st.warning(tr(
-                f"Generata simulazione per {atleta}. NOTA: Non essendoci uno storico per la tipologia '{tipo_sess_effettiva}', è stata usata la media generale.",
-                f"Generated simulation for {atleta}. NOTE: As no history existed for '{tipo_sess_effettiva}', general averages were used."
-            ))
-        else: 
-            st.success(f"{t['sim_succ']} {atleta}.")
+        dettagli_sim = [
+            tr(f"Atleta: {atleta}", f"Athlete: {atleta}"),
+            tr(f"Sessione: {nome_sessione} ({tipo_sess_effettiva})", f"Session: {nome_sessione} ({tipo_sess_effettiva})"),
+            tr(f"Data: {data_sim}", f"Date: {data_sim}"),
+            tr("Dato registrato come 'Dato_Simulato' nel database", "Data registered as 'Dato_Simulato' in database")
+        ]
+        if usato_media_generale:
+            dettagli_sim.append(tr("Parametri stimati tramite media generale", "Parameters estimated via general average"))
+
+        set_notification(
+            title=tr("Simulazione Dati Generata", "Data Simulation Generated"),
+            message=tr(f"Sessione simulata registrata con successo nel database per {atleta}.", f"Simulated session successfully recorded in database for {atleta}."),
+            tipo="modal",
+            details=dettagli_sim
+        )
+        st.rerun()
 
