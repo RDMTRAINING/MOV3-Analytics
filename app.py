@@ -8,6 +8,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 from streamlit_option_menu import option_menu
 
+import config
+try:
+    importlib.reload(config)
+except Exception:
+    pass
+
 from config import (
     LOGO_PATH,
     LOGO_CIRCULAR_PATH,

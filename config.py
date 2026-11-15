@@ -44,8 +44,8 @@ def setup_plotly_theme():
     ))
     pio.templates.default = "m0v3"
 
-LOGO_PATH = "logo.png"
-LOGO_CIRCULAR_PATH = "logo_circular.png" if os.path.exists("logo_circular.png") else LOGO_PATH
+LOGO_PATH = os.path.join(BASE_DIR, "logo.png") if os.path.exists(os.path.join(BASE_DIR, "logo.png")) else "logo.png"
+LOGO_CIRCULAR_PATH = os.path.join(BASE_DIR, "logo_circular.png") if os.path.exists(os.path.join(BASE_DIR, "logo_circular.png")) else LOGO_PATH
 
 # =========================================================================
 # MOTORE DI TRADUZIONE (MULTILINGUA COMPLETO)
@@ -241,8 +241,16 @@ def add_custom_css(image_file):
     header[data-testid="stHeader"] {{background: transparent !important;}}
     .stDeployButton {{display:none;}}
     
-    /* Sfondo principale grigio ardesia chiarissimo e Sidebar Blu Navy scuro */
-    .stApp {{ background-color: #f4f7f9 !important; }}
+    /* Sfondo principale Grigio-Ardesia Tecnico più strutturato e Sidebar Blu Navy scuro */
+    .stApp,
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient(145deg, #d8e2ee 0%, #c9d6e6 50%, #bfcfe2 100%) !important;
+        background-color: #cbd8e8 !important;
+    }}
+    [data-testid="stMain"],
+    section.main {{
+        background: transparent !important;
+    }}
     [data-testid="stSidebar"] {{ background-color: #0A192F !important; border-right: 1px solid #1e2d4a; }}
     [data-testid="stSidebar"] .stRadio label, [data-testid="stSidebar"] .stRadio div {{ color: #e6f1ff !important; }}
 
@@ -337,20 +345,37 @@ def add_custom_css(image_file):
         border-color: rgba(56, 189, 248, 0.4) !important;
     }}
     
-    /* Filigrana centrale discreta */
+    /* Filigrana centrale M0V3 ben visibile nel corpo pagina */
     [data-testid="stAppViewContainer"]::before {{
-        content: ""; background-image: url(data:image/png;base64,{encoded_string});
-        background-size: 30%; background-position: center; background-repeat: no-repeat;
-        background-attachment: fixed; opacity: 0.03; top: 0; left: 0; bottom: 0; right: 0;
-        position: fixed; z-index: 0; pointer-events: none; 
+        content: "";
+        background-image: url(data:image/png;base64,{encoded_string});
+        background-size: 460px;
+        background-position: 58% 52%;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        opacity: 0.14;
+        filter: drop-shadow(0 8px 24px rgba(14, 165, 233, 0.22));
+        top: 0; left: 0; bottom: 0; right: 0;
+        position: fixed;
+        z-index: 0;
+        pointer-events: none;
+    }}
+    @media (max-width: 900px) {{
+        [data-testid="stAppViewContainer"]::before {{
+            background-size: 300px;
+            background-position: 50% 50%;
+            opacity: 0.12;
+        }}
     }}
     
-    /* Stile Card Moderne (Contenitori con bordo) */
+    /* Stile Card Moderne (Contenitori con bordo e leggera trasparenza per lasciar intravedere la filigrana M0V3) */
     div[data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.86) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
         border-radius: 12px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04), 0 1px 3px -1px rgba(15, 23, 42, 0.02) !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04) !important;
         padding: 18px !important;
     }}
     
