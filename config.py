@@ -46,6 +46,11 @@ def setup_plotly_theme():
 
 LOGO_PATH = os.path.join(BASE_DIR, "logo.png") if os.path.exists(os.path.join(BASE_DIR, "logo.png")) else "logo.png"
 LOGO_CIRCULAR_PATH = os.path.join(BASE_DIR, "logo_circular.png") if os.path.exists(os.path.join(BASE_DIR, "logo_circular.png")) else LOGO_PATH
+CYBER_BG_PATH = os.path.join(BASE_DIR, "assets", "mov3_cyber_bg.jpg")
+if not os.path.exists(CYBER_BG_PATH):
+    CYBER_BG_PATH = os.path.join(BASE_DIR, "mov3_cyber_bg.jpg")
+if not os.path.exists(CYBER_BG_PATH):
+    CYBER_BG_PATH = "mov3_cyber_bg.jpg"
 
 # =========================================================================
 # MOTORE DI TRADUZIONE (MULTILINGUA COMPLETO)
@@ -206,8 +211,9 @@ def get_base64_image(image_file):
             return base64.b64encode(file.read()).decode()
     return ""
 
-def add_custom_css(image_file):
-    encoded_string = get_base64_image(image_file)
+def add_custom_css(image_file=None):
+    bg_path = CYBER_BG_PATH if (CYBER_BG_PATH and os.path.exists(CYBER_BG_PATH)) else image_file
+    encoded_bg = get_base64_image(bg_path) if bg_path and os.path.exists(bg_path) else ""
     st.markdown(
     f"""
     <style>
@@ -241,17 +247,26 @@ def add_custom_css(image_file):
     header[data-testid="stHeader"] {{background: transparent !important;}}
     .stDeployButton {{display:none;}}
     
-    /* Sfondo principale Grigio-Ardesia Tecnico più strutturato e Sidebar Blu Navy scuro */
+    /* Sfondo Principale Cybernetico M0V3 e Sidebar Blu Navy profondo */
     .stApp,
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(145deg, #d8e2ee 0%, #c9d6e6 50%, #bfcfe2 100%) !important;
-        background-color: #cbd8e8 !important;
+        background-color: #060e1f !important;
+        background-image: 
+            radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.04) 0%, rgba(7, 19, 41, 0.40) 65%, rgba(4, 10, 22, 0.88) 100%),
+            url(data:image/jpeg;base64,{encoded_bg}) !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
     }}
     [data-testid="stMain"],
     section.main {{
         background: transparent !important;
     }}
-    [data-testid="stSidebar"] {{ background-color: #0A192F !important; border-right: 1px solid #1e2d4a; }}
+    [data-testid="stSidebar"] {{ 
+        background-color: #0A192F !important; 
+        border-right: 1px solid #1e2d4a; 
+    }}
     [data-testid="stSidebar"] .stRadio label, [data-testid="stSidebar"] .stRadio div {{ color: #e6f1ff !important; }}
 
     /* Struttura Sidebar: Header Fisso Sticky in cima + Body Scorrevole fluido */
@@ -345,38 +360,50 @@ def add_custom_css(image_file):
         border-color: rgba(56, 189, 248, 0.4) !important;
     }}
     
-    /* Filigrana centrale M0V3 ben visibile nel corpo pagina */
+    /* Disabilita la vecchia filigrana: il logo MOV3 è già centrato e splendente nel background 3D */
     [data-testid="stAppViewContainer"]::before {{
-        content: "";
-        background-image: url(data:image/png;base64,{encoded_string});
-        background-size: 460px;
-        background-position: 58% 52%;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        opacity: 0.14;
-        filter: drop-shadow(0 8px 24px rgba(14, 165, 233, 0.22));
-        top: 0; left: 0; bottom: 0; right: 0;
-        position: fixed;
-        z-index: 0;
-        pointer-events: none;
+        display: none !important;
+        content: "" !important;
     }}
     @media (max-width: 900px) {{
         [data-testid="stAppViewContainer"]::before {{
-            background-size: 300px;
-            background-position: 50% 50%;
-            opacity: 0.12;
+            display: none !important;
         }}
     }}
     
-    /* Stile Card Moderne (Contenitori con bordo e leggera trasparenza per lasciar intravedere la filigrana M0V3) */
-    div[data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: rgba(255, 255, 255, 0.86) !important;
-        backdrop-filter: blur(4px) !important;
-        -webkit-backdrop-filter: blur(4px) !important;
-        border-radius: 12px !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04) !important;
+    /* Stile Card e Pannelli Glassmorphism High-Contrast M0V3 (Massima leggibilità WCAG AAA + Look Cockpit F1) */
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    [data-testid="stMain"] div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background: rgba(255, 255, 255, 0.92) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+        box-shadow: 0 10px 30px -5px rgba(2, 6, 23, 0.40), 0 0 15px rgba(14, 165, 233, 0.10) !important;
         padding: 18px !important;
+    }}
+
+    /* Card ed elementi custom nel corpo pagina */
+    [data-testid="stMain"] div[style*="background:white"],
+    [data-testid="stMain"] div[style*="background: white"],
+    [data-testid="stMain"] div[style*="background:#ffffff"],
+    [data-testid="stMain"] div[style*="background: #ffffff"] {{
+        background: rgba(255, 255, 255, 0.92) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-color: rgba(56, 189, 248, 0.35) !important;
+        box-shadow: 0 10px 30px -5px rgba(2, 6, 23, 0.35), 0 0 15px rgba(14, 165, 233, 0.10) !important;
+    }}
+
+    /* Sidebar esente dal glassmorphism bianco: mantiene dark cockpit nativo */
+    [data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: transparent !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }}
     
     /* Stile Pulsanti Enterprise M0V3 */
@@ -510,12 +537,15 @@ def add_custom_css(image_file):
 
 
 def render_page_header(title, subtitle="", badge="M0V3 PERFORMANCE ANALYTICS", icon=None, **kwargs):
-    sub_html = f"<p style='margin: 4px 0 0 0; color: #64748b; font-size: 14px; font-weight: 400;'>{subtitle}</p>" if subtitle else ""
+    sub_html = f"<p style='margin: 4px 0 0 0; color: #475569; font-size: 14px; font-weight: 500;'>{subtitle}</p>" if subtitle else ""
     icon_html = f"<i class='bi {icon}' style='margin-right: 8px; color: #0ea5e9;'></i>" if icon else ""
     st.markdown(f"""
     <div id="top-of-page" style="height:0; width:0; margin:0; padding:0;"></div>
-    <div class="no-print" style="background: white; padding: 20px 24px; border-radius: 12px; border: 1px solid #e2e8f0; border-left: 5px solid #0ea5e9; margin-bottom: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #0ea5e9; font-weight: 700; margin-bottom: 2px;">{badge}</div>
+    <div class="no-print" style="background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 20px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.35); border-left: 6px solid #0ea5e9; margin-bottom: 22px; box-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.35), 0 0 15px rgba(14, 165, 233, 0.12);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#0ea5e9; box-shadow:0 0 6px #38bdf8;"></span>
+            {badge}
+        </div>
         <h1 style="margin: 0; padding: 0; color: #0f172a; font-size: 24px; font-weight: 900; line-height: 1.2;">{icon_html}{title}</h1>
         {sub_html}
     </div>
@@ -528,7 +558,7 @@ def _build_meta_cells_html(items):
         lbl, val = item[0], item[1]
         is_acc = item[2] if len(item) > 2 else False
         val_color = "#0ea5e9" if is_acc else "#0f172a"
-        border_r = "border-right: 1px solid #e2e8f0; padding-right: 18px;" if idx < len(items) - 1 else ""
+        border_r = "border-right: 1px solid rgba(56, 189, 248, 0.25); padding-right: 18px;" if idx < len(items) - 1 else ""
         cells.append(
             f"<div style='{border_r} display: flex; flex-direction: column; gap: 2px;'>"
             f"<span style='font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px;'>{lbl}</span>"
@@ -539,10 +569,10 @@ def _build_meta_cells_html(items):
 
 
 def render_meta_bar(items):
-    """Renders a clean enterprise metadata bar. items = list of (label, value, is_accent_bool)."""
+    """Renders a clean enterprise metadata bar with glassmorphic styling."""
     inner_html = _build_meta_cells_html(items)
     st.markdown(
-        f"<div style='background: white; padding: 10px 18px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); margin-top: 2px; flex-wrap: wrap;'>{inner_html}</div>",
+        f"<div class='no-print' style='background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.30); display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 16px -2px rgba(2, 6, 23, 0.25); margin-top: 2px; flex-wrap: wrap;'>{inner_html}</div>",
         unsafe_allow_html=True,
     )
 
@@ -815,15 +845,17 @@ METRICHE_INTENSITA = [
 
 
 def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
-    """Renderizza una card KPI compatta con bordo laterale colorato."""
+    """Renderizza una card KPI compatta con styling glassmorphism high-contrast."""
     sub = kwargs.get('subtext', sottotitolo)
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
-        f"<div style='background:white; padding:18px 16px; border-radius:12px; border:1px solid #e2e8f0; "
-        f"border-left:5px solid {acc}; box-shadow:0 2px 4px rgba(0,0,0,0.03);'>"
-        f"<div style='font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{titolo}</div>"
-        f"<div style='margin:8px 0 4px 0; line-height:1.1;'>{valore_html}</div>"
-        f"<div style='font-size:11px; color:#94a3b8;'>{sub}</div></div>"
+        f"<div class='no-print' style='background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); "
+        f"padding: 18px 16px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.30); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 8px 20px -4px rgba(2, 6, 23, 0.30), 0 0 10px rgba(14, 165, 233, 0.08);'>"
+        f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
+        f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
+        + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")
+        + "</div>"
     )
 
 

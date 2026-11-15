@@ -1858,11 +1858,13 @@ def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
     sub = kwargs.get('subtext', sottotitolo)
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
-        f"<div style='background:white; padding:18px 16px; border-radius:12px; border:1px solid #e2e8f0; "
-        f"border-left:5px solid {acc}; box-shadow:0 2px 4px rgba(0,0,0,0.03);'>"
-        f"<div style='font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{titolo}</div>"
-        f"<div style='margin:8px 0 4px 0; line-height:1.1;'>{valore_html}</div>"
-        f"<div style='font-size:11px; color:#94a3b8;'>{sub}</div></div>"
+        f"<div class='no-print' style='background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); "
+        f"padding: 18px 16px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.30); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 8px 20px -4px rgba(2, 6, 23, 0.30), 0 0 10px rgba(14, 165, 233, 0.08);'>"
+        f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
+        f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
+        + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")
+        + "</div>"
     )
 
 def delta_puro(delta):
@@ -3868,8 +3870,9 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
     all_badges_str = "".join(badges_html)
 
     strip_html = (
-        f"<div class='no-print' style='background:white; border:1px solid #e2e8f0; border-left:5px solid #0ea5e9; border-radius:12px; "
-        f"padding:10px 16px; margin-top:8px; margin-bottom:18px; box-shadow:0 2px 6px -1px rgba(15,23,42,0.05); font-family:\"Inter\", sans-serif; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;'>"
+        f"<div class='no-print' style='background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); "
+        f"border: 1px solid rgba(56, 189, 248, 0.35); border-left: 6px solid #0ea5e9; border-radius: 14px; "
+        f"padding: 12px 20px; margin-top: 8px; margin-bottom: 20px; box-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.35), 0 0 15px rgba(14, 165, 233, 0.12); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;'>"
         f"<div style='display:flex; align-items:center; gap:14px;'>"
         f"<div style='width:46px; height:46px; border-radius:10px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "
         f"border:2px solid #0ea5e9; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:19px; "
@@ -3923,8 +3926,9 @@ def render_dual_athlete_strip(ath1, ath2, session_type=None, week=None, extra_ba
     lbl_bench = tr("RIFERIMENTO BENCHMARK 100%", "100% BENCHMARK")
 
     dual_html = (
-        f"<div class='no-print' style='background:white; border:1px solid #e2e8f0; border-radius:12px; padding:12px 18px; margin-top:8px; margin-bottom:18px; "
-        f"box-shadow:0 2px 6px -1px rgba(15,23,42,0.05); font-family:\"Inter\", sans-serif; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;'>"
+        f"<div class='no-print' style='background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); "
+        f"border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 14px; padding: 14px 20px; margin-top: 8px; margin-bottom: 20px; "
+        f"box-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.35), 0 0 15px rgba(14, 165, 233, 0.12); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;'>"
         f"<div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap;'>"
         f"<div style='display:flex; align-items:center; gap:10px;'>"
         f"<div style='width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "

@@ -17,6 +17,7 @@ except Exception:
 from config import (
     LOGO_PATH,
     LOGO_CIRCULAR_PATH,
+    CYBER_BG_PATH,
     DB_PARQUET_PATH,
     LANG,
     tr,
@@ -212,51 +213,29 @@ def auth_module():
     )
     court_bg_encoded = urllib.parse.quote(svg_tennis_court)
 
-    # Sfondo Geometric Tennis Grid & Grande Logo Circolare Perfettamente Centrato
+    cyber_b64 = get_base64_image(CYBER_BG_PATH) if os.path.exists(CYBER_BG_PATH) else logo_b64
+
+    # Sfondo Cybernetico High-Tech M0V3 & Glassmorphism Cockpit
     st.markdown(f"""
     <style>
-    /* 1. Sfondo Dark con Campo da Tennis Geometrico Stilizzato (Opzione 3) */
+    /* 1. Sfondo Cybernetico High-Tech M0V3 (Opzione 1) */
     .stApp {{
-        background-color: #060c18 !important;
+        background-color: #060e1f !important;
         background-image: 
-            url("data:image/svg+xml,{court_bg_encoded}"),
-            radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.16) 0%, transparent 60%),
-            radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
-            radial-gradient(circle at 85% 80%, rgba(30, 58, 138, 0.25) 0%, transparent 45%),
-            linear-gradient(145deg, #060c18 0%, #0b172a 50%, #080f1d 100%) !important;
-        background-position: center center, center center, top left, bottom right, center center !important;
-        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
-        background-size: min(1380px, 94vw) auto, cover, cover, cover, cover !important;
+            radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.04) 0%, rgba(7, 19, 41, 0.40) 65%, rgba(4, 10, 22, 0.88) 100%),
+            url("data:image/jpeg;base64,{cyber_b64}") !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        background-size: cover !important;
+        background-attachment: fixed !important;
         min-height: 100vh !important;
         overflow-x: hidden !important;
     }}
 
-    /* 2. Grande Logo Circolare di Sfondo Perfettamente Centrato Dietro la Card */
+    /* 2. Disabilita watermark aggiuntivo: il logo MOV3 è già centrato nel background 3D */
     [data-testid="stAppViewContainer"]::before {{
+        display: none !important;
         content: "" !important;
-        display: block !important;
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 720px !important;
-        height: 720px !important;
-        background-image: url('data:image/png;base64,{logo_b64}') !important;
-        background-size: contain !important;
-        background-repeat: no-repeat !important;
-        background-position: center !important;
-        opacity: 0.14 !important;
-        pointer-events: none !important;
-        z-index: 0 !important;
-        filter: drop-shadow(0 0 60px rgba(14, 165, 233, 0.35)) !important;
-    }}
-
-    @media (max-width: 900px) {{
-        [data-testid="stAppViewContainer"]::before {{
-            width: 440px !important;
-            height: 440px !important;
-            opacity: 0.10 !important;
-        }}
     }}
 
     /* 3. Centratura e Dimensionamento Cockpit (3 Colonne) */
