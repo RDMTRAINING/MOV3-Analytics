@@ -218,12 +218,10 @@ def auth_module():
     # Sfondo Cybernetico High-Tech M0V3 & Glassmorphism Cockpit
     st.markdown(f"""
     <style>
-    /* 1. Sfondo Cybernetico High-Tech M0V3 (Opzione 1) */
+    /* 1. Sfondo Cybernetico Chiaro High-Tech M0V3 */
     .stApp {{
-        background-color: #060e1f !important;
-        background-image: 
-            radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.04) 0%, rgba(7, 19, 41, 0.40) 65%, rgba(4, 10, 22, 0.88) 100%),
-            url("data:image/jpeg;base64,{cyber_b64}") !important;
+        background-color: #f1f5fa !important;
+        background-image: url("data:image/jpeg;base64,{cyber_b64}") !important;
         background-position: center center !important;
         background-repeat: no-repeat !important;
         background-size: cover !important;
