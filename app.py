@@ -30,7 +30,9 @@ from config import (
 
 import utils
 if (
-    not hasattr(utils, "render_m0v3_footer")
+    not hasattr(utils, "check_and_render_notifications")
+    or not hasattr(utils, "set_notification")
+    or not hasattr(utils, "render_m0v3_footer")
     or not hasattr(utils, "sync_binary_snapshots_on_cold_boot")
     or not hasattr(utils, "get_cloud_snapshot_status")
     or not hasattr(utils, "upload_binary_snapshot")
@@ -53,7 +55,21 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
-    check_and_render_notifications,
+)
+check_and_render_notifications = getattr(
+    utils,
+    "check_and_render_notifications",
+    lambda: None,
+)
+set_notification = getattr(
+    utils,
+    "set_notification",
+    lambda *args, **kwargs: None,
+)
+notify_success = getattr(
+    utils,
+    "notify_success",
+    lambda *args, **kwargs: None,
 )
 get_cloud_snapshot_status = getattr(
     utils,

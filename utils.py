@@ -4035,7 +4035,28 @@ def render_m0v3_footer(is_sidebar=False):
 # SISTEMA NOTIFICHE GLOBALE M0V3 ANALYTICS (OPZIONE 3: MODAL & TOAST HUD)
 # =========================================================================
 
-@st.dialog("M0V3 ANALYTICS — CONFERMA OPERAZIONE", width="small")
+def _m0v3_dialog_decorator(title, width="small"):
+    """
+    Decoratore modale sicuro retrocompatibile per qualsiasi versione di Streamlit
+    (supporta sia st.dialog nativo >= 1.37, sia st.experimental_dialog 1.34-1.36, sia fallback).
+    """
+    if hasattr(st, "dialog"):
+        try:
+            return st.dialog(title, width=width)
+        except Exception:
+            return st.dialog(title)
+    elif hasattr(st, "experimental_dialog"):
+        try:
+            return st.experimental_dialog(title)
+        except Exception:
+            pass
+    def _fallback(fn):
+        def _wrap(*args, **kwargs):
+            return fn(*args, **kwargs)
+        return _wrap
+    return _fallback
+
+@_m0v3_dialog_decorator("M0V3 ANALYTICS — CONFERMA OPERAZIONE", width="small")
 def _render_m0v3_modal_dialog(title, message, details=None):
     """
     Finestra Pop-up Modale ufficiale M0V3 Analytics per conferme di operazioni strutturali
