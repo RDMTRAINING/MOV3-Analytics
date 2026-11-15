@@ -19,6 +19,7 @@ from config import (
     slugify_name,
     render_tab_navigation,
 )
+import utils as _utils_mod
 from utils import (
     supabase,
     supabase_admin,
@@ -26,7 +27,11 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     render_athlete_hero_strip,
-    upload_binary_snapshot,
+)
+upload_binary_snapshot = getattr(
+    _utils_mod,
+    "upload_binary_snapshot",
+    lambda local_path, remote_name=None: False,
 )
 
 STORAGE_JSON_PATH = "data_supporto/move_tennis_tests.json"

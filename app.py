@@ -22,7 +22,12 @@ from config import (
 )
 
 import utils
-if not hasattr(utils, "render_m0v3_footer"):
+if (
+    not hasattr(utils, "render_m0v3_footer")
+    or not hasattr(utils, "sync_binary_snapshots_on_cold_boot")
+    or not hasattr(utils, "get_cloud_snapshot_status")
+    or not hasattr(utils, "upload_binary_snapshot")
+):
     try:
         import importlib
         importlib.reload(utils)
@@ -41,8 +46,16 @@ from utils import (
     get_atleta_dettagli_per_utente,
     get_lista_atleti_disponibili,
     check_stato_giornaliero_atleta,
-    get_cloud_snapshot_status,
-    sync_binary_snapshots_on_cold_boot,
+)
+get_cloud_snapshot_status = getattr(
+    utils,
+    "get_cloud_snapshot_status",
+    lambda: {"active": True, "max_date": "N/D", "total_rows": 0},
+)
+sync_binary_snapshots_on_cold_boot = getattr(
+    utils,
+    "sync_binary_snapshots_on_cold_boot",
+    lambda: {"synced": False},
 )
 
 DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"

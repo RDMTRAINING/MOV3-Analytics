@@ -21,6 +21,7 @@ from config import (
     render_print_header,
     tr,
 )
+import utils as _utils_mod
 from utils import (
     supabase,
     supabase_admin,
@@ -30,7 +31,6 @@ from utils import (
     converti_durata_in_minuti,
     load_local_database,
     save_local_database,
-    get_cloud_snapshot_status,
     get_val,
     calcola_delta_percentuale,
     formatta_delta,
@@ -49,6 +49,11 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     slugify_name,
+)
+get_cloud_snapshot_status = getattr(
+    _utils_mod,
+    "get_cloud_snapshot_status",
+    lambda: {"active": True, "max_date": "N/D", "total_rows": 0},
 )
 from pdf_generator import (
     crea_pdf_m0v3,
