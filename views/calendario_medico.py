@@ -1119,7 +1119,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
 
     # Barra Legenda Integrata M0V3
     st.markdown(
-        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 16px; margin-bottom:12px; font-family:\"Inter\",sans-serif; font-size:11.5px;'>"
+        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#f8fafc; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:10px 16px; margin-bottom:12px; font-family:\"Inter\",sans-serif; font-size:11.5px;'>"
         f"<div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap;'>"
         f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'><i class='bi bi-activity' style='color:#0ea5e9; margin-right:4px;'></i>{tr('Metriche:', 'Metrics:')}</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#0ea5e9;'></span>Training Load GPS</span>"
@@ -1514,8 +1514,8 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         bargroupgap=0.08,
         height=680,
         margin=dict(l=30, r=30, t=50, b=35),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
         font=dict(family="Inter", color="#0f172a"),
         legend=dict(
             orientation="h",
@@ -1746,8 +1746,8 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 barmode="stack",
                 height=max(260, len(distretti_sorted) * 35 + 80),
                 margin=dict(l=10, r=20, t=20, b=20),
-                plot_bgcolor="white",
-                paper_bgcolor="white",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
                 font=dict(family="Inter", color="#0f172a"),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 xaxis=dict(title="Numero Eventi Registrati", showgrid=True, gridcolor="#f1f5f9"),

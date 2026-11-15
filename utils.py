@@ -1859,8 +1859,8 @@ def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
         f"<div class='no-print' style='background: white; "
-        f"padding: 18px 16px; border-radius: 14px; border: 1px solid #e2e8f0; "
-        f"border-left: 5px solid {acc}; box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);'>"
+        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(10, 25, 47, 0.22); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05);'>"
         f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
         f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
         + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")

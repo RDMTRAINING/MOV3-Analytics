@@ -872,8 +872,8 @@ def render_home(t):
                     bargroupgap=0.08,
                     height=350,
                     margin=dict(l=20, r=20, t=35, b=25),
-                    plot_bgcolor="white",
-                    paper_bgcolor="white",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     font=dict(family="Inter, sans-serif", color="#0f172a"),
                     xaxis=dict(
                         showgrid=True,

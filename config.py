@@ -369,13 +369,14 @@ def add_custom_css(image_file=None):
         }}
     }}
     
-    /* Stile Card e Pannelli High-Contrast M0V3 (Massima leggibilità WCAG AAA su sfondo chiaro) */
+    /* Stile Card e Pannelli High-Contrast M0V3 (Massima leggibilità WCAG AAA su sfondo chiaro - Opzione A: Navy Border) */
     div[data-testid="stVerticalBlockBorderWrapper"],
     [data-testid="stMain"] div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: #ffffff !important;
         border-radius: 14px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        overflow: hidden !important;
+        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
+        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
         padding: 18px !important;
     }}
 
@@ -383,18 +384,33 @@ def add_custom_css(image_file=None):
     [data-testid="stMain"] div[style*="background:white"],
     [data-testid="stMain"] div[style*="background: white"],
     [data-testid="stMain"] div[style*="background:#ffffff"],
-    [data-testid="stMain"] div[style*="background: #ffffff"] {{
+    [data-testid="stMain"] div[style*="background: #ffffff"],
+    [data-testid="stMain"] div[style*="background:#f8fafc"],
+    [data-testid="stMain"] div[style*="background: #f8fafc"] {{
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
+        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
     }}
 
-    /* Grafici Plotly: assicura sempre una superficie bianca pulita ad altissimo contrasto */
+    /* Grafici Plotly: assicura sempre una superficie bianca pulita ad altissimo contrasto con bordi arrotondati perfetti (Anti-Bleed) */
+    .stPlotlyChart,
+    div[data-testid="stPlotlyChart"],
+    .stPlotlyChart > div,
+    .js-plotly-plot,
+    .plot-container,
+    .svg-container {{
+        border-radius: 14px !important;
+        overflow: hidden !important;
+    }}
+
     .stPlotlyChart {{
         background: #ffffff !important;
         border-radius: 14px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05) !important;
+        overflow: hidden !important;
+        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
+        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
         padding: 10px !important;
     }}
 
@@ -404,6 +420,8 @@ def add_custom_css(image_file=None):
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
     }}
 
     /* Sidebar esente: mantiene dark cockpit nativo */
@@ -894,13 +912,13 @@ METRICHE_INTENSITA = [
 
 
 def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
-    """Renderizza una card KPI compatta con styling bianco ad alto contrasto."""
+    """Renderizza una card KPI compatta con styling bianco ad alto contrasto (Opzione A: Navy Border)."""
     sub = kwargs.get('subtext', sottotitolo)
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
         f"<div class='no-print' style='background: white; "
-        f"padding: 18px 16px; border-radius: 14px; border: 1px solid #e2e8f0; "
-        f"border-left: 5px solid {acc}; box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);'>"
+        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(10, 25, 47, 0.22); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05);'>"
         f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
         f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
         + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")

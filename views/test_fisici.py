@@ -983,8 +983,8 @@ def render_test_fisici(t):
                             title=dict(text=f"<b>{m['label']}</b> ({m.get('unit', '')})", font=dict(size=13, color="#0f172a")),
                             height=270,
                             margin=dict(l=10, r=10, t=35, b=10),
-                            plot_bgcolor="white",
-                            paper_bgcolor="white",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
                             xaxis=dict(showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=10, color="#64748b")),
                             yaxis=dict(showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=10, color="#64748b")),
                             font=dict(family="Inter", color="#0f172a"),
@@ -1025,8 +1025,8 @@ def render_test_fisici(t):
                                     title=dict(text=asym_chart_title, font=dict(size=11.5, color="#0f172a")),
                                     height=230,
                                     margin=dict(l=10, r=10, t=35, b=10),
-                                    plot_bgcolor="white",
-                                    paper_bgcolor="white",
+                                    plot_bgcolor="rgba(0,0,0,0)",
+                                    paper_bgcolor="rgba(0,0,0,0)",
                                     xaxis=dict(showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=9.5, color="#64748b")),
                                     yaxis=dict(title="← Sx (%) | Dx (%) →", range=[-bound_v, bound_v], showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=9.5, color="#64748b")),
                                     font=dict(family="Inter", color="#0f172a")
@@ -1733,8 +1733,8 @@ def render_test_fisici(t):
                             yaxis=dict(showgrid=False, tickfont=dict(color='#0f172a', size=12, family='Inter')),
                             height=max(280, len(dati_plot) * 45 + 100),
                             margin=dict(l=10, r=40, t=50, b=30),
-                            plot_bgcolor='white',
-                            paper_bgcolor='white'
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)'
                         )
                         st.plotly_chart(fig_bar, use_container_width=True)
 
