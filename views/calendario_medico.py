@@ -1255,18 +1255,80 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         )
 
     # --- EVENTI CLINICI PUNTUALI: SEDUTE FISIOTERAPICHE & SEGNALAZIONI FASTIDIO ---
-    # L'infortunio aperto/prolungato è mostrato unicamente dalla banda a sfondo rosso,
-    # evitando marker duplicati sui singoli giorni dell'infortunio.
-    fisio_x, fisio_y, fisio_texts, fisio_hovers = [], [], [], []
-    fastidio_x, fastidio_y, fastidio_texts, fastidio_hovers = [], [], [], []
-    vlines_done = set()
+    # L'infortunio aperto/prolungato è mostrato unicamente dalla banda a sfondo rosso.
+    # Gli eventi puntuali (Fisio e Fastidio) usano badge orizzontali a scaglioni (staggered tiers)
+    # con sfondo bianco protetto, evitando completamente qualsiasi collisione o sovrapposizione.
+    def _clean_distr_tag(distr, lato):
+        d = str(distr or "").strip()
+        if not d or "sistemico" in d.lower() or "nessuno" in d.lower():
+            d = "Sistemico"
+        elif " / " in d:
+            d = d.split(" / ")[0]
+        
+        l = str(lato or "").strip().lower()
+        if l in ("destro", "dx", "right"):
+            l_str = "Dx"
+        elif l in ("sinistro", "sx", "left"):
+            l_str = "Sx"
+        elif l in ("bilaterale", "bil"):
+            l_str = "Bil."
+        else:
+            l_str = ""
+        return f"{d} {l_str}".strip() if l_str else d
 
-    for d_str in date_list:
+    fisio_x, fisio_y, fisio_hovers = [], [], []
+    fastidio_x, fastidio_y, fastidio_hovers = [], [], []
+    annotated_clinical_events = []
+    vlines_done = set()
+    total_dates = len(date_list)
+
+    for idx_d, d_str in enumerate(date_list):
         d_info_c = corr_calendar[d_str]
         d_obj = d_info_c["date_obj"]
         all_evs = d_info_c.get("medico_eventi", [])
 
-        # 1. Seduta Fisioterapica (TRATTAMENTO)
+        # 1. Segnalazione di Fastidio / Sovraccarico (SOVRACCARICO)
+        fastidio_evs = [e for e in all_evs if e.get("tipo_scheda") == "SOVRACCARICO"]
+        if fastidio_evs:
+            ev0 = fastidio_evs[0]
+            sott_c = ev0.get("sottotipo_evento") or tr("Fastidio / Sovraccarico", "Discomfort / Overload")
+            distr_c = ev0.get("distretto_anatomico", "Sistemico")
+            lato_c = ev0.get("lato", "")
+            lato_s = f" {lato_c}" if lato_c and lato_c not in ("N/A", "-") else ""
+            vas_c = ev0.get("scala_dolore_vas")
+            vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
+            ind_c = ev0.get("indicazioni_staff") or "-"
+            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff"
+
+            distr_tag = _clean_distr_tag(distr_c, lato_c)
+            vas_tag = f" (VAS {vas_c})" if vas_c is not None else ""
+            lbl_badge_fast = f"Fastidio: {distr_tag}{vas_tag}"
+
+            fastidio_x.append(d_obj)
+            fastidio_y.append(y1_max * 0.04)
+            fastidio_hovers.append(
+                f"<b>{d_str} — Segnalazione Fastidio / Sovraccarico</b><br>"
+                f"Distretto: <b>{distr_c}{lato_s}</b> ({sott_c}){vas_s}<br>"
+                f"Operatore/Autore: {op_name}<br>"
+                f"Indicazioni Staff: {ind_c}"
+            )
+            annotated_clinical_events.append({
+                "date": d_obj,
+                "date_idx": idx_d,
+                "label": lbl_badge_fast,
+                "color": "#f97316",
+                "text_color": "#9a3412",
+                "type": "fastidio"
+            })
+            if (d_obj, "fastidio") not in vlines_done:
+                fig_corr.add_vline(
+                    x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
+                    line=dict(color="#f97316", width=1.4, dash="dash"),
+                    row="all"
+                )
+                vlines_done.add((d_obj, "fastidio"))
+
+        # 2. Seduta Fisioterapica (TRATTAMENTO)
         fisio_evs = [e for e in all_evs if e.get("tipo_scheda") == "TRATTAMENTO"]
         if fisio_evs:
             ev0 = fisio_evs[0]
@@ -1280,11 +1342,11 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
 
             count_tag = f" ({len(fisio_evs)})" if len(fisio_evs) > 1 else ""
-            lbl_fisio = f"♦ [FISIO: {distr_c}{lato_s}{count_tag}]"
+            distr_tag = _clean_distr_tag(distr_c, lato_c)
+            lbl_badge_fisio = f"Fisio: {distr_tag}{count_tag}"
 
             fisio_x.append(d_obj)
             fisio_y.append(y1_max * 0.04)
-            fisio_texts.append(lbl_fisio)
 
             dettagli_extra = ""
             if len(fisio_evs) > 1:
@@ -1301,6 +1363,14 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 f"Indicazioni: {ind_c}"
                 f"{dettagli_extra}"
             )
+            annotated_clinical_events.append({
+                "date": d_obj,
+                "date_idx": idx_d,
+                "label": lbl_badge_fisio,
+                "color": "#10b981",
+                "text_color": "#047857",
+                "type": "fisio"
+            })
             if (d_obj, "fisio") not in vlines_done:
                 fig_corr.add_vline(
                     x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
@@ -1309,52 +1379,14 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 )
                 vlines_done.add((d_obj, "fisio"))
 
-        # 2. Segnalazione di Fastidio / Sovraccarico (SOVRACCARICO)
-        fastidio_evs = [e for e in all_evs if e.get("tipo_scheda") == "SOVRACCARICO"]
-        if fastidio_evs:
-            ev0 = fastidio_evs[0]
-            sott_c = ev0.get("sottotipo_evento") or tr("Fastidio / Sovraccarico", "Discomfort / Overload")
-            distr_c = ev0.get("distretto_anatomico", "Sistemico")
-            lato_c = ev0.get("lato", "")
-            lato_s = f" {lato_c}" if lato_c and lato_c not in ("N/A", "-") else ""
-            vas_c = ev0.get("scala_dolore_vas")
-            vas_s = f" | VAS {vas_c}" if vas_c is not None else ""
-            ind_c = ev0.get("indicazioni_staff") or "-"
-            op_name = ev0.get("autore_nome") or ev0.get("operatore") or "Staff"
-
-            lbl_fastidio = f"▲ [FASTIDIO: {distr_c}{lato_s}{vas_s}]"
-
-            # Se nello stesso giorno c'è già la fisio, posiziona leggermente sopra per evitare collisione
-            y_pos = y1_max * 0.11 if fisio_evs else y1_max * 0.04
-
-            fastidio_x.append(d_obj)
-            fastidio_y.append(y_pos)
-            fastidio_texts.append(lbl_fastidio)
-            fastidio_hovers.append(
-                f"<b>{d_str} — Segnalazione Fastidio / Sovraccarico</b><br>"
-                f"Distretto: <b>{distr_c}{lato_s}</b> ({sott_c}){vas_s}<br>"
-                f"Operatore/Autore: {op_name}<br>"
-                f"Indicazioni Staff: {ind_c}"
-            )
-            if (d_obj, "fastidio") not in vlines_done:
-                fig_corr.add_vline(
-                    x=datetime.datetime.combine(d_obj, datetime.time(0, 0)),
-                    line=dict(color="#f97316", width=1.4, dash="dash"),
-                    row="all"
-                )
-                vlines_done.add((d_obj, "fastidio"))
-
-    # Aggiunta Tracce Plotly Distinte
+    # Aggiunta Tracce Plotly Distinte (Marker ad alta visibilità con tooltip diagnostico completo)
     if fisio_x:
         fig_corr.add_trace(go.Scatter(
             x=fisio_x,
             y=fisio_y,
-            mode="markers+text",
+            mode="markers",
             name=tr("Seduta Fisioterapica", "Physiotherapy Session"),
-            text=fisio_texts,
-            textposition="top center",
-            textfont=dict(size=9.5, color="#047857", family="Inter", weight="bold"),
-            marker=dict(symbol="diamond", size=13, color="#10b981", line=dict(width=1.8, color="#065f46")),
+            marker=dict(symbol="diamond", size=13, color="#10b981", line=dict(width=1.8, color="#ffffff")),
             customdata=fisio_hovers,
             hovertemplate="%{customdata}<extra></extra>"
         ), row=1, col=1, secondary_y=False)
@@ -1363,15 +1395,61 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         fig_corr.add_trace(go.Scatter(
             x=fastidio_x,
             y=fastidio_y,
-            mode="markers+text",
+            mode="markers",
             name=tr("Segnalazione Fastidio / Dolore", "Discomfort / Pain Alert"),
-            text=fastidio_texts,
-            textposition="top center",
-            textfont=dict(size=9.5, color="#c2410c", family="Inter", weight="bold"),
-            marker=dict(symbol="triangle-up", size=13, color="#f97316", line=dict(width=1.8, color="#9a3412")),
+            marker=dict(symbol="triangle-up", size=13, color="#f97316", line=dict(width=1.8, color="#ffffff")),
             customdata=fastidio_hovers,
             hovertemplate="%{customdata}<extra></extra>"
         ), row=1, col=1, secondary_y=False)
+
+    # Render Etichette a Badge Orizzontali a Scaglioni (Staggered Tiers con sfondo anti-sovrapposizione)
+    tiers = [-26, -54, -82, -110]
+    prev_d = None
+    tier_idx = 0
+
+    for ev_item in annotated_clinical_events:
+        d_ev = ev_item["date"]
+        d_idx = ev_item["date_idx"]
+
+        # Se due eventi sono entro 2 giorni o sullo stesso giorno, scala al livello superiore per evitare sovrapposizioni
+        if prev_d is not None and abs((d_ev - prev_d).days) <= 2:
+            tier_idx = (tier_idx + 1) % len(tiers)
+        else:
+            tier_idx = 0
+        prev_d = d_ev
+        ay_offset = tiers[tier_idx]
+
+        # Allineamento ai bordi del grafico per evitare clipping a inizio o fine mese
+        if d_idx <= 1:
+            x_anc = "left"
+            ax_offset = 10
+        elif d_idx >= total_dates - 2:
+            x_anc = "right"
+            ax_offset = -10
+        else:
+            x_anc = "center"
+            ax_offset = 0
+
+        fig_corr.add_annotation(
+            x=d_ev,
+            y=y1_max * 0.04,
+            text=ev_item["label"],
+            textangle=0,
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=1.2,
+            arrowcolor=ev_item["color"],
+            ax=ax_offset,
+            ay=ay_offset,
+            xanchor=x_anc,
+            bgcolor="rgba(255, 255, 255, 0.95)",
+            bordercolor=ev_item["color"],
+            borderwidth=1.2,
+            borderpad=3,
+            font=dict(size=9, color=ev_item["text_color"], family="Inter"),
+            row=1, col=1
+        )
 
     # --- ROW 2: CARICO INTERNO EXTRA-CAMPO IN AU (PALESTRA & PREP. FISICA 70/30) ---
     # Blocco Primario (70% o 100%)
