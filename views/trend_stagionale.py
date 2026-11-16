@@ -1450,7 +1450,7 @@ def render_trend_stagionale(t):
             for idx, w in enumerate(weekly_timeline_raw):
                 t_w = t_dict_w.get(idx)
                 if t_w:
-                    w['tourn_tag'] = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})"
+                    w['tourn_tag'] = f"<br><b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})"
                 else:
                     w['tourn_tag'] = ""
 
@@ -1730,7 +1730,7 @@ def render_trend_stagionale(t):
                 z_info = get_acwr_zone_details(p['acwr_7d'])[0]
                 val_7_str = f"{p['acwr_7d']:.1f}%" if p['acwr_7d'] is not None else "N/D"
                 t_w = t_dict_acwr.get(idx)
-                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
+                t_tag = f"<br><b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
                 hov_7d_season.append(
                     f"<b>{p['full_label']}</b>{t_tag}<br>"
                     f"ACWR 7 Giorni: <b>{val_7_str}</b><br>"
@@ -2614,7 +2614,7 @@ def render_trend_stagionale(t):
                 st_tlh = tr("[ALLARME] (> 2.0)", "[ALARM] (> 2.0)") if p['mono_tlh'] >= 2.0 else tr("[OTTIMALE] (< 2.0)", "[OPTIMAL] (< 2.0)")
                 st_tl = tr("[ALLARME] (> 2.0)", "[ALARM] (> 2.0)") if p['mono_tl'] >= 2.0 else tr("[OTTIMALE] (< 2.0)", "[OPTIMAL] (< 2.0)")
                 t_w = t_dict_mono.get(idx)
-                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
+                t_tag = f"<br><b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
 
                 hover_tlh.append(
                     f"<b>{p['full_label']}</b>{t_tag}<br>"
@@ -3020,7 +3020,7 @@ def render_trend_stagionale(t):
                 is_alert_tlh = (p['strain_tlh'] > threshold_strain_alarm and p['strain_tlh'] > 0)
                 st_tlh_str = tr("[ALLARME PICCO STRAIN]", "[ALARM STRAIN PEAK]") if is_alert_tlh else tr("[RANGE TOLLERABILE]", "[TOLERABLE RANGE]")
                 t_w = t_dict_strain.get(idx)
-                t_tag = f"<br>🏆 <b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
+                t_tag = f"<br><b>Torneo: {t_w.get('tournament')}</b> ({t_w.get('surfaces')} · {t_w.get('types')})" if t_w else ""
 
                 hover_strain_tlh.append(
                     f"<b>{p['full_label']}</b>{t_tag}<br>"

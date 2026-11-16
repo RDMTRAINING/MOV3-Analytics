@@ -4622,8 +4622,8 @@ def crea_pdf_statistiche_match(atleta_nome, df_corr, df_f, df_matches=None, kpis
             Paragraph(f"SCONFITTE ({len(m_loss)})", th_st),
             Paragraph("DELTA %", th_st)
         ]
-        cat_wr_hdr = [Paragraph("<b>⚡ 3 VALORI DI WORK RATE (INTENSITÀ REALE)</b>", ParagraphStyle('WRH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#0369a1'))), "", "", ""]
-        cat_vol_hdr = [Paragraph("<b>📊 4 VALORI DI VOLUME (CARICO TOTALE MATCH)</b>", ParagraphStyle('VOLH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#7c3aed'))), "", "", ""]
+        cat_wr_hdr = [Paragraph("<b>3 VALORI DI WORK RATE (INTENSITÀ REALE)</b>", ParagraphStyle('WRH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#0369a1'))), "", "", ""]
+        cat_vol_hdr = [Paragraph("<b>4 VALORI DI VOLUME (CARICO TOTALE MATCH)</b>", ParagraphStyle('VOLH', parent=th_left, fontName='Helvetica-Bold', fontSize=6.8, textColor=colors.HexColor('#7c3aed'))), "", "", ""]
 
         def _fmt_delta(d_val):
             c_hex = '#16a34a' if d_val > 0 else ('#dc2626' if d_val < 0 else '#64748b')

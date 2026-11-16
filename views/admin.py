@@ -212,7 +212,7 @@ def render_admin(t):
         with col_u3:
             n_non_conf = len(utenti_senza_privacy)
             priv_warn_col = "#10b981" if n_non_conf == 0 else "#ef4444"
-            priv_warn_val = tr("✓ 100% Regolari", "✓ 100% Compliant") if n_non_conf == 0 else f"[!] {n_non_conf} Non A Norma"
+            priv_warn_val = tr("100% Regolari", "100% Compliant") if n_non_conf == 0 else f"[!] {n_non_conf} Non A Norma"
             priv_warn_sub = tr("Nessun alert privacy", "No privacy alerts") if n_non_conf == 0 else tr("Consenso revocato / mancante", "Consent revoked / missing")
             st.markdown(
                 card_kpi(
@@ -243,7 +243,7 @@ def render_admin(t):
                 + ", ".join([f"`{em}`" for em in utenti_senza_privacy])
             )
         else:
-            st.success(f"✓ Tutti i {tot_profili} profili utente hanno il consenso Privacy (GDPR) attivo e conforme.")
+            st.success(f"Tutti i {tot_profili} profili utente hanno il consenso Privacy (GDPR) attivo e conforme.")
 
         # 3. TABELLA DI RIEPILOGO PROFILI, ACCESSI & STATO PRIVACY
         with st.expander("Registro Dettagliato Profili, Accessi & Stato Privacy (GDPR)", expanded=bool(utenti_senza_privacy)):
@@ -263,7 +263,7 @@ def render_admin(t):
                 dt_acc_u = p_u.get('terms_accepted_at')
 
                 if has_acc_u:
-                    stato_priv_ip = f"✓ Accettati ({dt_acc_u})" if dt_acc_u else "✓ Accettati"
+                    stato_priv_ip = f"Accettati ({dt_acc_u})" if dt_acc_u else "Accettati"
                 else:
                     stato_priv_ip = "In attesa di primo accesso"
 
@@ -341,7 +341,7 @@ def render_admin(t):
                             message=tr(f"Profilo creato per {target_email} con ruolo '{db_ruolo}'.", f"Profile created for {target_email} with role '{db_ruolo}'."),
                             tipo="toast"
                         )
-                        st.success(f"✓ Utente registrato con successo nel database: {target_email} (Ruolo: {db_ruolo})")
+                        st.success(f"Utente registrato con successo nel database: {target_email} (Ruolo: {db_ruolo})")
 
                         # Invio Email con credenziali, link di accesso e nota cambio password
                         ok_mail, msg_mail = invia_email_creazione_account(target_email, pwd_temp, db_ruolo)
@@ -374,7 +374,7 @@ def render_admin(t):
                 p_item = next((p for p in list_profili if p['email'] == email_opt), None)
                 if not p_item:
                     return email_opt
-                pr_badge = "✓ Priv. OK" if p_item.get('privacy_accettata') else "[!] NO PRIVACY"
+                pr_badge = "Priv. OK" if p_item.get('privacy_accettata') else "[!] NO PRIVACY"
                 n_s = len(df_storico_admin[df_storico_admin['Uploader_Email'] == email_opt]) if (not df_storico_admin.empty and 'Uploader_Email' in df_storico_admin.columns) else 0
                 return f"{email_opt}  ·  [{p_item.get('ruolo', 'Atleta')}]  ·  [{pr_badge}]  ·  ({n_s} sess.)"
 
@@ -398,14 +398,14 @@ def render_admin(t):
                         st.markdown(f"#### `{utente_selezionato}`")
                         if has_acc_sel:
                             dt_label = f" (il {dt_acc_sel})" if dt_acc_sel else ""
-                            st.markdown(f"<span style='background:#dcfce7; color:#166534; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>✓ Termini IP & GDPR: Accettati{dt_label}</span>", unsafe_allow_html=True)
+                            st.markdown(f"<span style='background:#dcfce7; color:#166534; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>Termini IP & GDPR: Accettati{dt_label}</span>", unsafe_allow_html=True)
                         else:
                             st.markdown("<span style='background:#fee2e2; color:#991b1b; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>[!] Termini IP & GDPR: In attesa di primo accesso</span>", unsafe_allow_html=True)
 
                     with c_info2:
                         st.caption("Azione Rapida Admin:")
                         if not has_acc_sel:
-                            if st.button("✓ Registra Consenso d'Ufficio", key=f"btn_force_priv_{p_id}", use_container_width=True):
+                            if st.button("Registra Consenso d'Ufficio", key=f"btn_force_priv_{p_id}", use_container_width=True):
                                 now_iso = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 upd_adm = {
                                     "has_accepted_terms": True,
@@ -477,7 +477,7 @@ def render_admin(t):
                             supabase_admin.auth.admin.update_user_by_id(p_id, {"password": pwd_reset})
                             ok_m, msg_m = invia_email_reset_password_admin(utente_selezionato, pwd_reset)
                             if ok_m:
-                                st.success(f"✓ Nuova password provvisoria inviata via email a {utente_selezionato}!")
+                                st.success(f"Nuova password provvisoria inviata via email a {utente_selezionato}!")
                             else:
                                 st.warning(f"[!] Password aggiornata nel database, ma email non inviata ({msg_m}).")
                             st.code(
@@ -492,7 +492,7 @@ def render_admin(t):
                     if st.button(t['btn_email_reset'], key=f"btn_reset_em_{p_id}", use_container_width=True):
                         try:
                             supabase.auth.reset_password_email(utente_selezionato)
-                            st.success(f"✓ Link di ripristino password inviato via email a {utente_selezionato}!")
+                            st.success(f"Link di ripristino password inviato via email a {utente_selezionato}!")
                         except Exception as e:
                             st.error(f"Errore invio link di reset: {e}")
 
@@ -763,7 +763,7 @@ def render_admin(t):
                         elif st_code == "unmapped" or is_num_zero:
                             b_bg, b_fg, b_lbl = "#fef3c7", "#b45309", f"[!] Valore 0 ({det_txt})"
                         else:
-                            b_bg, b_fg, b_lbl = "#dcfce7", "#166534", f"✓ Valorizzato ({det_txt})"
+                            b_bg, b_fg, b_lbl = "#dcfce7", "#166534", f"Valorizzato ({det_txt})"
 
                         html_prev += (
                             "<tr style='border-bottom:1px solid #f1f5f9;'>"
@@ -811,7 +811,7 @@ def render_admin(t):
                 ruolo_rep = profilo_data_rep.get('ruolo', 'Staff')
 
                 if ruolo_rep == 'Super-Admin':
-                    st.info("⭐ **Account Super-Admin**: Gli utenti con ruolo Super-Admin hanno accesso illimitato a tutte le aree, pagine e sottomoduli per definizione di sistema.")
+                    st.info("**Account Super-Admin**: Gli utenti con ruolo Super-Admin hanno accesso illimitato a tutte le aree, pagine e sottomoduli per definizione di sistema.")
                 else:
                     # Caricamento permessi salvati da Supabase
                     res_permessi = supabase_admin.table('moduli_report').select('*').eq('profilo_id', p_id_rep).execute()
@@ -823,7 +823,7 @@ def render_admin(t):
 
                     c_btn_all1, c_btn_all2, _ = st.columns([1.5, 1.5, 3])
                     with c_btn_all1:
-                        if st.button("✓ " + tr("Abilita Tutte le Aree", "Enable All Areas"), key=f"{state_prefix}btn_all_on"):
+                        if st.button(tr("Abilita Tutte le Aree", "Enable All Areas"), key=f"{state_prefix}btn_all_on"):
                             for area, reports in CATALOGO_REPORT.items():
                                 st.session_state[f"{state_prefix}area_{area}"] = True
                                 for r in reports:
@@ -833,7 +833,7 @@ def render_admin(t):
                             st.rerun()
 
                     with c_btn_all2:
-                        if st.button("✗ " + tr("Disabilita Tutte le Aree", "Disable All Areas"), key=f"{state_prefix}btn_all_off"):
+                        if st.button(tr("Disabilita Tutte le Aree", "Disable All Areas"), key=f"{state_prefix}btn_all_off"):
                             for area, reports in CATALOGO_REPORT.items():
                                 st.session_state[f"{state_prefix}area_{area}"] = False
                                 for r in reports:
@@ -897,13 +897,13 @@ def render_admin(t):
                                 key=area_key
                             )
                         with c_sel_all:
-                            if st.button(tr("Tutti ✓", "All ✓"), key=f"{state_prefix}all_{area}"):
+                            if st.button(tr("Seleziona Tutti", "Select All"), key=f"{state_prefix}all_{area}"):
                                 st.session_state[area_key] = True
                                 for r in reports:
                                     st.session_state[f"{state_prefix}chk_{area}_{r}"] = True
                                 st.rerun()
                         with c_des_all:
-                            if st.button(tr("Nessuno ✗", "None ✗"), key=f"{state_prefix}none_{area}"):
+                            if st.button(tr("Deseleziona Tutti", "Deselect All"), key=f"{state_prefix}none_{area}"):
                                 st.session_state[area_key] = False
                                 for r in reports:
                                     st.session_state[f"{state_prefix}chk_{area}_{r}"] = False

@@ -203,7 +203,7 @@ def render_caricamento_dati(t):
                     badge_status_txt = (
                         tr("VERIFICA MAPPATURA (VALORI A ZERO)", "CHECK MAPPING (ZERO VALUES)")
                         if alert_zero else
-                        tr(f"✓ {len(righe_scelte_idx)} RIGA/E PRONTA/E PER L'IMPORTAZIONE", f"✓ {len(righe_scelte_idx)} ROW(S) READY TO IMPORT")
+                        tr(f"{len(righe_scelte_idx)} RIGA/E PRONTA/E PER L'IMPORTAZIONE", f"{len(righe_scelte_idx)} ROW(S) READY TO IMPORT")
                     )
 
                     preview_html = (

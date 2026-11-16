@@ -330,8 +330,8 @@ def render_medie(t):
                 st.info(tr("Nessun dato reale disponibile per l'atleta selezionato.", "No real data available for the selected athlete."))
             else:
                 # Selettore Modalità: Allenamenti vs Settimane
-                M_SESS = tr("🏋️ Confronto tra Allenamenti", "🏋️ Compare Sessions")
-                M_WEEK = tr("📅 Confronto tra Settimane", "📅 Compare Weeks")
+                M_SESS = tr("Confronto tra Allenamenti", "Compare Sessions")
+                M_WEEK = tr("Confronto tra Settimane", "Compare Weeks")
                 sub_modes = [M_SESS, M_WEEK]
                 active_conf_mode = render_tab_navigation(sub_modes, key="nav_conf_ind_mode")
 
@@ -377,7 +377,7 @@ def render_medie(t):
                         )
 
                     if len(sel_sess_labels) < 2:
-                        st.info(tr("👆 Seleziona almeno 2 allenamenti dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "👆 Select at least 2 sessions from the dropdown above to display charts and comparison tables."))
+                        st.info(tr("Seleziona almeno 2 allenamenti dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "Select at least 2 sessions from the dropdown above to display charts and comparison tables."))
                     else:
                         sel_indices = [sess_idx_map[lbl] for lbl in sel_sess_labels]
                         df_comp_sess = df_ath_filtered.iloc[sel_indices].copy().reset_index(drop=True)
@@ -720,7 +720,7 @@ def render_medie(t):
                     )
 
                     if len(sel_weeks) < 2:
-                        st.info(tr("👆 Seleziona almeno 2 settimane di carico dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "👆 Select at least 2 load weeks from the dropdown above to display charts and comparison tables."))
+                        st.info(tr("Seleziona almeno 2 settimane di carico dal menu a tendina sopra per visualizzare grafici e tabelle comparative.", "Select at least 2 load weeks from the dropdown above to display charts and comparison tables."))
                     else:
                         df_comp_weeks = df_ath_weeks[df_ath_weeks['Week_Label'].isin(sel_weeks)].copy().reset_index(drop=True)
                         df_raw_weeks = df_ath[df_ath['Week_Label'].isin(sel_weeks)].copy()
@@ -1315,8 +1315,8 @@ def render_medie(t):
         if len_wa == 0 and len_wb == 0:
             st.info(
                 tr(
-                    f"ℹ️ Nessuna sessione registrata per entrambi gli atleti ({ath_wa} e {ath_wb}) nella settimana {week_target}.",
-                    f"ℹ️ No sessions recorded for either athlete ({ath_wa} and {ath_wb}) in week {week_target}."
+                    f"Nessuna sessione registrata per entrambi gli atleti ({ath_wa} e {ath_wb}) nella settimana {week_target}.",
+                    f"No sessions recorded for either athlete ({ath_wa} and {ath_wb}) in week {week_target}."
                 )
             )
         else:

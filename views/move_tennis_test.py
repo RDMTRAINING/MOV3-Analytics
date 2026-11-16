@@ -27,6 +27,7 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     render_athlete_hero_strip,
+    set_notification,
 )
 upload_binary_snapshot = getattr(
     _utils_mod,
@@ -367,7 +368,7 @@ def render_move_tennis_test(t):
         # Template Excel
         template_bytes = genera_template_excel()
         st.download_button(
-            label=tr("📥 Scarica Template Excel", "📥 Download Excel Template"),
+            label=tr("Scarica Template Excel", "Download Excel Template"),
             data=template_bytes,
             file_name="Template_M0V3_Tennis_Test.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -381,9 +382,9 @@ def render_move_tennis_test(t):
     ])
 
     # TABS DI NAVIGAZIONE INTERNA CON PERSISTENZA
-    lbl_tab_dash = tr("📊 Dashboard & Profilazione Clinica", "📊 Dashboard & Clinical Profiling")
-    lbl_tab_input = tr("✍️ Inserimento & Modifica Dati (Manuale / Excel)", "✍️ Data Entry & Edit (Manual / Excel)")
-    lbl_tab_compare = tr("📈 Confronto Storico Longitudinale", "📈 Longitudinal Historical Comparison")
+    lbl_tab_dash = tr("Dashboard & Profilazione Clinica", "Dashboard & Clinical Profiling")
+    lbl_tab_input = tr("Inserimento & Modifica Dati (Manuale / Excel)", "Data Entry & Edit (Manual / Excel)")
+    lbl_tab_compare = tr("Confronto Storico Longitudinale", "Longitudinal Historical Comparison")
     active_m0v3_tab = render_tab_navigation(
         [lbl_tab_dash, lbl_tab_input, lbl_tab_compare],
         key="nav_sub_m0v3_test",
@@ -405,7 +406,7 @@ def render_move_tennis_test(t):
             # Action bar superiore per Download PDF
             c_act1, c_act2 = st.columns([3, 1])
             with c_act2:
-                btn_pdf = st.button(tr("📄 Esporta Report PDF Ufficiale M0V3", "📄 Export Official M0V3 PDF Report"), type="primary", use_container_width=True)
+                btn_pdf = st.button(tr("Esporta Report PDF Ufficiale M0V3", "Export Official M0V3 PDF Report"), type="primary", use_container_width=True)
                 if btn_pdf:
                     from pdf_generator import crea_pdf_move_tennis_test
                     pdf_bytes = crea_pdf_move_tennis_test(test_attivo, dati_calc)
@@ -721,15 +722,15 @@ def render_move_tennis_test(t):
             
             # Tabella di sintesi dei 6 indici (esattamente come Pagina 5 del PDF)
             table_kpi_rows = [
-                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "Work Capacity (Volume)", "Valore Rilevato": f"{dati_calc['tps_min']}% (Round 5-6)", "Rating": "🔴 Critico" if dati_calc['tps_min'] < 80 else "🟢 Ottimale", "Note Tecniche": "Crollo della resilienza globale nel finale (da 97% a 64%)."},
-                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "PCI (Disaccoppiamento)", "Valore Rilevato": f"{dati_calc['pci_min']:+d} (Low Cost)", "Rating": "🟡 Attenzione" if dati_calc['pci_min'] < -15 else "🟢 Coerente", "Note Tecniche": "Disaccoppiamento negativo: l'atleta smette di correre ma mantiene il salto."},
-                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "EDI (Esplosività)", "Valore Rilevato": f"{dati_calc['avg_edi']:.1f}%", "Rating": "🟢 Eccellente" if dati_calc['avg_edi'] >= 95 else "🟡 Buono", "Note Tecniche": "Eccellente mantenimento delle qualità neuromuscolari (Vmax/Acc/Dec)."},
+                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "Work Capacity (Volume)", "Valore Rilevato": f"{dati_calc['tps_min']}% (Round 5-6)", "Rating": "[Critico] Critico" if dati_calc['tps_min'] < 80 else "[Ottimale] Ottimale", "Note Tecniche": "Crollo della resilienza globale nel finale (da 97% a 64%)."},
+                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "PCI (Disaccoppiamento)", "Valore Rilevato": f"{dati_calc['pci_min']:+d} (Low Cost)", "Rating": "[Attenzione] Attenzione" if dati_calc['pci_min'] < -15 else "[Ottimale] Coerente", "Note Tecniche": "Disaccoppiamento negativo: l'atleta smette di correre ma mantiene il salto."},
+                {"Test / Indice": "M0V3 Tennis Test", "Parametro Chiave": "EDI (Esplosività)", "Valore Rilevato": f"{dati_calc['avg_edi']:.1f}%", "Rating": "[Ottimale] Eccellente" if dati_calc['avg_edi'] >= 95 else "[Attenzione] Buono", "Note Tecniche": "Eccellente mantenimento delle qualità neuromuscolari (Vmax/Acc/Dec)."},
             ]
             if dati_calc["has_raa"]:
                 table_kpi_rows.extend([
-                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Fatigue Index Vel", "Valore Rilevato": f"{dati_calc['fi_vel']:.0f}%", "Rating": "🟢 Buono", "Note Tecniche": "Dato Corretto: indice medio/basso (<10%). Buona tenuta sulla velocità."},
-                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Fatigue Index Acc", "Valore Rilevato": f"{dati_calc['fi_acc']:.0f}%", "Rating": "🟢 Buono", "Note Tecniche": "Dato Corretto: indice medio. Buona capacità di accelerazione ripetuta."},
-                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Efficienza Tecnica", "Valore Rilevato": f"{dati_calc['eff_tec']:.1f}", "Rating": "🔴 Critico" if dati_calc['eff_tec'] > 0.5 else "🟢 Buono", "Note Tecniche": "Rottura della tecnica di corsa (compensazione) nonostante la tenuta prestazionale."}
+                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Fatigue Index Vel", "Valore Rilevato": f"{dati_calc['fi_vel']:.0f}%", "Rating": "[Ottimale] Buono", "Note Tecniche": "Dato Corretto: indice medio/basso (<10%). Buona tenuta sulla velocità."},
+                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Fatigue Index Acc", "Valore Rilevato": f"{dati_calc['fi_acc']:.0f}%", "Rating": "[Ottimale] Buono", "Note Tecniche": "Dato Corretto: indice medio. Buona capacità di accelerazione ripetuta."},
+                    {"Test / Indice": "R.A.A. Test (8x15m)", "Parametro Chiave": "Efficienza Tecnica", "Valore Rilevato": f"{dati_calc['eff_tec']:.1f}", "Rating": "[Critico] Critico" if dati_calc['eff_tec'] > 0.5 else "[Ottimale] Buono", "Note Tecniche": "Rottura della tecnica di corsa (compensazione) nonostante la tenuta prestazionale."}
                 ])
             st.dataframe(pd.DataFrame(table_kpi_rows), use_container_width=True, hide_index=True)
 
@@ -766,8 +767,8 @@ def render_move_tennis_test(t):
                       "Fill in test round values or upload pre-filled Excel/CSV. All indices are computed instantly."))
 
         # Sottotab: Manuale vs Upload File con persistenza
-        lbl_sub_man = tr("📝 Form Tabellare Guidato (6 Round)", "📝 Guided Table Form (6 Rounds)")
-        lbl_sub_file = tr("📤 Caricamento File Excel / CSV", "📤 Upload Excel / CSV File")
+        lbl_sub_man = tr("Form Tabellare Guidato (6 Round)", "Guided Table Form (6 Rounds)")
+        lbl_sub_file = tr("Caricamento File Excel / CSV", "Upload Excel / CSV File")
         active_sub_input = render_tab_navigation(
             [lbl_sub_man, lbl_sub_file],
             key="nav_sub_m0v3_input_mode",
@@ -858,7 +859,7 @@ def render_move_tennis_test(t):
 
                 inp_note = st.text_area(tr("Note di Sessione / Osservazioni Tecniche:", "Session Notes / Technical Observations:"), value=test_attivo.get("note", "") if test_attivo else "")
 
-                btn_salva = st.form_submit_button(tr("💾 Salva o Aggiorna M0V3 Tennis Test", "💾 Save or Update M0V3 Tennis Test"), type="primary")
+                btn_salva = st.form_submit_button(tr("Salva o Aggiorna M0V3 Tennis Test", "Save or Update M0V3 Tennis Test"), type="primary")
 
                 if btn_salva:
                     nuovo_payload = {
@@ -884,8 +885,17 @@ def render_move_tennis_test(t):
                         "note": inp_note.strip()
                     }
                     salva_test_sessione(nuovo_payload)
-                    st.success(tr(f"Test per {nuovo_atleta} del {nuova_data.strftime('%d/%m/%Y')} salvato con successo!",
-                                  f"Test for {nuovo_atleta} on {nuova_data.strftime('%d/%m/%Y')} saved successfully!"))
+                    set_notification(
+                        title=tr("Test M0V3 Salvato con Successo", "M0V3 Test Successfully Saved"),
+                        message=tr(f"Test per {nuovo_atleta} del {nuova_data.strftime('%d/%m/%Y')} archiviato nel database.",
+                                   f"Test for {nuovo_atleta} on {nuova_data.strftime('%d/%m/%Y')} archived in database."),
+                        tipo="modal",
+                        details=[
+                            tr(f"Atleta: {nuovo_atleta}", f"Athlete: {nuovo_atleta}"),
+                            tr(f"Data: {nuova_data.strftime('%d/%m/%Y')}", f"Date: {nuova_data.strftime('%d/%m/%Y')}"),
+                            tr("Profilazione clinica e carichi aggiornati", "Clinical profiling and loads updated")
+                        ]
+                    )
                     st.rerun()
 
         else:

@@ -1051,7 +1051,7 @@ def render_navigation_cards(page_key: str, cards: list) -> str:
                     </div>
                     """
                     st.markdown(card_html, unsafe_allow_html=True)
-                    btn_label = f"✓ {title}" if is_active else f"Apri {title}"
+                    btn_label = f"[Attivo] {title}" if is_active else f"Apri {title}"
                     if st.button(
                         btn_label,
                         key=f"cardbtn_{page_key}_{cid}",
@@ -1227,7 +1227,7 @@ def render_scientific_methodology_box(topic_key, title=None, subtitle=None, defa
             <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="bi {icon_cls}" style="font-size: 18px; color: #0284c7;"></i>
                 <span style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
-                    📘 {t_title} — {tr('Razionale Fisiologico & Formule Scientifiche', 'Physiological Rationale & Scientific Formulas')}
+                    <i class='bi bi-journal-medical'></i> {t_title} — {tr('Razionale Fisiologico & Formule Scientifiche', 'Physiological Rationale & Scientific Formulas')}
                 </span>
             </div>
             <span style="background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 6px;">
@@ -1263,7 +1263,7 @@ def render_scientific_methodology_box(topic_key, title=None, subtitle=None, defa
 
         if meta.get("bibliografia"):
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-            st.markdown(f"##### 📚 {tr('Riferimenti Bibliografici Validati (Letteratura Internazionale)', 'Validated Bibliographic References (Peer-Reviewed Literature)')}")
+            st.markdown(f"##### <i class='bi bi-book-half'></i> {tr('Riferimenti Bibliografici Validati (Letteratura Internazionale)', 'Validated Bibliographic References (Peer-Reviewed Literature)')}")
             biblio_html = "<ul style='margin-top:4px; padding-left:18px; font-size:11.5px; color:#475569; line-height:1.5;'>"
             for b_ref in meta["bibliografia"]:
                 biblio_html += f"<li style='margin-bottom:4px;'>{b_ref}</li>"

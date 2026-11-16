@@ -225,7 +225,7 @@ def render_supporto(t):
                 help=tr("Aggiungi uno screenshot per facilitare l'analisi del problema.", "Attach a screenshot to help analyze the issue.")
             )
 
-            st.caption(f"✓ {tr('Verranno inviati automaticamente:', 'Will be sent automatically:')} **{curr_email}** ({curr_role}) · {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            st.caption(f"{tr('Verranno inviati automaticamente:', 'Will be sent automatically:')} **{curr_email}** ({curr_role}) · {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
             btn_invia = st.form_submit_button(
                 tr("Invia Segnalazione al Team", "Submit Ticket to Team"),
@@ -246,7 +246,7 @@ def render_supporto(t):
                         description=descrizione,
                         uploaded_file=allegato
                     )
-                    st.success(f"✓ {tr('Segnalazione inviata con successo!', 'Ticket successfully submitted!')} ID: **{new_t['id']}**")
+                    st.success(f"{tr('Segnalazione inviata con successo!', 'Ticket successfully submitted!')} ID: **{new_t['id']}**")
                     
                     # Callout con link rapido mailto
                     mailto_link = build_mailto_url(new_t['id'], new_t['subject'], curr_email, new_t['description'])

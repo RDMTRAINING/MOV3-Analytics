@@ -431,8 +431,8 @@ def render_statistiche_match(t):
     # =========================================================================
     # STRUTTURA A SUB-PAGINE / TAB (CON PERSISTENZA)
     # =========================================================================
-    lbl_tab_analisi = tr("📊 Analisi Prestazione Tennis ↔ GPS", "📊 Tennis ↔ GPS Performance Analysis")
-    lbl_tab_archivio = tr("🎾 Archivio Partite & Abbinamento Telemetria", "🎾 Match Archive & Telemetry Pairing")
+    lbl_tab_analisi = tr("Analisi Prestazione Tennis - GPS", "Tennis - GPS Performance Analysis")
+    lbl_tab_archivio = tr("Archivio Partite & Abbinamento Telemetria", "Match Archive & Telemetry Pairing")
     active_sm_tab = render_tab_navigation(
         [lbl_tab_analisi, lbl_tab_archivio],
         key="nav_sub_statistiche_match",
@@ -763,7 +763,7 @@ def render_statistiche_match(t):
                             <!-- WORK RATE HEADER -->
                             <tr style='background: #f0f9ff; border-top: 1px solid #bae6fd; border-bottom: 1px solid #bae6fd;'>
                                 <td colspan='4' style='padding: 5px 12px; font-weight: 800; font-size: 11px; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;'>
-                                    ⚡ 3 VALORI DI WORK RATE (INTENSITÀ REALE)
+                                    3 VALORI DI WORK RATE (INTENSITÀ REALE)
                                 </td>
                             </tr>
                             <tr style='border-bottom: 1px solid #f1f5f9;'>
@@ -787,7 +787,7 @@ def render_statistiche_match(t):
                             <!-- VOLUME HEADER -->
                             <tr style='background: #faf5ff; border-top: 1px solid #e9d5ff; border-bottom: 1px solid #e9d5ff;'>
                                 <td colspan='4' style='padding: 5px 12px; font-weight: 800; font-size: 11px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px;'>
-                                    📊 4 VALORI DI VOLUME (CARICO TOTALE DI GARA)
+                                    4 VALORI DI VOLUME (CARICO TOTALE DI GARA)
                                 </td>
                             </tr>
                             <tr style='border-bottom: 1px solid #f1f5f9;'>
@@ -999,8 +999,8 @@ def render_statistiche_match(t):
                     view_mode_rk = st.radio(
                         tr("Modalità Visualizzazione Ranking:", "Ranking View Mode:"),
                         [
-                            tr("📊 Confronto Aggregato per Ranking Tier", "📊 Aggregated by Ranking Tier"),
-                            tr("📉 Dispersione Match per Match (Ranking Esatto)", "📉 Match-by-Match Scatter")
+                            tr("Confronto Aggregato per Ranking Tier", "Aggregated by Ranking Tier"),
+                            tr("Dispersione Match per Match (Ranking Esatto)", "Match-by-Match Scatter")
                         ],
                         horizontal=True,
                         key="rk_tier_view_toggle",
@@ -1114,8 +1114,8 @@ def render_statistiche_match(t):
                     srv_mode = st.radio(
                         tr("Modalità Grafico:", "Chart Mode:"),
                         [
-                            tr("📊 Confronto Costo Vivo Medio", "📊 Average Live Cost Comparison"),
-                            tr("📉 Dispersione Match per Match", "📉 Match-by-Match Scatter")
+                            tr("Confronto Costo Vivo Medio", "Average Live Cost Comparison"),
+                            tr("Dispersione Match per Match", "Match-by-Match Scatter")
                         ],
                         horizontal=True,
                         key="srv_chart_view_mode",
@@ -1394,7 +1394,7 @@ def render_statistiche_match(t):
             else:
                 gps_badge = "<span style='background:#f8fafc; color:#94a3b8; font-weight:700; font-size:10.5px; padding:2px 7px; border-radius:5px;'>NO GPS</span>"
 
-            expander_title = f"{'🟢' if res == 'Vittoria' else '🔴'} {dt_str} · {tourn} ({surf}) — vs {opp} ({score})"
+            expander_title = f"{'[V]' if res == 'Vittoria' else '[S]'} {dt_str} · {tourn} ({surf}) — vs {opp} ({score})"
 
             with st.expander(expander_title, expanded=False):
                 st.markdown(

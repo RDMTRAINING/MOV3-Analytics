@@ -919,7 +919,7 @@ def render_test_fisici(t):
                 # Menù a tendina per selezionare il singolo parametro o tutti
                 opzioni_filtro_m = [tr("Tutti i parametri (Griglia Completa)", "All Parameters (Full Grid)")] + [m['label'] for m in metriche_attive]
                 sel_filtro_m = st.selectbox(
-                    tr("📊 Seleziona Parametro da Visualizzare nel Grafico:", "📊 Select Parameter to Display in Chart:"),
+                    tr("Seleziona Parametro da Visualizzare nel Grafico:", "Select Parameter to Display in Chart:"),
                     opzioni_filtro_m,
                     index=0,
                     key=f"filtro_metrica_deepdive_{prot_nome_sel}"
@@ -1934,24 +1934,43 @@ def render_test_fisici(t):
                             col_bd1, col_bd2 = st.columns(2)
                             with col_bd1:
                                 if sel_f_data != tr("Tutte le date", "All dates"):
-                                    if st.button(f"🗑️ Elimina tutti i test del {sel_f_data} ({len(sess_filtrate)} test)", type="secondary", key="btn_del_batch_date"):
+                                    if st.button(f"Elimina tutti i test del {sel_f_data} ({len(sess_filtrate)} test)", type="secondary", key="btn_del_batch_date"):
                                         c_del = 0
                                         for s_d in sess_filtrate:
                                             if s_d.get('id') and delete_sessione_test(s_d['id']):
                                                 c_del += 1
                                         st.cache_data.clear()
-                                        st.success(f"✓ Eliminati {c_del} test per la data {sel_f_data}!")
+                                        set_notification(
+                                            title=tr("Test Eliminati con Successo", "Tests Successfully Deleted"),
+                                            message=tr(f"Eliminati {c_del} test per la data {sel_f_data}.",
+                                                       f"{c_del} tests deleted for date {sel_f_data}."),
+                                            tipo="modal",
+                                            details=[
+                                                tr(f"Atleta: {atleta_sel}", f"Athlete: {atleta_sel}"),
+                                                tr(f"Data: {sel_f_data}", f"Date: {sel_f_data}"),
+                                                tr(f"Test rimossi: {c_del}", f"Tests removed: {c_del}")
+                                            ]
+                                        )
                                         st.rerun()
                                 else:
                                     st.caption(tr("Seleziona una data specifica nel filtro sopra per eliminare tutti i test di quel giorno in un clic.", "Select a specific date above to batch delete that day's tests."))
                             with col_bd2:
-                                if st.button(f"⚠️ Resetta e Cancella TUTTI i Test di {atleta_sel}", type="secondary", key="btn_del_all_ath_tests"):
+                                if st.button(f"Resetta e Cancella TUTTI i Test di {atleta_sel}", type="secondary", key="btn_del_all_ath_tests"):
                                     c_all = 0
                                     for s_a in sessioni_atleta:
                                         if s_a.get('id') and delete_sessione_test(s_a['id']):
                                             c_all += 1
                                     st.cache_data.clear()
-                                    st.success(f"✓ Resettati ed eliminati {c_all} test per {atleta_sel}!")
+                                    set_notification(
+                                        title=tr("Archivio Test Resettato", "Test Archive Reset"),
+                                        message=tr(f"Resettati ed eliminati tutti i {c_all} test per {atleta_sel}.",
+                                                   f"All {c_all} tests reset and deleted for {atleta_sel}."),
+                                        tipo="modal",
+                                        details=[
+                                            tr(f"Atleta: {atleta_sel}", f"Athlete: {atleta_sel}"),
+                                            tr(f"Totale eliminati: {c_all}", f"Total deleted: {c_all}")
+                                        ]
+                                    )
                                     st.rerun()
 
                     if is_coach:
@@ -2139,7 +2158,7 @@ def render_test_fisici(t):
                 if uploaded_docx:
                     docx_bytes = uploaded_docx.read()
                 elif os.path.exists("data_supporto/Test Cobolli.docx") and "cobolli" in atleta_dest.lower():
-                    if st.button("📄 Carica File Presente in Cartella: 'data_supporto/Test Cobolli.docx'", key="btn_load_local_docx"):
+                    if st.button("Carica File Presente in Cartella: 'data_supporto/Test Cobolli.docx'", key="btn_load_local_docx"):
                         with open("data_supporto/Test Cobolli.docx", "rb") as f_local:
                             docx_bytes = f_local.read()
 
@@ -2150,7 +2169,7 @@ def render_test_fisici(t):
                         st.error(tr("Nessun test riconosciuto nel file caricato.", "No tests recognized in uploaded file."))
                     else:
                         dates_found = sorted(list(set(t['data'] for t in parsed_tests)))
-                        st.success(f"✓ Rilevate **{len(parsed_tests)} sessioni di test** distribuite su **{len(dates_found)} date**: {', '.join(dates_found)}")
+                        st.success(f"Rilevate **{len(parsed_tests)} sessioni di test** distribuite su **{len(dates_found)} date**: {', '.join(dates_found)}")
                         
                         # Tabella di anteprima
                         preview_rows = []
@@ -2171,7 +2190,7 @@ def render_test_fisici(t):
                         
                         st.dataframe(pd.DataFrame(preview_rows), use_container_width=True)
                         
-                        if st.button("💾 Conferma & Salva Tutte le Sessioni nel Database", type="primary", key="btn_confirm_import_docx"):
+                        if st.button("Conferma & Salva Tutte le Sessioni nel Database", type="primary", key="btn_confirm_import_docx"):
                             with st.spinner("Salvataggio in corso..."):
                                 imported_count = 0
                                 for t_item in parsed_tests:
@@ -2266,7 +2285,7 @@ def render_test_fisici(t):
                     st.markdown("---")
                     if target_prot:
                         st.markdown(f"##### Variabili di Misurazione — **{target_prot['nome_protocollo']}**")
-                        st.caption("ℹ️ *Sparse Data: compila solo i dati rilevati; lascia vuoti i campi non misurati.*")
+                        st.caption("*Sparse Data: compila solo i dati rilevati; lascia vuoti i campi non misurati.*")
 
                         is_m0v3_flagship = (target_prot.get('codice_univoco') == 'm0v3_tennis_test')
                         schema = target_prot.get('schema_metriche') or []

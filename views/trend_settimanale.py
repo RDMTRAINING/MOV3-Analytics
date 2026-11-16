@@ -1486,10 +1486,10 @@ def render_trend_settimanale(t):
             if tot_sessioni_w == 0:
                 st.info(
                     tr(
-                        f"ℹ️ **Nessuna sessione registrata per {giocatore_selezionato} nel microciclo selezionato ({settimana_valutata})**.\n\n"
+                        f"**Nessuna sessione registrata per {giocatore_selezionato} nel microciclo selezionato ({settimana_valutata})**.\n\n"
                         f"Non risultano dati GPS caricati per questo intervallo temporale. "
                         f"Seleziona una settimana con dati registrati dal menu sopra oppure carica nuovi file dalla sezione 'Caricamento Dati'.",
-                        f"ℹ️ **No sessions recorded for {giocatore_selezionato} in the selected microcycle ({settimana_valutata})**.\n\n"
+                        f"**No sessions recorded for {giocatore_selezionato} in the selected microcycle ({settimana_valutata})**.\n\n"
                         f"Please select a week with recorded data from the dropdown above or upload new GPS files."
                     )
                 )

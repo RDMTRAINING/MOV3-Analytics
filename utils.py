@@ -2326,7 +2326,7 @@ def calcola_e_salva_slot_rpe(payload, autore='atleta'):
         "tipologia": tipo,
         "durata_minuti": durata_db,
         "rpe": rpe_num,
-        "carico_interno": carico_interno,
+        # carico_interno è colonna generata sempre in PostgreSQL (durata_minuti * rpe), non includere in upsert
         "durata_atleta_min": f_atleta,
         "durata_staff_min": f_staff,
         "rpe_staff": float(rpe_staff) if rpe_staff is not None else None,
@@ -4640,7 +4640,7 @@ def _render_m0v3_modal_dialog(title, message, details=None):
         f"""
         <div style="text-align:center; padding:8px 4px 16px 4px; font-family:'Inter', sans-serif;">
             <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(16, 185, 129, 0.12); border:2px solid #10b981; margin-bottom:14px; box-shadow:0 0 25px rgba(16, 185, 129, 0.35);">
-                <span style="font-size:32px; color:#10b981; line-height:1; font-weight:900;">✓</span>
+                <i class="bi bi-check-circle-fill" style="font-size:32px; color:#10b981;"></i>
             </div>
             <div style="color:#0f172a; font-weight:800; font-size:1.22rem; margin-bottom:8px; letter-spacing:-0.2px;">
                 {title}
@@ -4672,7 +4672,7 @@ def _render_m0v3_modal_dialog(title, message, details=None):
             unsafe_allow_html=True
         )
         
-    if st.button("✓ OK, Continua", type="primary", use_container_width=True, key="btn_m0v3_modal_ok"):
+    if st.button("OK, Continua", type="primary", use_container_width=True, key="btn_m0v3_modal_ok"):
         st.rerun()
 
 
@@ -4696,7 +4696,7 @@ def notify_success(title, message, tipo="toast", details=None, rerun=False):
     Emette una notifica o la accoda per il rerun immediato.
     Se rerun=True, salva la notifica e invoca st.rerun().
     Se rerun=False e siamo a runtime:
-    - Per 'toast': invoca direttamente st.toast(...)
+        st.toast(f"**{title}**\n\n{message}")
     - Per 'modal': apre direttamente il modale _render_m0v3_modal_dialog(...)
     """
     if rerun:
@@ -4706,7 +4706,7 @@ def notify_success(title, message, tipo="toast", details=None, rerun=False):
         if tipo == "modal":
             _render_m0v3_modal_dialog(title, message, details=details)
         else:
-            st.toast(f"✅ **{title}**\n\n{message}", icon="⚡")
+            st.toast(f"**{title}**\n\n{message}")
 
 
 def check_and_render_notifications():
@@ -4728,7 +4728,7 @@ def check_and_render_notifications():
     if tipo == "modal":
         _render_m0v3_modal_dialog(title, message, details=details)
     else:
-        st.toast(f"✅ **{title}**\n\n{message}", icon="⚡")
+        st.toast(f"**{title}**\n\n{message}")
 
 
 
