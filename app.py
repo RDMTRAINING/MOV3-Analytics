@@ -245,10 +245,13 @@ def auth_module():
     st.markdown(f"""
     <style>
     /* 1. Sfondo Dark Cyber High-Tech M0V3 con Blueprint Campo Tennis */
-    .stApp {{
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    section.main {{
         background-color: #060b14 !important;
         background-image: 
-            radial-gradient(ellipse at 50% 12%, rgba(14, 165, 233, 0.18) 0%, rgba(6, 11, 20, 0.88) 60%, #030712 100%),
+            radial-gradient(ellipse at 50% 12%, rgba(14, 165, 233, 0.20) 0%, rgba(6, 11, 20, 0.94) 55%, #030712 100%),
             url("data:image/svg+xml;base64,{court_b64}") !important;
         background-position: center top, center center !important;
         background-repeat: no-repeat, no-repeat !important;
@@ -266,8 +269,8 @@ def auth_module():
 
     /* 3. Centratura e Dimensionamento Minimal Executive */
     .block-container {{
-        max-width: 500px !important;
-        padding-top: 7vh !important;
+        max-width: 530px !important;
+        padding-top: 5vh !important;
         padding-bottom: 5vh !important;
         margin: 0 auto !important;
         position: relative !important;
@@ -277,7 +280,7 @@ def auth_module():
     @media (max-width: 640px) {{
         .block-container {{
             max-width: 94% !important;
-            padding-top: 4vh !important;
+            padding-top: 3vh !important;
             padding-bottom: 3vh !important;
         }}
     }}
@@ -438,11 +441,23 @@ def auth_module():
         border-radius: 8px !important;
         margin-top: 6px !important;
     }}
+    /* 8. Selettore Lingua Orizzontale Pulito */
+    div[data-testid="stRadio"] > div[role="radiogroup"] {{
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+    }}
+    div[data-testid="stRadio"] label span {{
+        color: #94a3b8 !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
     with st.container(border=True):
-        col_auth_sp, col_auth_lang = st.columns([3, 1.2])
+        col_auth_sp, col_auth_lang = st.columns([2.5, 1.5])
         with col_auth_lang:
             curr_l = st.session_state.get('lang', 'IT')
             sel_auth_l = st.radio(
@@ -459,7 +474,7 @@ def auth_module():
 
         st.markdown(f"""
         <div style='text-align: center; margin-bottom: 22px;'>
-            <img src='data:image/png;base64,{logo_b64}' style='width: 82px; height: 82px; border-radius: 50%; box-shadow: 0 0 32px rgba(14, 165, 233, 0.55); border: 2px solid rgba(56, 189, 248, 0.35); display: inline-block; margin-bottom: 12px;'>
+            <img src='data:image/png;base64,{logo_b64}' style='width: 145px; height: 145px; border-radius: 50%; box-shadow: 0 0 45px rgba(14, 165, 233, 0.65), 0 0 20px rgba(56, 189, 248, 0.4); border: 3px solid rgba(56, 189, 248, 0.45); display: inline-block; margin-bottom: 14px; background: #081120;'>
             <div style='font-size: 11px; letter-spacing: 2.8px; text-transform: uppercase; color: #38bdf8; font-weight: 800; margin-bottom: 4px;'>PERFORMANCE ANALYTICS</div>
             <h1 style='color: #ffffff; font-size: 34px; font-weight: 900; line-height: 1.15; margin: 0 0 8px 0; letter-spacing: -0.8px; text-shadow: 0 0 24px rgba(14, 165, 233, 0.45);'>MOV3 Analytics</h1>
             <p style='color: #94a3b8; font-size: 13.5px; margin: 0;'>{tr("Improve your Game · Inserisci le credenziali", "Improve your Game · Enter your credentials")}</p>

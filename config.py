@@ -212,8 +212,20 @@ def get_base64_image(image_file):
     return ""
 
 def add_custom_css(image_file=None):
+    is_authenticated = bool(st.session_state.get('user'))
     bg_path = CYBER_BG_PATH if (CYBER_BG_PATH and os.path.exists(CYBER_BG_PATH)) else image_file
-    encoded_bg = get_base64_image(bg_path) if bg_path and os.path.exists(bg_path) else ""
+    encoded_bg = get_base64_image(bg_path) if (is_authenticated and bg_path and os.path.exists(bg_path)) else ""
+    auth_dashboard_bg_css = f"""
+    .stApp,
+    [data-testid="stAppViewContainer"] {{
+        background-color: #f1f5fa !important;
+        background-image: url(data:image/jpeg;base64,{encoded_bg}) !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+    }}
+    """ if is_authenticated else ""
     st.markdown(
     f"""
     <style>
@@ -247,16 +259,8 @@ def add_custom_css(image_file=None):
     header[data-testid="stHeader"] {{background: transparent !important;}}
     .stDeployButton {{display:none;}}
     
-    /* Sfondo Principale Cybernetico Chiaro High-Tech M0V3 e Sidebar Blu Navy profondo */
-    .stApp,
-    [data-testid="stAppViewContainer"] {{
-        background-color: #f1f5fa !important;
-        background-image: url(data:image/jpeg;base64,{encoded_bg}) !important;
-        background-size: cover !important;
-        background-position: center center !important;
-        background-repeat: no-repeat !important;
-        background-attachment: fixed !important;
-    }}
+    /* Sfondo Principale Dashboard (solo quando autenticato) e Sidebar Blu Navy profondo */
+    {auth_dashboard_bg_css}
     [data-testid="stMain"],
     section.main {{
         background: transparent !important;
