@@ -4,6 +4,7 @@ import os
 import datetime
 import importlib
 import urllib.parse
+import base64
 import streamlit as st
 import streamlit.components.v1 as components
 from streamlit_option_menu import option_menu
@@ -207,87 +208,89 @@ def auth_module():
     if not logo_b64:
         logo_b64 = get_base64_image(LOGO_PATH)
 
-    # SVG Campo da Tennis Geometrico Stilizzato (Opzione 3)
+    # SVG Campo da Tennis Stilizzato Wireframe Neon (Blueprint M0V3)
     svg_tennis_court = (
         "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 700' fill='none'>"
         "<defs>"
         "<radialGradient id='courtGlow' cx='50%' cy='50%' r='50%'>"
-        "<stop offset='0%' stop-color='#0ea5e9' stop-opacity='0.09'/>"
-        "<stop offset='70%' stop-color='#0ea5e9' stop-opacity='0.02'/>"
+        "<stop offset='0%' stop-color='#0ea5e9' stop-opacity='0.16'/>"
+        "<stop offset='65%' stop-color='#0ea5e9' stop-opacity='0.04'/>"
         "<stop offset='100%' stop-color='#0ea5e9' stop-opacity='0'/>"
         "</radialGradient>"
+        "<linearGradient id='courtLine' x1='0%' y1='0%' x2='100%' y2='0%'>"
+        "<stop offset='0%' stop-color='#38bdf8' stop-opacity='0.35'/>"
+        "<stop offset='50%' stop-color='#38bdf8' stop-opacity='0.55'/>"
+        "<stop offset='100%' stop-color='#38bdf8' stop-opacity='0.35'/>"
+        "</linearGradient>"
         "</defs>"
-        "<rect x='100' y='60' width='1200' height='580' fill='url(#courtGlow)' rx='8'/>"
-        "<rect x='100' y='60' width='1200' height='580' stroke='rgba(56, 189, 248, 0.22)' stroke-width='2'/>"
-        "<line x1='100' y1='132' x2='1300' y2='132' stroke='rgba(56, 189, 248, 0.16)' stroke-width='1.5'/>"
-        "<line x1='100' y1='568' x2='1300' y2='568' stroke='rgba(56, 189, 248, 0.16)' stroke-width='1.5'/>"
-        "<line x1='700' y1='36' x2='700' y2='664' stroke='rgba(56, 189, 248, 0.35)' stroke-width='2.5' stroke-dasharray='6 4'/>"
-        "<circle cx='700' cy='36' r='4' fill='#38bdf8' opacity='0.7'/>"
-        "<circle cx='700' cy='664' r='4' fill='#38bdf8' opacity='0.7'/>"
-        "<line x1='377' y1='132' x2='377' y2='568' stroke='rgba(56, 189, 248, 0.20)' stroke-width='1.5'/>"
-        "<line x1='1023' y1='132' x2='1023' y2='568' stroke='rgba(56, 189, 248, 0.20)' stroke-width='1.5'/>"
-        "<line x1='377' y1='350' x2='1023' y2='350' stroke='rgba(56, 189, 248, 0.20)' stroke-width='1.5'/>"
-        "<line x1='100' y1='350' x2='125' y2='350' stroke='rgba(56, 189, 248, 0.30)' stroke-width='2'/>"
-        "<line x1='1275' y1='350' x2='1300' y2='350' stroke='rgba(56, 189, 248, 0.30)' stroke-width='2'/>"
-        "<circle cx='700' cy='350' r='5' fill='none' stroke='#38bdf8' stroke-width='1.5' opacity='0.4'/>"
-        "<circle cx='700' cy='350' r='1.5' fill='#38bdf8' opacity='0.7'/>"
+        "<rect x='100' y='60' width='1200' height='580' fill='url(#courtGlow)' rx='14'/>"
+        "<rect x='100' y='60' width='1200' height='580' stroke='url(#courtLine)' stroke-width='2'/>"
+        "<line x1='100' y1='132' x2='1300' y2='132' stroke='rgba(56, 189, 248, 0.28)' stroke-width='1.5'/>"
+        "<line x1='100' y1='568' x2='1300' y2='568' stroke='rgba(56, 189, 248, 0.28)' stroke-width='1.5'/>"
+        "<line x1='700' y1='36' x2='700' y2='664' stroke='#38bdf8' stroke-width='2.5' stroke-dasharray='7 4' opacity='0.7'/>"
+        "<circle cx='700' cy='36' r='5' fill='#38bdf8' opacity='0.9'/>"
+        "<circle cx='700' cy='664' r='5' fill='#38bdf8' opacity='0.9'/>"
+        "<line x1='377' y1='132' x2='377' y2='568' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+        "<line x1='1023' y1='132' x2='1023' y2='568' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+        "<line x1='377' y1='350' x2='1023' y2='350' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+        "<line x1='100' y1='350' x2='125' y2='350' stroke='rgba(56, 189, 248, 0.45)' stroke-width='2.2'/>"
+        "<line x1='1275' y1='350' x2='1300' y2='350' stroke='rgba(56, 189, 248, 0.45)' stroke-width='2.2'/>"
+        "<circle cx='700' cy='350' r='7' fill='none' stroke='#38bdf8' stroke-width='1.5' opacity='0.6'/>"
+        "<circle cx='700' cy='350' r='2.5' fill='#38bdf8' opacity='0.95'/>"
         "</svg>"
     )
-    court_bg_encoded = urllib.parse.quote(svg_tennis_court)
+    court_b64 = base64.b64encode(svg_tennis_court.encode('utf-8')).decode('utf-8')
 
-    cyber_b64 = get_base64_image(CYBER_BG_PATH) if os.path.exists(CYBER_BG_PATH) else logo_b64
-
-    # Sfondo Cybernetico High-Tech M0V3 & Glassmorphism Cockpit
+    # Sfondo Dark Cyber High-Tech M0V3 & Minimal Executive Glassmorphism Card
     st.markdown(f"""
     <style>
-    /* 1. Sfondo Cybernetico Chiaro High-Tech M0V3 */
+    /* 1. Sfondo Dark Cyber High-Tech M0V3 con Blueprint Campo Tennis */
     .stApp {{
-        background-color: #f1f5fa !important;
-        background-image: url("data:image/jpeg;base64,{cyber_b64}") !important;
-        background-position: center center !important;
-        background-repeat: no-repeat !important;
-        background-size: cover !important;
-        background-attachment: fixed !important;
+        background-color: #060b14 !important;
+        background-image: 
+            radial-gradient(ellipse at 50% 12%, rgba(14, 165, 233, 0.18) 0%, rgba(6, 11, 20, 0.88) 60%, #030712 100%),
+            url("data:image/svg+xml;base64,{court_b64}") !important;
+        background-position: center top, center center !important;
+        background-repeat: no-repeat, no-repeat !important;
+        background-size: 100% 100%, min(1280px, 92vw) auto !important;
+        background-attachment: fixed, fixed !important;
         min-height: 100vh !important;
         overflow-x: hidden !important;
     }}
 
-    /* 2. Disabilita watermark aggiuntivo: il logo MOV3 è già centrato nel background 3D */
+    /* 2. Disabilita watermark aggiuntivo */
     [data-testid="stAppViewContainer"]::before {{
         display: none !important;
         content: "" !important;
     }}
 
-    /* 3. Centratura e Dimensionamento Cockpit (3 Colonne) */
+    /* 3. Centratura e Dimensionamento Minimal Executive */
     .block-container {{
-        max-width: 1380px !important;
-        padding-top: 4vh !important;
-        padding-bottom: 4vh !important;
+        max-width: 500px !important;
+        padding-top: 7vh !important;
+        padding-bottom: 5vh !important;
         margin: 0 auto !important;
         position: relative !important;
         z-index: 10 !important;
     }}
 
-    @media (max-width: 1080px) {{
-        div[data-testid="column"]:nth-of-type(1),
-        div[data-testid="column"]:nth-of-type(3) {{
-            display: none !important;
-        }}
+    @media (max-width: 640px) {{
         .block-container {{
-            max-width: 480px !important;
-            padding-top: 6vh !important;
+            max-width: 94% !important;
+            padding-top: 4vh !important;
+            padding-bottom: 3vh !important;
         }}
     }}
 
-    /* 4. Card Glassmorphism ad Alto Contrasto */
+    /* 4. Card Glassmorphism ad Alto Contrasto Dark */
     div[data-testid="stVerticalBlockBorderWrapper"] {{
-        background: linear-gradient(165deg, rgba(17, 28, 48, 0.90) 0%, rgba(10, 18, 34, 0.96) 100%) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.14) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 40px rgba(14, 165, 233, 0.14) !important;
-        padding: 34px 28px !important;
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.94) 0%, rgba(8, 15, 28, 0.98) 100%) !important;
+        backdrop-filter: blur(28px) !important;
+        -webkit-backdrop-filter: blur(28px) !important;
+        border: 1px solid rgba(56, 189, 248, 0.28) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 50px rgba(14, 165, 233, 0.16) !important;
+        padding: 36px 30px !important;
     }}
 
     [data-testid="stForm"] {{
@@ -295,7 +298,7 @@ def auth_module():
         padding: 0 !important;
     }}
 
-    /* 5. Campi Input ed Etichette (Altissima Leggibilità su Sfondo Scuro) */
+    /* 5. Campi Input ed Etichette */
     .stTextInput label, [data-testid="stWidgetLabel"] p {{
         color: #e2e8f0 !important;
         font-weight: 700 !important;
@@ -308,21 +311,21 @@ def auth_module():
     div[data-baseweb="base-input"],
     .stTextInput > div > div,
     .stTextInput input {{
-        background-color: #0b1528 !important;
+        background-color: #081120 !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         caret-color: #38bdf8 !important;
         border: 1px solid rgba(56, 189, 248, 0.35) !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         font-size: 14.5px !important;
         transition: all 0.2s ease !important;
     }}
 
     div[data-baseweb="input"]:focus-within,
     .stTextInput input:focus {{
-        background-color: #0f1d36 !important;
-        border-color: #0ea5e9 !important;
-        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.35) !important;
+        background-color: #0d1a32 !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.35), 0 0 15px rgba(56, 189, 248, 0.2) !important;
         outline: none !important;
     }}
 
@@ -337,8 +340,8 @@ def auth_module():
     .stTextInput input:-webkit-autofill:focus,
     .stTextInput input:-webkit-autofill:active {{
         -webkit-text-fill-color: #ffffff !important;
-        -webkit-box-shadow: 0 0 0px 1000px #0b1528 inset !important;
-        box-shadow: 0 0 0px 1000px #0b1528 inset !important;
+        -webkit-box-shadow: 0 0 0px 1000px #081120 inset !important;
+        box-shadow: 0 0 0px 1000px #081120 inset !important;
         transition: background-color 5000s ease-in-out 0s !important;
     }}
 
@@ -355,24 +358,29 @@ def auth_module():
         font-size: 16px !important;
     }}
 
-    /* 6. Pulsante "Accedi" Premium */
+    /* 6. Pulsante "Accedi" Premium con Glow Neon dinamico */
     .stFormSubmitButton button, button[kind="primaryFormSubmit"] {{
-        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%) !important;
         color: #ffffff !important;
         font-weight: 800 !important;
         font-size: 15px !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 12px 20px !important;
-        letter-spacing: 0.5px !important;
-        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35) !important;
-        transition: all 0.2s ease !important;
-        margin-top: 8px !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 13px 22px !important;
+        letter-spacing: 0.6px !important;
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35), 0 0 10px rgba(56, 189, 248, 0.2) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-top: 10px !important;
     }}
     .stFormSubmitButton button:hover, button[kind="primaryFormSubmit"]:hover {{
-        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%) !important;
-        box-shadow: 0 6px 22px rgba(14, 165, 233, 0.55) !important;
-        transform: translateY(-1px) !important;
+        background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%) !important;
+        box-shadow: 0 8px 30px rgba(14, 165, 233, 0.65), 0 0 25px rgba(56, 189, 248, 0.5) !important;
+        transform: translateY(-2px) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+    }}
+    .stFormSubmitButton button:active, button[kind="primaryFormSubmit"]:active {{
+        transform: translateY(0px) !important;
+        box-shadow: 0 3px 12px rgba(14, 165, 233, 0.4) !important;
     }}
 
     /* 7. Link e Box "Password Dimenticata?" */
@@ -399,8 +407,8 @@ def auth_module():
     }}
     [data-testid="stExpander"] [data-testid="stExpanderDetails"] {{
         background: rgba(8, 15, 28, 0.95) !important;
-        border: 1px solid rgba(255, 255, 255, 0.14) !important;
-        border-radius: 12px !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 14px !important;
         padding: 18px !important;
         margin-top: 8px !important;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
@@ -433,426 +441,104 @@ def auth_module():
     </style>
     """, unsafe_allow_html=True)
 
-    # Widget HUD Laterali con Grafici Neon Puri (Zero Numeri, 100% Visual High-Tech)
-    hud_monitora = """<div style='background: linear-gradient(165deg, rgba(17, 28, 48, 0.90) 0%, rgba(10, 18, 34, 0.96) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.32); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6), 0 0 24px rgba(14, 165, 233, 0.12); margin-bottom: 12px;'>
-<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;'>
-<div style='font-size: 10.5px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; text-transform: uppercase;'>
-<i class="bi bi-activity" style='margin-right: 5px;'></i> MONITORA
-</div>
-<span style='background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-size: 8.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(14, 165, 233, 0.35); display: flex; align-items: center; gap: 5px;'>
-<span style='width: 5px; height: 5px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 8px #38bdf8; display: inline-block;'></span> POST-MATCH SYNC
-</span>
-</div>
-<div style='color: #ffffff; font-size: 12px; font-weight: 800; margin-bottom: 8px;'>Telemetria & Analisi Post-Sessione</div>
-<div style='background: rgba(6, 12, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.20); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px;'>
-<svg viewBox='0 0 260 55' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 55px; display: block;'>
-<line x1='0' y1='14' x2='260' y2='14' stroke='rgba(56, 189, 248, 0.10)' stroke-dasharray='3 3'/>
-<line x1='0' y1='28' x2='260' y2='28' stroke='rgba(56, 189, 248, 0.14)' stroke-dasharray='3 3'/>
-<line x1='0' y1='42' x2='260' y2='42' stroke='rgba(56, 189, 248, 0.10)' stroke-dasharray='3 3'/>
-<line x1='65' y1='0' x2='65' y2='55' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='3 3'/>
-<line x1='130' y1='0' x2='130' y2='55' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='3 3'/>
-<line x1='195' y1='0' x2='195' y2='55' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='3 3'/>
-<path d='M0,38 Q25,38 45,34 T70,30 T85,12 T95,48 T105,24 T125,28 T145,22 T165,6 T178,44 T190,26 T215,28 T240,24 T260,20' stroke='rgba(14, 165, 233, 0.25)' stroke-width='6' fill='none'/>
-<path d='M0,38 Q25,38 45,34 T70,30 T85,12 T95,48 T105,24 T125,28 T145,22 T165,6 T178,44 T190,26 T215,28 T240,24 T260,20' stroke='#38bdf8' stroke-width='2.2' fill='none' style='filter: drop-shadow(0 0 6px #0ea5e9);'/>
-<path d='M0,32 Q35,26 70,33 T140,24 T210,30 T260,22' stroke='#60a5fa' stroke-width='1.2' stroke-dasharray='4 3' fill='none' opacity='0.75'/>
-<circle cx='85' cy='12' r='3' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-<circle cx='165' cy='6' r='3.5' fill='#34d399' style='filter: drop-shadow(0 0 8px #34d399);'/>
-<circle cx='260' cy='20' r='3.5' fill='#38bdf8' style='filter: drop-shadow(0 0 8px #38bdf8);'/>
-</svg>
-</div>
-<div style='background: rgba(6, 12, 24, 0.70); border: 1px solid rgba(56, 189, 248, 0.16); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>IMU TRI-AXIAL</div>
-<svg viewBox='0 0 110 24' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 24px; display: block;'>
-<path d='M0,6 Q18,2 35,6 T70,4 T110,6' stroke='#38bdf8' stroke-width='1.5' fill='none' style='filter: drop-shadow(0 0 4px #0ea5e9);'/>
-<path d='M0,13 Q22,17 45,13 T85,11 T110,14' stroke='#34d399' stroke-width='1.5' fill='none' style='filter: drop-shadow(0 0 4px #34d399);'/>
-<path d='M0,20 Q30,16 60,20 T95,18 T110,21' stroke='#818cf8' stroke-width='1.5' fill='none' style='filter: drop-shadow(0 0 4px #818cf8);'/>
-</svg>
-</div>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>IMPULSE BANDS</div>
-<div style='display: flex; align-items: flex-end; justify-content: space-between; height: 24px; padding: 2px 0;'>
-<div style='width: 5px; height: 8px; background: #0284c7; border-radius: 2px;'></div>
-<div style='width: 5px; height: 14px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 5px; height: 20px; background: #38bdf8; border-radius: 2px; box-shadow: 0 0 6px #38bdf8;'></div>
-<div style='width: 5px; height: 12px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 5px; height: 17px; background: #38bdf8; border-radius: 2px; box-shadow: 0 0 6px #38bdf8;'></div>
-<div style='width: 5px; height: 23px; background: #ffffff; border-radius: 2px; box-shadow: 0 0 8px #ffffff;'></div>
-<div style='width: 5px; height: 15px; background: #38bdf8; border-radius: 2px; box-shadow: 0 0 6px #38bdf8;'></div>
-<div style='width: 5px; height: 9px; background: #0284c7; border-radius: 2px;'></div>
-<div style='width: 5px; height: 18px; background: #34d399; border-radius: 2px; box-shadow: 0 0 6px #34d399;'></div>
-<div style='width: 5px; height: 11px; background: #0ea5e9; border-radius: 2px;'></div>
-</div>
-</div>
-</div>
-</div>"""
+    with st.container(border=True):
+        col_auth_sp, col_auth_lang = st.columns([3, 1.2])
+        with col_auth_lang:
+            curr_l = st.session_state.get('lang', 'IT')
+            sel_auth_l = st.radio(
+                "Auth Lang",
+                ["IT", "EN"],
+                index=0 if curr_l == 'IT' else 1,
+                horizontal=True,
+                key="auth_lang_switch",
+                label_visibility="collapsed"
+            )
+            if sel_auth_l != curr_l:
+                st.session_state['lang'] = sel_auth_l
+                st.rerun()
 
-    hud_analizza = """<div style='background: linear-gradient(165deg, rgba(17, 28, 48, 0.90) 0%, rgba(10, 18, 34, 0.96) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.32); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6), 0 0 24px rgba(14, 165, 233, 0.12);'>
-<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;'>
-<div style='font-size: 10.5px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; text-transform: uppercase;'>
-<i class="bi bi-bar-chart-line" style='margin-right: 5px;'></i> ANALIZZA
-</div>
-<span style='background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-size: 8.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(14, 165, 233, 0.35);'>
-OPTIMAL ZONE
-</span>
-</div>
-<div style='color: #ffffff; font-size: 12px; font-weight: 800; margin-bottom: 8px;'>Spettro Carichi & Distribuzione</div>
-<div style='background: rgba(6, 12, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.20); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px;'>
-<svg viewBox='0 0 260 55' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 55px; display: block;'>
-<line x1='0' y1='14' x2='260' y2='14' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='2 2'/>
-<line x1='0' y1='28' x2='260' y2='28' stroke='rgba(56, 189, 248, 0.12)' stroke-dasharray='2 2'/>
-<line x1='0' y1='42' x2='260' y2='42' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='2 2'/>
-<!-- Segmented neon bars (11 columns) -->
-<rect x='10' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='10' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='10' y='30' width='14' height='3.5' rx='1.5' fill='#38bdf8' style='filter: drop-shadow(0 0 5px #38bdf8);'/>
+        st.markdown(f"""
+        <div style='text-align: center; margin-bottom: 22px;'>
+            <img src='data:image/png;base64,{logo_b64}' style='width: 82px; height: 82px; border-radius: 50%; box-shadow: 0 0 32px rgba(14, 165, 233, 0.55); border: 2px solid rgba(56, 189, 248, 0.35); display: inline-block; margin-bottom: 12px;'>
+            <div style='font-size: 11px; letter-spacing: 2.8px; text-transform: uppercase; color: #38bdf8; font-weight: 800; margin-bottom: 4px;'>PERFORMANCE ANALYTICS</div>
+            <h1 style='color: #ffffff; font-size: 34px; font-weight: 900; line-height: 1.15; margin: 0 0 8px 0; letter-spacing: -0.8px; text-shadow: 0 0 24px rgba(14, 165, 233, 0.45);'>MOV3 Analytics</h1>
+            <p style='color: #94a3b8; font-size: 13.5px; margin: 0;'>{tr("Improve your Game · Inserisci le credenziali", "Improve your Game · Enter your credentials")}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-<rect x='32' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='32' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='32' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='32' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='32' y='18' width='14' height='3.5' rx='1.5' fill='#ffffff' style='filter: drop-shadow(0 0 5px #ffffff);'/>
+        with st.form("login_form"):
+            email = st.text_input(tr("Email", "Email"), autocomplete="username", key="login_email")
+            password = st.text_input(tr("Password", "Password"), type="password", autocomplete="current-password", key="login_password")
+            if st.form_submit_button(tr("Accedi", "Sign In"), type="primary", use_container_width=True):
+                try:
+                    try: supabase.auth.sign_out()
+                    except: pass
 
-<rect x='54' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='54' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='54' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='54' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
+                    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                    st.session_state['user'] = res.user
+                    st.session_state['logged_out'] = False
+                    if 'logged_out' in st.query_params:
+                        del st.query_params['logged_out']
+                    if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
+                        st.session_state['refresh_token'] = res.session.refresh_token
 
-<rect x='76' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='76' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='76' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='76' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='76' y='18' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='76' y='12' width='14' height='3.5' rx='1.5' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-
-<rect x='98' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='98' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='98' y='30' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-
-<rect x='120' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='120' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='120' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='120' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='120' y='18' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='120' y='12' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='120' y='6' width='14' height='3.5' rx='1.5' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-
-<rect x='142' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='142' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='142' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='142' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-
-<rect x='164' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='164' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='164' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='164' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='164' y='18' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-
-<rect x='186' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='186' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='186' y='30' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='186' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-
-<rect x='208' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='208' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='208' y='30' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='208' y='24' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-<rect x='208' y='18' width='14' height='3.5' rx='1.5' fill='#ffffff' style='filter: drop-shadow(0 0 5px #ffffff);'/>
-
-<rect x='230' y='42' width='14' height='3.5' rx='1.5' fill='#0284c7'/>
-<rect x='230' y='36' width='14' height='3.5' rx='1.5' fill='#0ea5e9'/>
-<rect x='230' y='30' width='14' height='3.5' rx='1.5' fill='#38bdf8'/>
-
-<!-- Spline Trend Curve -->
-<path d='M 17,28 Q 40,16 61,23 T 105,27 T 149,15 T 193,22 T 237,28' stroke='#34d399' stroke-width='2' fill='none' style='filter: drop-shadow(0 0 5px #34d399);'/>
-</svg>
-</div>
-<div style='background: rgba(6, 12, 24, 0.70); border: 1px solid rgba(56, 189, 248, 0.16); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;'>SWEET SPOT RANGE</div>
-<div style='position: relative; height: 16px; background: rgba(14, 165, 233, 0.10); border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2); overflow: hidden;'>
-<div style='position: absolute; left: 35%; width: 35%; top: 0; bottom: 0; background: rgba(16, 185, 129, 0.25); border-left: 1px dashed #34d399; border-right: 1px dashed #34d399;'></div>
-<div style='position: absolute; left: 52%; top: 2px; width: 6px; height: 10px; border-radius: 3px; background: #ffffff; box-shadow: 0 0 8px #38bdf8, 0 0 12px #34d399;'></div>
-</div>
-<div style='display: flex; justify-content: space-between; margin-top: 3px;'>
-<span style='font-size: 7px; color: #64748b; font-weight: 700;'>LOW</span>
-<span style='font-size: 7px; color: #34d399; font-weight: 800;'>OPTIMAL</span>
-<span style='font-size: 7px; color: #64748b; font-weight: 700;'>HIGH</span>
-</div>
-</div>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;'>LOAD MATRIX</div>
-<div style='display: grid; grid-template-columns: repeat(6, 1fr); gap: 3.5px; padding-top: 2px;'>
-<div style='height: 7px; border-radius: 2px; background: #0ea5e9;'></div>
-<div style='height: 7px; border-radius: 2px; background: #38bdf8; box-shadow: 0 0 4px #38bdf8;'></div>
-<div style='height: 7px; border-radius: 2px; background: #34d399; box-shadow: 0 0 5px #34d399;'></div>
-<div style='height: 7px; border-radius: 2px; background: #38bdf8;'></div>
-<div style='height: 7px; border-radius: 2px; background: #0284c7;'></div>
-<div style='height: 7px; border-radius: 2px; background: #34d399; box-shadow: 0 0 5px #34d399;'></div>
-<div style='height: 7px; border-radius: 2px; background: #38bdf8;'></div>
-<div style='height: 7px; border-radius: 2px; background: #ffffff; box-shadow: 0 0 6px #ffffff;'></div>
-<div style='height: 7px; border-radius: 2px; background: #34d399;'></div>
-<div style='height: 7px; border-radius: 2px; background: #0ea5e9;'></div>
-<div style='height: 7px; border-radius: 2px; background: #38bdf8; box-shadow: 0 0 4px #38bdf8;'></div>
-<div style='height: 7px; border-radius: 2px; background: #0284c7;'></div>
-</div>
-</div>
-</div>
-</div>"""
-
-    hud_programma = """<div style='background: linear-gradient(165deg, rgba(17, 28, 48, 0.90) 0%, rgba(10, 18, 34, 0.96) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.32); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6), 0 0 24px rgba(14, 165, 233, 0.12); margin-bottom: 12px;'>
-<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;'>
-<div style='font-size: 10.5px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; text-transform: uppercase;'>
-<i class="bi bi-calendar-check" style='margin-right: 5px;'></i> PROGRAMMA
-</div>
-<span style='background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-size: 8.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(14, 165, 233, 0.35);'>
-TAPER PROTOCOL
-</span>
-</div>
-<div style='color: #ffffff; font-size: 12px; font-weight: 800; margin-bottom: 8px;'>Periodizzazione & Microcicli</div>
-<div style='background: rgba(6, 12, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.20); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px;'>
-<svg viewBox='0 0 260 55' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 55px; display: block;'>
-<line x1='0' y1='14' x2='260' y2='14' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='3 3'/>
-<line x1='0' y1='28' x2='260' y2='28' stroke='rgba(56, 189, 248, 0.12)' stroke-dasharray='3 3'/>
-<line x1='0' y1='42' x2='260' y2='42' stroke='rgba(56, 189, 248, 0.08)' stroke-dasharray='3 3'/>
-<!-- Vertical Phase Dividers -->
-<line x1='86' y1='0' x2='86' y2='55' stroke='rgba(56, 189, 248, 0.12)' stroke-dasharray='2 2'/>
-<line x1='172' y1='0' x2='172' y2='55' stroke='rgba(56, 189, 248, 0.12)' stroke-dasharray='2 2'/>
-<!-- Volume Curve (Tapering Descent) -->
-<path d='M0,14 C40,14 70,20 100,28 C140,38 190,44 260,46' stroke='#0284c7' stroke-width='2' fill='none' opacity='0.75'/>
-<!-- Intensity Curve (Sharp Match Waves) -->
-<path d='M0,38 Q30,14 60,32 T120,24 T180,16 T220,10 T260,8' stroke='#38bdf8' stroke-width='2.2' fill='none' style='filter: drop-shadow(0 0 6px #0ea5e9);'/>
-<!-- Chronic Load Baseline -->
-<path d='M0,28 C70,26 140,24 210,21 C235,20 250,19 260,18' stroke='#34d399' stroke-width='1.8' stroke-dasharray='4 3' fill='none' style='filter: drop-shadow(0 0 5px #34d399);'/>
-<!-- Highlights -->
-<circle cx='220' cy='10' r='3' fill='#38bdf8' style='filter: drop-shadow(0 0 6px #38bdf8);'/>
-<circle cx='260' cy='8' r='3.5' fill='#ffffff' style='filter: drop-shadow(0 0 8px #ffffff);'/>
-</svg>
-</div>
-<div style='background: rgba(6, 12, 24, 0.70); border: 1px solid rgba(56, 189, 248, 0.16); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>CYCLE PROGRESSION</div>
-<div style='display: flex; flex-direction: column; gap: 3.5px; padding-top: 1px;'>
-<div style='display: flex; gap: 2.5px;'>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #0ea5e9;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #0ea5e9;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #38bdf8; box-shadow: 0 0 5px #38bdf8;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #38bdf8;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: rgba(14, 165, 233, 0.2);'></div>
-</div>
-<div style='display: flex; gap: 2.5px;'>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #34d399;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #34d399; box-shadow: 0 0 5px #34d399;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #ffffff; box-shadow: 0 0 6px #ffffff;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #34d399;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #34d399;'></div>
-</div>
-<div style='display: flex; gap: 2.5px;'>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #60a5fa;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #60a5fa;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: #818cf8;'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: rgba(14, 165, 233, 0.2);'></div>
-<div style='flex: 1; height: 5px; border-radius: 2px; background: rgba(14, 165, 233, 0.2);'></div>
-</div>
-</div>
-</div>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>SESSION DISTRIBUTION</div>
-<div style='display: flex; align-items: flex-end; justify-content: space-between; height: 24px; padding: 2px 2px;'>
-<div style='width: 8px; height: 10px; background: #0284c7; border-radius: 2px;'></div>
-<div style='width: 8px; height: 16px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 8px; height: 22px; background: #38bdf8; border-radius: 2px; box-shadow: 0 0 6px #38bdf8;'></div>
-<div style='width: 8px; height: 12px; background: #0284c7; border-radius: 2px;'></div>
-<div style='width: 8px; height: 20px; background: #34d399; border-radius: 2px; box-shadow: 0 0 6px #34d399;'></div>
-<div style='width: 8px; height: 24px; background: #ffffff; border-radius: 2px; box-shadow: 0 0 8px #ffffff;'></div>
-<div style='width: 8px; height: 8px; background: rgba(14, 165, 233, 0.3); border-radius: 2px;'></div>
-</div>
-</div>
-</div>
-</div>"""
-
-    hud_performa = """<div style='background: linear-gradient(165deg, rgba(17, 28, 48, 0.90) 0%, rgba(10, 18, 34, 0.96) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.32); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6), 0 0 24px rgba(14, 165, 233, 0.12);'>
-<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;'>
-<div style='font-size: 10.5px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; text-transform: uppercase;'>
-<i class="bi bi-trophy" style='margin-right: 5px;'></i> PERFORMA
-</div>
-<span style='background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 8.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.35);'>
-MATCH READY
-</span>
-</div>
-<div style='color: #ffffff; font-size: 12px; font-weight: 800; margin-bottom: 8px;'>Readiness & Athletic Radar</div>
-<div style='background: rgba(6, 12, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.20); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px;'>
-<svg viewBox='0 0 260 88' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 88px; display: block;'>
-<!-- Hexagonal Athletic Radar Chart (Expanded & Centered) -->
-<!-- Concentric Web 1 (Outer - 100%) -->
-<polygon points='130,12 161,30 161,64 130,82 99,64 99,30' stroke='rgba(56, 189, 248, 0.26)' stroke-width='1.2' fill='none'/>
-<!-- Concentric Web 2 (Mid - 66%) -->
-<polygon points='130,24 151,36 151,58 130,70 109,58 109,36' stroke='rgba(56, 189, 248, 0.16)' stroke-width='1' stroke-dasharray='2 2' fill='none'/>
-<!-- Concentric Web 3 (Inner - 33%) -->
-<polygon points='130,35 140,41 140,53 130,59 120,53 120,41' stroke='rgba(56, 189, 248, 0.10)' stroke-width='1' fill='none'/>
-<!-- Axes -->
-<line x1='130' y1='12' x2='130' y2='82' stroke='rgba(56, 189, 248, 0.20)' stroke-dasharray='2 2'/>
-<line x1='99' y1='30' x2='161' y2='64' stroke='rgba(56, 189, 248, 0.20)' stroke-dasharray='2 2'/>
-<line x1='99' y1='64' x2='161' y2='30' stroke='rgba(56, 189, 248, 0.20)' stroke-dasharray='2 2'/>
-<!-- Radar Sweep Glow Line -->
-<line x1='130' y1='47' x2='158' y2='33' stroke='#38bdf8' stroke-width='1.5' opacity='0.7' style='filter: drop-shadow(0 0 6px #38bdf8);'/>
-<!-- Filled Athletic Polygon Shape -->
-<polygon points='130,16 157,33 155,62 130,76 106,60 103,32' stroke='#38bdf8' stroke-width='2.2' fill='rgba(14, 165, 233, 0.28)' style='filter: drop-shadow(0 0 8px #0ea5e9);'/>
-<!-- Glowing Vertices -->
-<circle cx='130' cy='16' r='3' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-<circle cx='157' cy='33' r='3' fill='#34d399' style='filter: drop-shadow(0 0 6px #34d399);'/>
-<circle cx='155' cy='62' r='3' fill='#38bdf8' style='filter: drop-shadow(0 0 6px #38bdf8);'/>
-<circle cx='130' cy='76' r='3' fill='#38bdf8' style='filter: drop-shadow(0 0 6px #38bdf8);'/>
-<circle cx='106' cy='60' r='3' fill='#34d399' style='filter: drop-shadow(0 0 6px #34d399);'/>
-<circle cx='103' cy='32' r='3' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-<!-- Center Anchor -->
-<circle cx='130' cy='47' r='2' fill='#38bdf8'/>
-<!-- Radar Pillar Labels -->
-<text x='130' y='9' fill='#38bdf8' font-size='8' font-weight='900' text-anchor='middle'>ACC</text>
-<text x='168' y='29' fill='#e2e8f0' font-size='7.5' font-weight='800'>VEL</text>
-<text x='168' y='67' fill='#e2e8f0' font-size='7.5' font-weight='800'>PWR</text>
-<text x='130' y='92' fill='#38bdf8' font-size='8' font-weight='900' text-anchor='middle'>DEC</text>
-<text x='92' y='67' fill='#e2e8f0' font-size='7.5' font-weight='800' text-anchor='end'>VOL</text>
-<text x='92' y='29' fill='#e2e8f0' font-size='7.5' font-weight='800' text-anchor='end'>INT</text>
-<!-- Lateral Cyber Accents -->
-<path d='M8,47 Q22,25 38,47 T68,47' stroke='#0ea5e9' stroke-width='1.5' fill='none' opacity='0.55'/>
-<path d='M192,47 Q222,47 238,25 T252,47' stroke='#34d399' stroke-width='1.5' fill='none' opacity='0.55'/>
-</svg>
-</div>
-<div style='background: rgba(6, 12, 24, 0.70); border: 1px solid rgba(56, 189, 248, 0.16); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>NEUROMUSCULAR ARC</div>
-<svg viewBox='0 0 110 24' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 100%; height: 24px; display: block;'>
-<path d='M 15 20 A 18 18 0 0 1 95 20' stroke='rgba(14, 165, 233, 0.18)' stroke-width='4' stroke-linecap='round' fill='none'/>
-<path d='M 15 20 A 18 18 0 0 1 88 10' stroke='#38bdf8' stroke-width='4' stroke-linecap='round' fill='none' style='filter: drop-shadow(0 0 5px #0ea5e9);'/>
-<circle cx='88' cy='10' r='3' fill='#ffffff' style='filter: drop-shadow(0 0 6px #ffffff);'/>
-</svg>
-</div>
-<div>
-<div style='font-size: 8px; font-weight: 800; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;'>INTENSITY SPECTRUM</div>
-<div style='display: flex; align-items: flex-end; justify-content: space-between; height: 24px; padding: 2px 2px;'>
-<div style='width: 6px; height: 10px; background: #0284c7; border-radius: 2px;'></div>
-<div style='width: 6px; height: 15px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 6px; height: 21px; background: #38bdf8; border-radius: 2px; box-shadow: 0 0 5px #38bdf8;'></div>
-<div style='width: 6px; height: 14px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 6px; height: 23px; background: #ffffff; border-radius: 2px; box-shadow: 0 0 7px #ffffff;'></div>
-<div style='width: 6px; height: 18px; background: #34d399; border-radius: 2px; box-shadow: 0 0 5px #34d399;'></div>
-<div style='width: 6px; height: 12px; background: #0ea5e9; border-radius: 2px;'></div>
-<div style='width: 6px; height: 8px; background: #0284c7; border-radius: 2px;'></div>
-</div>
-</div>
-</div>
-</div>"""
-
-    col_left, col_center, col_right = st.columns([1, 1.25, 1], gap="large")
-
-    with col_left:
-        st.html(hud_monitora)
-        st.html(hud_analizza)
-
-    with col_center:
-        with st.container(border=True):
-            col_auth_sp, col_auth_lang = st.columns([3, 1.2])
-            with col_auth_lang:
-                curr_l = st.session_state.get('lang', 'IT')
-                sel_auth_l = st.radio(
-                    "Auth Lang",
-                    ["IT", "EN"],
-                    index=0 if curr_l == 'IT' else 1,
-                    horizontal=True,
-                    key="auth_lang_switch",
-                    label_visibility="collapsed"
-                )
-                if sel_auth_l != curr_l:
-                    st.session_state['lang'] = sel_auth_l
-                    st.rerun()
-
-            st.markdown(f"""
-            <div style='text-align: center; margin-bottom: 22px;'>
-                <img src='data:image/png;base64,{logo_b64}' style='width: 78px; height: 78px; border-radius: 50%; box-shadow: 0 0 28px rgba(14, 165, 233, 0.45); border: 2px solid rgba(255, 255, 255, 0.2); display: inline-block; margin-bottom: 12px;'>
-                <div style='font-size: 10.5px; letter-spacing: 2.5px; text-transform: uppercase; color: #38bdf8; font-weight: 800; margin-bottom: 4px;'>PERFORMANCE ANALYTICS</div>
-                <h1 style='color: #ffffff; font-size: 36px; font-weight: 900; line-height: 1.15; margin: 0 0 8px 0; letter-spacing: -0.8px; text-shadow: 0 0 24px rgba(14, 165, 233, 0.45);'>MOV3 Analytics</h1>
-                <p style='color: #94a3b8; font-size: 13.5px; margin: 0;'>{tr("Improve your Game · Inserisci le credenziali", "Improve your Game · Enter your credentials")}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            with st.form("login_form"):
-                email = st.text_input(tr("Email", "Email"), autocomplete="username", key="login_email")
-                password = st.text_input(tr("Password", "Password"), type="password", autocomplete="current-password", key="login_password")
-                if st.form_submit_button(tr("Accedi", "Sign In"), type="primary", use_container_width=True):
-                    try:
-                        try: supabase.auth.sign_out()
-                        except: pass
-
-                        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                        st.session_state['user'] = res.user
-                        st.session_state['logged_out'] = False
-                        if 'logged_out' in st.query_params:
-                            del st.query_params['logged_out']
-                        if hasattr(res, 'session') and res.session and hasattr(res.session, 'refresh_token'):
-                            st.session_state['refresh_token'] = res.session.refresh_token
-
-                        profilo = supabase.table('profili').select('*').eq('id', res.user.id).execute()
-                        if profilo.data:
-                            p_row = profilo.data[0]
-                            st.session_state['role'] = p_row.get('ruolo', 'Atleta')
-                            has_acc = bool(p_row.get('has_accepted_terms') or p_row.get('privacy_accettata', False))
-                            st.session_state['has_accepted_terms'] = has_acc
-                            st.session_state['privacy_accettata'] = has_acc
-                            st.session_state['terms_accepted_at'] = p_row.get('terms_accepted_at', '')
-                            st.session_state['terms_version'] = p_row.get('terms_version', 'M0V3_IP_GDPR_v2.0')
-                        else:
-                            st.session_state['role'] = 'Atleta'
-                            st.session_state['has_accepted_terms'] = False
-                            st.session_state['privacy_accettata'] = False
-                            st.session_state['terms_accepted_at'] = ''
-                            st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
-                        st.rerun()
-                    except Exception as e:
-                        st.error(tr("Credenziali errate o sessione scaduta. Riprova.", "Invalid credentials or session expired. Try again."))
-
-            with st.expander(tr("Password dimenticata?", "Forgot password?")):
-                st.info(tr("Inserisci la tua email e invia la richiesta al team M0V3. Verrai ricontattato con una password provvisoria.", "Enter your email to send a request to M0V3. You will receive a temporary password shortly."))
-                req_email = st.text_input(tr("La tua Email registrata", "Your registered Email"), key="req_mail_m0v3")
-
-                if st.button(tr("Invia richiesta a M0V3", "Send request to M0V3"), type="primary", use_container_width=True):
-                    if req_email:
-                        try:
-                            supabase.table('richieste_reset').insert({"email": req_email.strip()}).execute()
-                            st.success(tr("Richiesta inviata. L'amministratore resetterà la tua password al più presto.", "Request sent. The administrator will reset your password shortly."))
-                        except Exception as e:
-                            err_lbl = tr("Errore durante l'invio della richiesta:", "Error sending request:")
-                            st.error(f"{err_lbl} {e}")
+                    profilo = supabase.table('profili').select('*').eq('id', res.user.id).execute()
+                    if profilo.data:
+                        p_row = profilo.data[0]
+                        st.session_state['role'] = p_row.get('ruolo', 'Atleta')
+                        has_acc = bool(p_row.get('has_accepted_terms') or p_row.get('privacy_accettata', False))
+                        st.session_state['has_accepted_terms'] = has_acc
+                        st.session_state['privacy_accettata'] = has_acc
+                        st.session_state['terms_accepted_at'] = p_row.get('terms_accepted_at', '')
+                        st.session_state['terms_version'] = p_row.get('terms_version', 'M0V3_IP_GDPR_v2.0')
                     else:
-                        st.warning(tr("Inserisci un indirizzo email valido.", "Please enter a valid email address."))
+                        st.session_state['role'] = 'Atleta'
+                        st.session_state['has_accepted_terms'] = False
+                        st.session_state['privacy_accettata'] = False
+                        st.session_state['terms_accepted_at'] = ''
+                        st.session_state['terms_version'] = 'M0V3_IP_GDPR_v2.0'
+                    st.rerun()
+                except Exception as e:
+                    st.error(tr("Credenziali errate o sessione scaduta. Riprova.", "Invalid credentials or session expired. Try again."))
 
-            components.html("""
-                <script>
-                (function() {
-                    const doc = window.parent.document;
-                    function bindAutofillAttrs() {
-                        const emailInput = doc.querySelector('input[aria-label="Email"]');
-                        const pwdInput = doc.querySelector('input[aria-label="Password"]');
-                        if (emailInput) {
-                            emailInput.setAttribute('type', 'email');
-                            emailInput.setAttribute('name', 'username');
-                            emailInput.setAttribute('autocomplete', 'username');
-                        }
-                        if (pwdInput) {
-                            pwdInput.setAttribute('name', 'password');
-                            pwdInput.setAttribute('autocomplete', 'current-password');
-                        }
+        with st.expander(tr("Password dimenticata?", "Forgot password?")):
+            st.info(tr("Inserisci la tua email e invia la richiesta al team M0V3. Verrai ricontattato con una password provvisoria.", "Enter your email to send a request to M0V3. You will receive a temporary password shortly."))
+            req_email = st.text_input(tr("La tua Email registrata", "Your registered Email"), key="req_mail_m0v3")
+
+            if st.button(tr("Invia richiesta a M0V3", "Send request to M0V3"), type="primary", use_container_width=True):
+                if req_email:
+                    try:
+                        supabase.table('richieste_reset').insert({"email": req_email.strip()}).execute()
+                        st.success(tr("Richiesta inviata. L'amministratore resetterà la tua password al più presto.", "Request sent. The administrator will reset your password shortly."))
+                    except Exception as e:
+                        err_lbl = tr("Errore durante l'invio della richiesta:", "Error sending request:")
+                        st.error(f"{err_lbl} {e}")
+                else:
+                    st.warning(tr("Inserisci un indirizzo email valido.", "Please enter a valid email address."))
+
+        components.html("""
+            <script>
+            (function() {
+                const doc = window.parent.document;
+                function bindAutofillAttrs() {
+                    const emailInput = doc.querySelector('input[aria-label="Email"]');
+                    const pwdInput = doc.querySelector('input[aria-label="Password"]');
+                    if (emailInput) {
+                        emailInput.setAttribute('type', 'email');
+                        emailInput.setAttribute('name', 'username');
+                        emailInput.setAttribute('autocomplete', 'username');
                     }
-                    bindAutofillAttrs();
-                    setTimeout(bindAutofillAttrs, 150);
-                    setTimeout(bindAutofillAttrs, 500);
-                })();
-                </script>
-            """, height=0)
-
-    with col_right:
-        st.html(hud_programma)
-        st.html(hud_performa)
+                    if (pwdInput) {
+                        pwdInput.setAttribute('name', 'password');
+                        pwdInput.setAttribute('autocomplete', 'current-password');
+                    }
+                }
+                bindAutofillAttrs();
+                setTimeout(bindAutofillAttrs, 150);
+                setTimeout(bindAutofillAttrs, 500);
+            })();
+            </script>
+        """, height=0)
 
 
 # =========================================================================
