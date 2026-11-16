@@ -387,48 +387,88 @@ def auth_module():
     }}
 
     /* 7. Link e Box "Password Dimenticata?" */
-    [data-testid="stExpander"] {{
+    [data-testid="stExpander"],
+    details[data-testid="stExpander"] {{
         border: none !important;
         background: transparent !important;
-        margin-top: 14px !important;
+        margin-top: 16px !important;
     }}
-    [data-testid="stExpander"] summary {{
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] > details > summary,
+    details[data-testid="stExpander"] > summary {{
+        background: rgba(14, 165, 233, 0.12) !important;
+        background-color: rgba(14, 165, 233, 0.12) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
         color: #38bdf8 !important;
         font-size: 13.5px !important;
         font-weight: 700 !important;
         justify-content: center !important;
-        border-radius: 8px !important;
-        padding: 6px 12px !important;
-        transition: all 0.15s ease !important;
+        border-radius: 12px !important;
+        padding: 8px 16px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
     }}
-    [data-testid="stExpander"] summary:hover {{
-        color: #7dd3fc !important;
-        background-color: rgba(56, 189, 248, 0.10) !important;
+    [data-testid="stExpander"] summary:hover,
+    [data-testid="stExpander"] > details > summary:hover,
+    details[data-testid="stExpander"] > summary:hover {{
+        background: rgba(14, 165, 233, 0.22) !important;
+        background-color: rgba(14, 165, 233, 0.22) !important;
+        border-color: #38bdf8 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.3) !important;
+    }}
+    [data-testid="stExpander"] summary *,
+    [data-testid="stExpander"] summary p,
+    [data-testid="stExpander"] summary span {{
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        font-weight: 700 !important;
+    }}
+    [data-testid="stExpander"] summary:hover *,
+    [data-testid="stExpander"] summary:hover p,
+    [data-testid="stExpander"] summary:hover span {{
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }}
     [data-testid="stExpander"] summary svg {{
         fill: #38bdf8 !important;
     }}
     [data-testid="stExpander"] [data-testid="stExpanderDetails"] {{
-        background: rgba(8, 15, 28, 0.95) !important;
-        border: 1px solid rgba(56, 189, 248, 0.22) !important;
-        border-radius: 14px !important;
-        padding: 18px !important;
-        margin-top: 8px !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+        background: #081120 !important;
+        background-color: #081120 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 16px !important;
+        padding: 20px !important;
+        margin-top: 10px !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
     }}
 
-    [data-testid="stAlert"] {{
-        background-color: rgba(14, 165, 233, 0.15) !important;
-        border: 1px solid rgba(56, 189, 248, 0.35) !important;
-        border-radius: 10px !important;
-        color: #e2e8f0 !important;
+    /* Box Informativo dentro Password Dimenticata (Altissima Leggibilità su Sfondo Scuro) */
+    [data-testid="stAlert"],
+    .stAlert,
+    div[data-baseweb="notification"],
+    div[data-testid="stAlert"] > div {{
+        background: #0b1d3a !important;
+        background-color: #0b1d3a !important;
+        border: 1px solid #0284c7 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
     }}
-    [data-testid="stAlert"] p, [data-testid="stAlert"] span {{
-        color: #e2e8f0 !important;
-        font-size: 12.5px !important;
+    [data-testid="stAlert"] *,
+    .stAlert *,
+    div[data-baseweb="notification"] *,
+    div[data-testid="stAlert"] p,
+    div[data-testid="stAlert"] span {{
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        line-height: 1.5 !important;
     }}
-    [data-testid="stAlert"] svg {{
+    [data-testid="stAlert"] svg,
+    div[data-baseweb="notification"] svg {{
         fill: #38bdf8 !important;
+        color: #38bdf8 !important;
     }}
 
     /* Pulsante secondario invio richiesta dentro expander */
@@ -438,20 +478,52 @@ def auth_module():
         font-weight: 800 !important;
         font-size: 13.5px !important;
         border: none !important;
-        border-radius: 8px !important;
-        margin-top: 6px !important;
+        border-radius: 10px !important;
+        padding: 10px 18px !important;
+        margin-top: 8px !important;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3) !important;
     }}
-    /* 8. Selettore Lingua Orizzontale Pulito */
+
+    /* 8. Selettore Lingua Orizzontale ad Altissima Leggibilità (Badge Glow) */
+    div[data-testid="stRadio"] {{
+        background: rgba(8, 17, 32, 0.95) !important;
+        border: 1px solid rgba(56, 189, 248, 0.45) !important;
+        border-radius: 12px !important;
+        padding: 5px 12px !important;
+        display: inline-flex !important;
+        justify-content: flex-end !important;
+        float: right !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(14, 165, 233, 0.2) !important;
+    }}
     div[data-testid="stRadio"] > div[role="radiogroup"] {{
         display: flex !important;
         flex-direction: row !important;
-        justify-content: flex-end !important;
-        gap: 12px !important;
+        align-items: center !important;
+        gap: 16px !important;
     }}
-    div[data-testid="stRadio"] label span {{
-        color: #94a3b8 !important;
-        font-weight: 700 !important;
-        font-size: 13px !important;
+    div[data-testid="stRadio"] label {{
+        cursor: pointer !important;
+        margin: 0 !important;
+        padding: 2px 4px !important;
+    }}
+    div[data-testid="stRadio"] label *,
+    div[data-testid="stRadio"] label p,
+    div[data-testid="stRadio"] label span,
+    div[data-testid="stRadio"] div[data-testid="stMarkdownContainer"] p {{
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 13.5px !important;
+        letter-spacing: 0.8px !important;
+    }}
+    div[data-testid="stRadio"] [data-baseweb="radio"] div:first-child {{
+        border-color: #38bdf8 !important;
+        background-color: #060b14 !important;
+    }}
+    div[data-testid="stRadio"] [aria-checked="true"] [data-baseweb="radio"] div:first-child {{
+        border-color: #38bdf8 !important;
+        background-color: #0ea5e9 !important;
+        box-shadow: 0 0 8px #38bdf8 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -477,7 +549,7 @@ def auth_module():
             <img src='data:image/png;base64,{logo_b64}' style='width: 145px; height: 145px; border-radius: 50%; box-shadow: 0 0 45px rgba(14, 165, 233, 0.65), 0 0 20px rgba(56, 189, 248, 0.4); border: 3px solid rgba(56, 189, 248, 0.45); display: inline-block; margin-bottom: 14px; background: #081120;'>
             <div style='font-size: 11px; letter-spacing: 2.8px; text-transform: uppercase; color: #38bdf8; font-weight: 800; margin-bottom: 4px;'>PERFORMANCE ANALYTICS</div>
             <h1 style='color: #ffffff; font-size: 34px; font-weight: 900; line-height: 1.15; margin: 0 0 8px 0; letter-spacing: -0.8px; text-shadow: 0 0 24px rgba(14, 165, 233, 0.45);'>MOV3 Analytics</h1>
-            <p style='color: #94a3b8; font-size: 13.5px; margin: 0;'>{tr("Improve your Game · Inserisci le credenziali", "Improve your Game · Enter your credentials")}</p>
+            <p style='color: #cbd5e1; font-size: 14px; font-weight: 500; margin: 0;'>{tr("Improve your Game · Inserisci le credenziali", "Improve your Game · Enter your credentials")}</p>
         </div>
         """, unsafe_allow_html=True)
 
