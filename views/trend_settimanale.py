@@ -473,7 +473,7 @@ def render_trend_settimanale(t):
                         text=[f"<b>{v:.0f}{suffix}</b>" if v > 0 else "" for v in y_data],
                         textposition='outside',
                         cliponaxis=False,
-                        textfont=dict(size=12, color='#0f172a'),
+                        textfont=dict(size=12, color='#ffffff'),
                         hovertemplate=f"%{{x}}<br>{tr('Valore', 'Value')}: <b>%{{y:.0f}}{suffix}</b><extra></extra>"
                     ))
                     if avg_active > 0:
@@ -513,15 +513,15 @@ def render_trend_settimanale(t):
                     st.markdown(render_executive_chart_header(tr("Accelerazioni & Decelerazioni Meccaniche IMU", "IMU Mechanical Accelerations & Decelerations"), pills=pills_mech, accent="#10b981"), unsafe_allow_html=True)
                     max_m_y = max(float(df_plot['High Accel IMU'].max()), float(df_plot['High Decel IMU'].max()), 10.0) * 1.25
                     fig_mech = go.Figure()
-                    fig_mech.add_trace(go.Bar(name='High Acc IMU', x=df_plot['Label'], y=df_plot['High Accel IMU'], marker_color='#10b981', text=[f"{v:.0f}" if v > 0 else "" for v in df_plot['High Accel IMU']], textposition='outside', cliponaxis=False, textfont=dict(size=11, weight='bold', color='#0f172a'), hovertemplate="%{x}<br>Acc: %{y:.0f}<extra></extra>"))
-                    fig_mech.add_trace(go.Bar(name='High Dec IMU', x=df_plot['Label'], y=df_plot['High Decel IMU'], marker_color='#ef4444', text=[f"{v:.0f}" if v > 0 else "" for v in df_plot['High Decel IMU']], textposition='outside', cliponaxis=False, textfont=dict(size=11, weight='bold', color='#0f172a'), hovertemplate="%{x}<br>Dec: %{y:.0f}<extra></extra>"))
+                    fig_mech.add_trace(go.Bar(name='High Acc IMU', x=df_plot['Label'], y=df_plot['High Accel IMU'], marker_color='#10b981', text=[f"{v:.0f}" if v > 0 else "" for v in df_plot['High Accel IMU']], textposition='outside', cliponaxis=False, textfont=dict(size=11, weight='bold', color='#ffffff'), hovertemplate="%{x}<br>Acc: %{y:.0f}<extra></extra>"))
+                    fig_mech.add_trace(go.Bar(name='High Dec IMU', x=df_plot['Label'], y=df_plot['High Decel IMU'], marker_color='#ef4444', text=[f"{v:.0f}" if v > 0 else "" for v in df_plot['High Decel IMU']], textposition='outside', cliponaxis=False, textfont=dict(size=11, weight='bold', color='#ffffff'), hovertemplate="%{x}<br>Dec: %{y:.0f}<extra></extra>"))
                     fig_mech.update_layout(
                         barmode='group', height=320, showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                        yaxis=dict(showgrid=True, gridcolor='#f1f5f9', zeroline=True, zerolinecolor='#e2e8f0', range=[0, max_m_y]), margin=dict(l=10, r=10, t=20, b=15)
+                        yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', zeroline=True, zerolinecolor='rgba(56, 189, 248, 0.25)', range=[0, max_m_y]), margin=dict(l=10, r=10, t=20, b=15)
                     )
                     st.plotly_chart(fig_mech, use_container_width=True, key="w_bar_mech")
                     st.markdown(
-                        "<div style='display:flex; justify-content:center; gap:18px; padding:7px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:11px; font-weight:700; color:#475569;'>"
+                        "<div style='display:flex; justify-content:center; gap:18px; padding:7px 10px; background:rgba(8, 17, 32, 0.85); border:1px solid rgba(56, 189, 248, 0.22); border-radius:8px; font-size:11px; font-weight:700; color:#cbd5e1;'>"
                         "<div style='display:flex; align-items:center; gap:6px;'><span style='width:12px; height:10px; border-radius:3px; background:#10b981; display:inline-block;'></span>High Accelerations IMU</div>"
                         "<div style='display:flex; align-items:center; gap:6px;'><span style='width:12px; height:10px; border-radius:3px; background:#ef4444; display:inline-block;'></span>High Decelerations IMU</div>"
                         "</div>",
@@ -1365,7 +1365,7 @@ def render_trend_settimanale(t):
                     text=txt_b,
                     textposition='outside',
                     cliponaxis=False,
-                    textfont=dict(size=11, color='#0f172a', family='Inter, sans-serif'),
+                    textfont=dict(size=11, color='#ffffff', family='Inter, sans-serif'),
                     hovertemplate="<b>%{x}</b><br>Training Load: <b>%{y:,.0f}</b><extra></extra>"
                 ))
 
@@ -1384,18 +1384,18 @@ def render_trend_settimanale(t):
                     height=320,
                     margin=dict(l=20, r=20, t=30, b=30),
                     paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(248,250,252,0.6)',
+                    plot_bgcolor='rgba(0,0,0,0)',
                     xaxis=dict(
-                        tickfont=dict(size=10.5, color='#475569', family='Inter, sans-serif'),
+                        tickfont=dict(size=10.5, color='#cbd5e1', family='Inter, sans-serif'),
                         showgrid=False,
-                        linecolor='#cbd5e1'
+                        linecolor='rgba(56, 189, 248, 0.25)'
                     ),
                     yaxis=dict(
                         showgrid=True,
-                        gridcolor='#f1f5f9',
+                        gridcolor='rgba(56, 189, 248, 0.12)',
                         range=[0, max_bar_y],
-                        tickfont=dict(size=9.5, color='#64748b'),
-                        zerolinecolor='#cbd5e1'
+                        tickfont=dict(size=9.5, color='#94a3b8'),
+                        zerolinecolor='rgba(56, 189, 248, 0.25)'
                     ),
                     showlegend=False
                 )
@@ -1776,22 +1776,22 @@ def render_trend_settimanale(t):
 
                 # --- BOX REFERTO CLINICO & PRESTAZIONALE (STILE EXECUTIVE M0V3) ---
                 titolo_box = tr("REFERTO SETTIMANA IN CORSO", "CURRENT WEEK REPORT") if is_cur_week else tr("REFERTO ULTIMA SETTIMANA", "WEEKLY CLINICAL REPORT")
-                html_card = f"""<div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-top: 4px solid #0ea5e9; border-radius: 12px; padding: 24px 28px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05); font-family: 'Inter', sans-serif;">
-<div style="text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 22px;">
-<div style="font-size: 11.5px; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 1.5px;">{tr("Analisi descrittiva e riassuntiva dell'analisi", "Descriptive and Summary Performance Analysis")}</div>
-<div style="font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px;">ACWR • MONOTONIA • TRAINING STRAIN</div>
+                html_card = f"""<div style="background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border: 1.2px solid rgba(56, 189, 248, 0.22); border-top: 4px solid #38bdf8; border-radius: 14px; padding: 24px 28px; box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.5); font-family: 'Inter', sans-serif;">
+<div style="text-align: center; border-bottom: 1px solid rgba(56, 189, 248, 0.18); padding-bottom: 14px; margin-bottom: 22px;">
+<div style="font-size: 11.5px; font-weight: 800; color: #f87171; text-transform: uppercase; letter-spacing: 1.5px;">{tr("Analisi descrittiva e riassuntiva dell'analisi", "Descriptive and Summary Performance Analysis")}</div>
+<div style="font-size: 18px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px;">ACWR • MONOTONIA • TRAINING STRAIN</div>
 </div>
 <div style="text-align: center; margin-bottom: 24px;">
-<span style="font-size: 13.5px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; background: #f8fafc; padding: 6px 18px; border-radius: 20px; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 8px;"><i class="bi bi-file-earmark-text-fill" style="color:#0ea5e9;"></i>{titolo_box}</span>
+<span style="font-size: 13.5px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; background: rgba(14, 165, 233, 0.15); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 8px;"><i class="bi bi-file-earmark-text-fill" style="color:#38bdf8;"></i>{titolo_box}</span>
 </div>
-<div style="margin-bottom: 20px; line-height: 1.7; font-size: 14px; color: #0f172a; text-align: justify;">
-<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#e0f2fe; color:#0284c7; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-speedometer2"></i></span> <b style="color: #0284c7; font-weight: 800; text-transform: uppercase;">VOLUME (TL) & ACWR:</b> <span style="font-style: italic; color: #334155;">{testo_volume_totale}</span>
+<div style="margin-bottom: 20px; line-height: 1.7; font-size: 14px; color: #f8fafc; text-align: justify;">
+<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:rgba(14, 165, 233, 0.2); color:#38bdf8; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-speedometer2"></i></span> <b style="color: #38bdf8; font-weight: 800; text-transform: uppercase;">VOLUME (TL) & ACWR:</b> <span style="color: #e2e8f0;">{testo_volume_totale}</span>
 </div>
-<div style="margin-bottom: 20px; line-height: 1.7; font-size: 14px; color: #0f172a; text-align: justify;">
-<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#fee2e2; color:#dc2626; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-lightning-charge-fill"></i></span> <b style="color: #dc2626; font-weight: 800; text-transform: uppercase;">INTENSITÀ (TL High) & GESTIONE NEUROMUSCOLARE:</b> <span style="font-style: italic; color: #334155;">{testo_intensita_totale}</span>
+<div style="margin-bottom: 20px; line-height: 1.7; font-size: 14px; color: #f8fafc; text-align: justify;">
+<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:rgba(239, 68, 68, 0.2); color:#f87171; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-lightning-charge-fill"></i></span> <b style="color: #f87171; font-weight: 800; text-transform: uppercase;">INTENSITÀ (TL High) & GESTIONE NEUROMUSCOLARE:</b> <span style="color: #e2e8f0;">{testo_intensita_totale}</span>
 </div>
-<div style="margin-bottom: 8px; line-height: 1.7; font-size: 14px; color: #0f172a; text-align: justify;">
-<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#fef3c7; color:#b45309; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-activity"></i></span> <b style="color: #b45309; font-weight: 800; text-transform: uppercase;">VARIABILITÀ, MONOTONIA & TRAINING STRAIN (Foster):</b> <span style="font-style: italic; color: #334155;">{testo_monotonia_totale}</span>
+<div style="margin-bottom: 8px; line-height: 1.7; font-size: 14px; color: #f8fafc; text-align: justify;">
+<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:rgba(245, 158, 11, 0.2); color:#fbbf24; font-size:11px; margin-right:8px; vertical-align:middle;"><i class="bi bi-activity"></i></span> <b style="color: #fbbf24; font-weight: 800; text-transform: uppercase;">VARIABILITÀ, MONOTONIA & TRAINING STRAIN (Foster):</b> <span style="color: #e2e8f0;">{testo_monotonia_totale}</span>
 </div>
 </div>"""
                 st.html(html_card)

@@ -274,13 +274,13 @@ def render_medie(t):
                             x=sess_names_list, y=tl_vals_list,
                             marker_color="#0ea5e9", marker_line_width=0,
                             text=[f"{v:.0f}" for v in tl_vals_list], textposition="outside",
-                            textfont=dict(size=12, color="#0f172a", weight="bold"), cliponaxis=False
+                            textfont=dict(size=12, color="#ffffff", weight="bold"), cliponaxis=False
                         ))
                         fig_b_tl.update_layout(
                             height=300, margin=dict(l=10, r=10, t=20, b=10),
                             plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                            xaxis=dict(showgrid=False, tickfont=dict(size=11, color="#0f172a", weight="bold")),
-                            yaxis=dict(showgrid=True, gridcolor="#f1f5f9", range=[0, max_tl_g], zeroline=False)
+                            xaxis=dict(showgrid=False, tickfont=dict(size=11, color="#cbd5e1", weight="bold")),
+                            yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", range=[0, max_tl_g], zeroline=False)
                         )
                         st.plotly_chart(fig_b_tl, use_container_width=True, key="avg_bar_tl")
 
@@ -295,13 +295,13 @@ def render_medie(t):
                             x=sess_names_list, y=tlh_vals_list,
                             marker_color="#ef4444", marker_line_width=0,
                             text=[f"{v:.0f}" for v in tlh_vals_list], textposition="outside",
-                            textfont=dict(size=12, color="#0f172a", weight="bold"), cliponaxis=False
+                            textfont=dict(size=12, color="#ffffff", weight="bold"), cliponaxis=False
                         ))
                         fig_b_tlh.update_layout(
                             height=300, margin=dict(l=10, r=10, t=20, b=10),
                             plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                            xaxis=dict(showgrid=False, tickfont=dict(size=11, color="#0f172a", weight="bold")),
-                            yaxis=dict(showgrid=True, gridcolor="#f1f5f9", range=[0, max_tlh_g], zeroline=False)
+                            xaxis=dict(showgrid=False, tickfont=dict(size=11, color="#cbd5e1", weight="bold")),
+                            yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", range=[0, max_tlh_g], zeroline=False)
                         )
                         st.plotly_chart(fig_b_tlh, use_container_width=True, key="avg_bar_tlh")
 
@@ -481,6 +481,7 @@ def render_medie(t):
                                     fig_radar_sess.add_trace(go.Scatterpolar(
                                         r=r_norm_closed,
                                         theta=radar_labels_closed,
+                                        mode='lines+markers',
                                         fill='toself',
                                         fillcolor=fill_col,
                                         line=dict(color=c_hex, width=2.5),
@@ -494,22 +495,22 @@ def render_medie(t):
                                     polar=dict(
                                         domain=dict(x=[0.05, 0.95], y=[0.05, 0.95]),
                                         gridshape='linear',
-                                        bgcolor='#f8fafc',
+                                        bgcolor='rgba(0,0,0,0)',
                                         radialaxis=dict(
                                             visible=True, range=[0, 105],
                                             tickvals=[25, 50, 75, 100],
                                             ticktext=['25%', '50%', '75%', '100%'],
-                                            tickfont=dict(size=9, color='#64748b'),
-                                            gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                            tickfont=dict(size=9, color='#94a3b8'),
+                                            gridcolor='rgba(56, 189, 248, 0.12)', linecolor='rgba(56, 189, 248, 0.25)'
                                         ),
                                         angularaxis=dict(
-                                            tickfont=dict(size=10, color='#0f172a', family='Inter', weight='bold'),
+                                            tickfont=dict(size=10.5, color='#ffffff', family='Inter', weight='bold'),
                                             rotation=90, direction='clockwise',
-                                            gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                            gridcolor='rgba(56, 189, 248, 0.15)', linecolor='rgba(56, 189, 248, 0.25)'
                                         )
                                     ),
                                     showlegend=True,
-                                    legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5, font=dict(size=10, color="#0f172a")),
+                                    legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5, font=dict(size=10, color="#f8fafc")),
                                     height=430,
                                     margin=dict(l=35, r=35, t=30, b=45),
                                     paper_bgcolor='rgba(0,0,0,0)',
@@ -531,15 +532,15 @@ def render_medie(t):
                                     marker_color=df_comp_sess['Session_Color'],
                                     text=[f"{v:,.0f}" for v in df_comp_sess['Training Load']],
                                     textposition='outside',
-                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    textfont=dict(size=11, color='#ffffff', weight='bold'),
                                     name='Training Load (AU)'
                                 ))
                                 fig_vol_sess.update_layout(
                                     height=190,
                                     margin=dict(l=10, r=10, t=20, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#475569')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL (AU)', font=dict(size=10, color='#64748b'))),
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#cbd5e1')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', title=dict(text='TL (AU)', font=dict(size=10, color='#94a3b8'))),
                                     showlegend=False
                                 )
                                 st.plotly_chart(fig_vol_sess, use_container_width=True, key="conf_ind_bar_vol_sess")
@@ -557,14 +558,14 @@ def render_medie(t):
                                     name='TL High (AU)',
                                     text=[f"{v:,.0f}" for v in df_comp_sess['TL_High']],
                                     textposition='outside',
-                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                    textfont=dict(size=10, color='#ffffff', weight='bold')
                                 ))
                                 fig_int_sess.update_layout(
                                     height=190,
                                     margin=dict(l=10, r=10, t=20, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#475569')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL High', font=dict(size=10, color='#64748b'))),
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9, color='#cbd5e1')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', title=dict(text='TL High', font=dict(size=10, color='#94a3b8'))),
                                     showlegend=False
                                 )
                                 st.plotly_chart(fig_int_sess, use_container_width=True, key="conf_ind_bar_int_sess")
@@ -585,15 +586,15 @@ def render_medie(t):
                                     marker_color='#8b5cf6',
                                     text=[f"{v:.1f}" for v in df_comp_sess['Work Rate']],
                                     textposition='outside',
-                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    textfont=dict(size=11, color='#ffffff', weight='bold'),
                                     name='Work Rate (TL/min)'
                                 ))
                                 fig_wr.update_layout(
-                                    title=dict(text=tr("Work Rate (Training Load / min)", "Work Rate (Training Load / min)"), font=dict(size=12, color='#0f172a', weight='bold')),
+                                    title=dict(text=tr("Work Rate (Training Load / min)", "Work Rate (Training Load / min)"), font=dict(size=12, color='#ffffff', weight='bold')),
                                     height=220, margin=dict(l=10, r=10, t=35, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#cbd5e1')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)')
                                 )
                                 st.plotly_chart(fig_wr, use_container_width=True, key="conf_ind_bar_wr")
 
@@ -604,15 +605,15 @@ def render_medie(t):
                                     marker_color='#0ea5e9',
                                     text=[f"{v:.2f}" for v in df_comp_sess['Mech_Density']],
                                     textposition='outside',
-                                    textfont=dict(size=11, color='#0f172a', weight='bold'),
+                                    textfont=dict(size=11, color='#ffffff', weight='bold'),
                                     name='Accel + Decel / min'
                                 ))
                                 fig_mech.update_layout(
-                                    title=dict(text=tr("Carico Meccanico (High Accel + Decel / min)", "Mechanical Density (High Accel + Decel / min)"), font=dict(size=12, color='#0f172a', weight='bold')),
+                                    title=dict(text=tr("Carico Meccanico (High Accel + Decel / min)", "Mechanical Density (High Accel + Decel / min)"), font=dict(size=12, color='#ffffff', weight='bold')),
                                     height=220, margin=dict(l=10, r=10, t=35, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#cbd5e1')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)')
                                 )
                                 st.plotly_chart(fig_mech, use_container_width=True, key="conf_ind_bar_mech")
 
@@ -799,7 +800,7 @@ def render_medie(t):
                                     name='Training Load (AU)',
                                     text=[f"{v:,.0f}" for v in df_comp_weeks['Training Load']],
                                     textposition='outside',
-                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                    textfont=dict(size=10, color='#ffffff', weight='bold')
                                 ))
                                 fig_w_bars.add_trace(go.Bar(
                                     x=df_comp_weeks['Week_Label'],
@@ -808,16 +809,16 @@ def render_medie(t):
                                     name='TL High (AU)',
                                     text=[f"{v:,.0f}" for v in df_comp_weeks['TL_High']],
                                     textposition='outside',
-                                    textfont=dict(size=10, color='#0f172a', weight='bold')
+                                    textfont=dict(size=10, color='#ffffff', weight='bold')
                                 ))
                                 fig_w_bars.update_layout(
                                     barmode='group',
                                     height=340,
                                     margin=dict(l=10, r=10, t=20, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#475569')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='AU', font=dict(size=10, color='#64748b'))),
-                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10, color="#0f172a"))
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color='#cbd5e1')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', title=dict(text='AU', font=dict(size=10, color='#94a3b8'))),
+                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10, color="#f8fafc"))
                                 )
                                 st.plotly_chart(fig_w_bars, use_container_width=True, key="conf_ind_w_bars")
 
@@ -862,9 +863,9 @@ def render_medie(t):
                                     height=340,
                                     margin=dict(l=10, r=10, t=20, b=10),
                                     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#0f172a', weight='bold')),
-                                    yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL Giornaliero (AU)', font=dict(size=10, color='#64748b'))),
-                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=9.5, color="#0f172a"))
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#cbd5e1', weight='bold')),
+                                    yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', title=dict(text='TL Giornaliero (AU)', font=dict(size=10, color='#94a3b8'))),
+                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=9.5, color="#f8fafc"))
                                 )
                                 st.plotly_chart(fig_w_overlay, use_container_width=True, key="conf_ind_w_overlay")
 
@@ -899,9 +900,9 @@ def render_medie(t):
                                 height=280,
                                 margin=dict(l=10, r=10, t=20, b=10),
                                 plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-                                xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#0f172a')),
-                                yaxis=dict(showgrid=True, gridcolor='#f1f5f9', title=dict(text='TL Totale (AU)', font=dict(size=10, color='#64748b'))),
-                                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=10, color="#0f172a"))
+                                xaxis=dict(showgrid=False, tickfont=dict(size=10, color='#cbd5e1')),
+                                yaxis=dict(showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', title=dict(text='TL Totale (AU)', font=dict(size=10, color='#94a3b8'))),
+                                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(size=10, color="#f8fafc"))
                             )
                             st.plotly_chart(fig_w_stack, use_container_width=True, key="conf_ind_w_stack")
 
@@ -1162,28 +1163,30 @@ def render_medie(t):
                         name=f"{ath_b} (100%)", hoverinfo='skip'
                     ))
                     fig_h2h_hex.add_trace(go.Scatterpolar(
-                        r=r_a_closed, theta=theta_closed_h, fill='toself',
-                        fillcolor='rgba(14, 165, 233, 0.18)',
-                        line=dict(color='#0ea5e9', width=3.5),
-                        marker=dict(size=8, color='#0ea5e9', line=dict(width=2, color='#ffffff')),
+                        r=r_a_closed, theta=theta_closed_h,
+                        mode='lines+markers',
+                        fill='toself',
+                        fillcolor='rgba(14, 165, 233, 0.22)',
+                        line=dict(color='#38bdf8', width=3.5),
+                        marker=dict(size=8, color='#38bdf8', line=dict(width=2, color='#ffffff')),
                         name=ath_a
                     ))
                     fig_h2h_hex.update_layout(
                         polar=dict(
                             domain=dict(x=[0.16, 0.84], y=[0.08, 0.92]),
                             gridshape='linear',
-                            bgcolor='#f8fafc',
+                            bgcolor='rgba(0,0,0,0)',
                             radialaxis=dict(
                                 visible=True, range=[0, 160],
                                 tickvals=[50, 100, 150],
                                 ticktext=['50%', '100%', '150%'],
-                                tickfont=dict(size=9, color='#64748b'),
-                                gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                tickfont=dict(size=9, color='#94a3b8'),
+                                gridcolor='rgba(56, 189, 248, 0.12)', linecolor='rgba(56, 189, 248, 0.25)'
                             ),
                             angularaxis=dict(
-                                tickfont=dict(size=11, color='#0f172a', family='Inter'),
+                                tickfont=dict(size=11, color='#ffffff', family='Inter'),
                                 rotation=90, direction='clockwise',
-                                gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                gridcolor='rgba(56, 189, 248, 0.15)', linecolor='rgba(56, 189, 248, 0.25)'
                             )
                         ),
                         showlegend=False,
@@ -1454,28 +1457,30 @@ def render_medie(t):
                         name=f"{ath_wb} (100%)", hoverinfo='skip'
                     ))
                     fig_h2h_w_hex.add_trace(go.Scatterpolar(
-                        r=r_wa_closed, theta=theta_closed_wh, fill='toself',
-                        fillcolor='rgba(14, 165, 233, 0.18)',
-                        line=dict(color='#0ea5e9', width=3.5),
-                        marker=dict(size=8, color='#0ea5e9', line=dict(width=2, color='#ffffff')),
+                        r=r_wa_closed, theta=theta_closed_wh,
+                        mode='lines+markers',
+                        fill='toself',
+                        fillcolor='rgba(14, 165, 233, 0.22)',
+                        line=dict(color='#38bdf8', width=3.5),
+                        marker=dict(size=8, color='#38bdf8', line=dict(width=2, color='#ffffff')),
                         name=ath_wa
                     ))
                     fig_h2h_w_hex.update_layout(
                         polar=dict(
                             domain=dict(x=[0.16, 0.84], y=[0.08, 0.92]),
                             gridshape='linear',
-                            bgcolor='#f8fafc',
+                            bgcolor='rgba(0,0,0,0)',
                             radialaxis=dict(
                                 visible=True, range=[0, 160],
                                 tickvals=[50, 100, 150],
                                 ticktext=['50%', '100%', '150%'],
-                                tickfont=dict(size=9, color='#64748b'),
-                                gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                tickfont=dict(size=9, color='#94a3b8'),
+                                gridcolor='rgba(56, 189, 248, 0.12)', linecolor='rgba(56, 189, 248, 0.25)'
                             ),
                             angularaxis=dict(
-                                tickfont=dict(size=11, color='#0f172a', family='Inter'),
+                                tickfont=dict(size=11, color='#ffffff', family='Inter'),
                                 rotation=90, direction='clockwise',
-                                gridcolor='#e2e8f0', linecolor='#cbd5e1'
+                                gridcolor='rgba(56, 189, 248, 0.15)', linecolor='rgba(56, 189, 248, 0.25)'
                             )
                         ),
                         showlegend=False,
@@ -2257,18 +2262,18 @@ def render_medie(t):
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 xaxis=dict(
-                    tickfont=dict(size=12, color='#0f172a', family='Inter', weight='bold'),
+                    tickfont=dict(size=12, color='#cbd5e1', family='Inter', weight='bold'),
                     showgrid=False,
-                    linecolor='#cbd5e1'
+                    linecolor='rgba(56, 189, 248, 0.25)'
                 ),
                 yaxis=dict(
                     ticksuffix="%",
                     range=[0, 100],
                     dtick=20,
-                    tickfont=dict(size=11, color='#64748b', family='Inter'),
+                    tickfont=dict(size=11, color='#94a3b8', family='Inter'),
                     showgrid=True,
-                    gridcolor='#f1f5f9',
-                    linecolor='#cbd5e1'
+                    gridcolor='rgba(56, 189, 248, 0.12)',
+                    linecolor='rgba(56, 189, 248, 0.25)'
                 ),
                 legend=dict(
                     orientation="h",
@@ -2276,7 +2281,7 @@ def render_medie(t):
                     y=-0.22,
                     xanchor="center",
                     x=0.5,
-                    font=dict(size=11, color='#0f172a', family='Inter')
+                    font=dict(size=11, color='#f8fafc', family='Inter')
                 )
             )
 
@@ -2583,16 +2588,16 @@ def render_medie(t):
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 xaxis=dict(
-                    tickfont=dict(size=12, color='#0f172a', family='Inter', weight='bold'),
+                    tickfont=dict(size=12, color='#cbd5e1', family='Inter', weight='bold'),
                     showgrid=True,
-                    gridcolor='#f1f5f9',
-                    linecolor='#cbd5e1'
+                    gridcolor='rgba(56, 189, 248, 0.12)',
+                    linecolor='rgba(56, 189, 248, 0.25)'
                 ),
                 yaxis=dict(
-                    tickfont=dict(size=11, color='#64748b', family='Inter'),
+                    tickfont=dict(size=11, color='#94a3b8', family='Inter'),
                     showgrid=True,
-                    gridcolor='#f1f5f9',
-                    linecolor='#cbd5e1'
+                    gridcolor='rgba(56, 189, 248, 0.12)',
+                    linecolor='rgba(56, 189, 248, 0.25)'
                 ),
                 legend=dict(
                     orientation="h",
@@ -2600,7 +2605,7 @@ def render_medie(t):
                     y=-0.20,
                     xanchor="center",
                     x=0.5,
-                    font=dict(size=11, color='#0f172a', family='Inter')
+                    font=dict(size=11, color='#f8fafc', family='Inter')
                 )
             )
 

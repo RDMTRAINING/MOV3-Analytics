@@ -458,42 +458,42 @@ def render_test_fisici(t):
                                 st.markdown(f"""
                                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                                     <div>
-                                        <div style="font-size:16px; font-weight:800; color:#0f172a; letter-spacing:0.3px;">
-                                            <i class="bi bi-clipboard-pulse" style="color:#0ea5e9; margin-right:6px;"></i>{t_item['nome']}
+                                        <div style="font-size:16px; font-weight:800; color:#ffffff; letter-spacing:0.3px;">
+                                            <i class="bi bi-clipboard-pulse" style="color:#38bdf8; margin-right:6px;"></i>{t_item['nome']}
                                         </div>
                                         <div style="margin-top:4px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                                            <span style="background:#e0f2fe; color:#0369a1; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; text-transform:uppercase;">{t_item['macro_area']}</span>
-                                            <span style="background:#f1f5f9; color:#475569; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;"><i class="bi bi-tools"></i> {t_item['strumento']}</span>
-                                            <span style="font-size:11px; color:#64748b; font-weight:600;">Metrica: <b>{t_item['metric_label']}</b> ({t_item['unit']})</span>
+                                            <span style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; text-transform:uppercase;">{t_item['macro_area']}</span>
+                                            <span style="background:rgba(255,255,255,0.06); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;"><i class="bi bi-tools"></i> {t_item['strumento']}</span>
+                                            <span style="font-size:11px; color:#94a3b8; font-weight:600;">Metrica: <b style="color:#ffffff;">{t_item['metric_label']}</b> ({t_item['unit']})</span>
                                         </div>
                                     </div>
-                                    <span style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-weight:800; font-size:11px; padding:3px 9px; border-radius:6px; white-space:nowrap;">
-                                        <i class="bi bi-arrow-repeat" style="color:#0ea5e9;"></i> {t_item['n_count']} {tr('Rilevazioni', 'Tests')}
+                                    <span style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.28); color:#38bdf8; font-weight:800; font-size:11px; padding:3px 9px; border-radius:6px; white-space:nowrap;">
+                                        <i class="bi bi-arrow-repeat" style="color:#38bdf8;"></i> {t_item['n_count']} {tr('Rilevazioni', 'Tests')}
                                     </span>
                                 </div>
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                                    <div style="background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:9px 12px;">
-                                        <div style="font-size:10px; font-weight:800; color:#b45309; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <div style="background:rgba(245,158,11,0.10); border:1px solid rgba(245,158,11,0.25); border-left:4px solid #f59e0b; border-radius:8px; padding:9px 12px;">
+                                        <div style="font-size:10px; font-weight:800; color:#fbbf24; text-transform:uppercase; letter-spacing:0.5px;">
                                             <i class="bi bi-trophy-fill" style="color:#f59e0b; margin-right:4px;"></i>BEST ATLETA (PB)
                                         </div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; margin-top:2px;">
-                                            {t_item['best_val']:.2f} <span style="font-size:12px; font-weight:700; color:#64748b;">{t_item['unit']}</span>
+                                        <div style="font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;">
+                                            {t_item['best_val']:.2f} <span style="font-size:12px; font-weight:700; color:#94a3b8;">{t_item['unit']}</span>
                                         </div>
-                                        <div style="font-size:10.5px; color:#78350f; margin-top:3px; font-weight:600;">
+                                        <div style="font-size:10.5px; color:#fbbf24; margin-top:3px; font-weight:600;">
                                             <i class="bi bi-calendar-event"></i> {t_item['best_date']}
                                         </div>
                                     </div>
-                                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid {border_col}; border-radius:8px; padding:9px 12px;">
+                                    <div style="background:rgba(14,165,233,0.10); border:1px solid rgba(56,189,248,0.25); border-left:4px solid {border_col}; border-radius:8px; padding:9px 12px;">
                                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                                            <span style="font-size:10px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px;">
-                                                <i class="bi bi-calendar-check-fill" style="color:#0ea5e9; margin-right:4px;"></i>ULTIMO TEST
+                                            <span style="font-size:10px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">
+                                                <i class="bi bi-calendar-check-fill" style="color:#38bdf8; margin-right:4px;"></i>ULTIMO TEST
                                             </span>
                                             {badge_html}
                                         </div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; margin-top:2px;">
-                                            {t_item['last_val']:.2f} <span style="font-size:12px; font-weight:700; color:#64748b;">{t_item['unit']}</span>
+                                        <div style="font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;">
+                                            {t_item['last_val']:.2f} <span style="font-size:12px; font-weight:700; color:#94a3b8;">{t_item['unit']}</span>
                                         </div>
-                                        <div style="font-size:10.5px; color:#64748b; margin-top:3px; font-weight:600;">
+                                        <div style="font-size:10.5px; color:#94a3b8; margin-top:3px; font-weight:600;">
                                             <i class="bi bi-calendar"></i> {t_item['last_date']}
                                         </div>
                                     </div>
@@ -524,7 +524,7 @@ def render_test_fisici(t):
                                     line_width=1.5,
                                     annotation_text=f"PB: {b_val:.2f}",
                                     annotation_position="top right",
-                                    annotation_font=dict(size=9.5, color="#b45309", family="Inter")
+                                    annotation_font=dict(size=9.5, color="#fbbf24", family="Inter")
                                 )
                                 
                                 y_min_p = min(y_pts + [b_val])
@@ -535,18 +535,18 @@ def render_test_fisici(t):
                                 fig_sp.update_layout(
                                     height=150,
                                     margin=dict(l=10, r=10, t=16, b=26),
-                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color="#64748b"), tickangle=0),
-                                    yaxis=dict(showgrid=True, gridcolor="#f1f5f9", range=[y_min_p - pad_y, y_max_p + pad_y], tickfont=dict(size=9.5, color="#64748b")),
+                                    xaxis=dict(showgrid=False, tickfont=dict(size=9.5, color="#94a3b8"), tickangle=0),
+                                    yaxis=dict(showgrid=True, gridcolor="rgba(56,189,248,0.12)", range=[y_min_p - pad_y, y_max_p + pad_y], tickfont=dict(size=9.5, color="#94a3b8")),
                                     plot_bgcolor="rgba(0,0,0,0)",
                                     paper_bgcolor="rgba(0,0,0,0)",
                                     showlegend=False
                                 )
                                 st.markdown(f"""
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                                    <span style="font-size:10.5px; font-weight:800; color:#334155; text-transform:uppercase; letter-spacing:0.5px;">
-                                        <i class="bi bi-graph-up" style="color:#0ea5e9; margin-right:4px;"></i>Trend Cronologico
+                                    <span style="font-size:10.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">
+                                        <i class="bi bi-graph-up" style="color:#38bdf8; margin-right:4px;"></i>Trend Cronologico
                                     </span>
-                                    <span style="font-size:10px; color:#64748b; font-weight:600;">
+                                    <span style="font-size:10px; color:#94a3b8; font-weight:600;">
                                         {x_pts[0]} → {x_pts[-1]}
                                     </span>
                                 </div>
@@ -568,41 +568,41 @@ def render_test_fisici(t):
                         pct_v = t_item['pct_max']
                         d_pct = t_item['delta_pct']
                         if pct_v >= 98.0:
-                            bg_b, fg_b, lbl_st = "#dcfce7", "#15803d", tr("Record / Ottimale", "Record / Optimal")
+                            bg_b, fg_b, lbl_st = "rgba(16,185,129,0.18)", "#34d399", tr("Record / Ottimale", "Record / Optimal")
                         elif pct_v >= 92.0:
-                            bg_b, fg_b, lbl_st = "#e0f2fe", "#0369a1", tr("In Target", "In Target")
+                            bg_b, fg_b, lbl_st = "rgba(14,165,233,0.18)", "#38bdf8", tr("In Target", "In Target")
                         elif pct_v >= 85.0:
-                            bg_b, fg_b, lbl_st = "#fef3c7", "#b45309", tr("Lieve Calo", "Slight Drop")
+                            bg_b, fg_b, lbl_st = "rgba(245,158,11,0.18)", "#fbbf24", tr("Lieve Calo", "Slight Drop")
                         else:
-                            bg_b, fg_b, lbl_st = "#fee2e2", "#b91c1c", tr("Sotto Soglia", "Sub-threshold")
+                            bg_b, fg_b, lbl_st = "rgba(239,68,68,0.18)", "#f87171", tr("Sotto Soglia", "Sub-threshold")
 
-                        badge_st = f"<span style='background:{bg_b}; color:{fg_b}; font-size:11px; font-weight:800; padding:3px 8px; border-radius:5px;'>{lbl_st}</span>"
+                        badge_st = f"<span style='background:{bg_b}; color:{fg_b}; font-size:11px; font-weight:800; padding:3px 8px; border-radius:5px; border:1px solid {fg_b}44;'>{lbl_st}</span>"
 
                         table_rows.append(
-                            f"<tr style='border-bottom: 1px solid #f1f5f9;'>"
-                            f"<td style='padding:12px 14px;'><div style='font-weight:700; color:#0f172a;'>{t_item['nome']}</div><div style='font-size:11px; color:#64748b;'>{t_item['metric_label']} ({t_item['unit']})</div></td>"
-                            f"<td style='padding:12px 14px;'><span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;'>{t_item['macro_area']}</span><div style='font-size:10.5px; color:#64748b; margin-top:2px;'>{t_item['strumento']}</div></td>"
-                            f"<td style='padding:12px 14px; text-align:center; font-weight:800; color:#0284c7;'>{t_item['n_count']}</td>"
-                            f"<td style='padding:12px 14px; text-align:center;'><div style='font-weight:900; color:#0f172a;'>{t_item['best_val']:.2f} {t_item['unit']}</div><div style='font-size:10.5px; color:#78350f;'>{t_item['best_date']}</div></td>"
-                            f"<td style='padding:12px 14px; text-align:center;'><div style='font-weight:900; color:#0f172a;'>{t_item['last_val']:.2f} {t_item['unit']}</div><div style='font-size:10.5px; color:#64748b;'>{t_item['last_date']}</div></td>"
-                            f"<td style='padding:12px 14px; text-align:center; font-weight:800; color:#0f172a;'>{pct_v:.1f}%</td>"
+                            f"<tr style='border-bottom: 1px solid rgba(56,189,248,0.12); font-size:12px; color:#e2e8f0;'>"
+                            f"<td style='padding:12px 14px;'><div style='font-weight:700; color:#ffffff;'>{t_item['nome']}</div><div style='font-size:11px; color:#94a3b8;'>{t_item['metric_label']} ({t_item['unit']})</div></td>"
+                            f"<td style='padding:12px 14px;'><span style='background:rgba(255,255,255,0.06); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;'>{t_item['macro_area']}</span><div style='font-size:10.5px; color:#94a3b8; margin-top:2px;'>{t_item['strumento']}</div></td>"
+                            f"<td style='padding:12px 14px; text-align:center; font-weight:800; color:#38bdf8;'>{t_item['n_count']}</td>"
+                            f"<td style='padding:12px 14px; text-align:center;'><div style='font-weight:900; color:#ffffff;'>{t_item['best_val']:.2f} {t_item['unit']}</div><div style='font-size:10.5px; color:#fbbf24;'>{t_item['best_date']}</div></td>"
+                            f"<td style='padding:12px 14px; text-align:center;'><div style='font-weight:900; color:#ffffff;'>{t_item['last_val']:.2f} {t_item['unit']}</div><div style='font-size:10.5px; color:#94a3b8;'>{t_item['last_date']}</div></td>"
+                            f"<td style='padding:12px 14px; text-align:center; font-weight:800; color:#38bdf8;'>{pct_v:.1f}%</td>"
                             f"<td style='padding:12px 14px; text-align:center; font-weight:800; color:{fg_b};'>{d_pct:+.1f}%</td>"
                             f"<td style='padding:12px 14px; text-align:center;'>{badge_st}</td>"
                             f"</tr>"
                         )
 
                     html_table_m0v3 = (
-                        "<div style='background:white; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; box-shadow:0 2px 8px -1px rgba(15,23,42,0.05); margin-top:10px; font-family:\"Inter\",sans-serif;'>"
+                        "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border-radius:12px; border:1px solid rgba(56,189,248,0.22); overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-top:10px; font-family:\"Inter\",sans-serif;'>"
                         "<table style='width:100%; border-collapse:collapse;'>"
-                        "<tr style='background-color:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_p}</th>"
-                        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_c}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_n}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_b}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_l}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:800; color:#0ea5e9; text-transform:uppercase;'>{th_pct}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_d}</th>"
-                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;'>{th_st}</th>"
+                        "<tr style='background-color:rgba(15,23,42,0.85); border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_p}</th>"
+                        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_c}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_n}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_b}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_l}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase;'>{th_pct}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_d}</th>"
+                        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{th_st}</th>"
                         "</tr>"
                         + "".join(table_rows)
                         + "</table></div>"
@@ -1069,21 +1069,34 @@ def render_test_fisici(t):
     
                         fig_radar = go.Figure()
                         fig_radar.add_trace(go.Scatterpolar(
-                            r=r_a_loop, theta=categories_loop, fill='toself',
-                            name=f"Data A: {data_a}", line=dict(color="#94a3b8")
+                            r=r_a_loop, theta=categories_loop,
+                            mode='lines+markers',
+                            fill='toself',
+                            fillcolor='rgba(148, 163, 184, 0.15)',
+                            name=f"Data A: {data_a}",
+                            line=dict(color="#94a3b8", width=2, dash='dot'),
+                            marker=dict(size=6, color="#94a3b8")
                         ))
                         fig_radar.add_trace(go.Scatterpolar(
-                            r=r_b_loop, theta=categories_loop, fill='toself',
-                            name=f"Data B: {data_b}", line=dict(color="#0ea5e9", width=2.5)
+                            r=r_b_loop, theta=categories_loop,
+                            mode='lines+markers',
+                            fill='toself',
+                            fillcolor='rgba(56, 189, 248, 0.22)',
+                            name=f"Data B: {data_b}",
+                            line=dict(color="#38bdf8", width=3),
+                            marker=dict(size=7, color="#38bdf8", line=dict(color="#ffffff", width=2))
                         ))
                         fig_radar.update_layout(
                             polar=dict(
-                                radialaxis=dict(visible=True, range=[0, 110], tickfont=dict(size=9, color="#94a3b8")),
-                                bgcolor="rgba(255,255,255,0.02)"
+                                radialaxis=dict(visible=True, range=[0, 110], tickfont=dict(size=9, color="#94a3b8"), gridcolor="rgba(56, 189, 248, 0.12)"),
+                                angularaxis=dict(tickfont=dict(size=11, color="#ffffff"), gridcolor="rgba(56, 189, 248, 0.18)"),
+                                bgcolor="rgba(0,0,0,0)"
                             ),
                             height=380,
                             margin=dict(l=40, r=40, t=30, b=30),
-                            paper_bgcolor="rgba(0,0,0,0)"
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            legend=dict(font=dict(color="#f8fafc"))
                         )
                         st.plotly_chart(fig_radar, use_container_width=True)
     

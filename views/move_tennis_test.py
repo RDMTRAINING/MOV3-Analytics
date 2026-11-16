@@ -751,10 +751,10 @@ def render_move_tennis_test(t):
                 target_col = col_s1 if idx_s % 2 == 0 else col_s2
                 with target_col:
                     st.markdown(f"""
-                    <div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 6px rgba(15,23,42,0.03);'>
-                        <div style='font-size:14px; font-weight:800; color:#0f172a;'>{s_tit}</div>
-                        <div style='font-size:12.5px; color:#64748b; margin-top:4px;'><strong>Obiettivo:</strong> {s_obj}</div>
-                        <div style='font-size:13px; color:#0284c7; margin-top:6px; font-weight:600;'><strong>Intervento:</strong> {s_act}</div>
+                    <div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-left:4px solid #0ea5e9; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,0.4);'>
+                        <div style='font-size:14.5px; font-weight:800; color:#ffffff;'>{s_tit}</div>
+                        <div style='font-size:12.5px; color:#cbd5e1; margin-top:6px; line-height:1.5;'><strong style='color:#38bdf8;'>Obiettivo:</strong> {s_obj}</div>
+                        <div style='font-size:13px; color:#38bdf8; margin-top:8px; font-weight:600; line-height:1.5;'><strong style='color:#38bdf8;'>Intervento:</strong> {s_act}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -809,28 +809,40 @@ def render_move_tennis_test(t):
                 for r_idx in range(6):
                     r_num = r_idx + 1
                     def_r = default_rounds[r_idx] if default_rounds else {}
-                    st.markdown(f"**Round {r_num}**")
-                    col_r1, col_r2, col_r3, col_r4, col_r5, col_r6, col_r7, col_r8, col_r9, col_r10 = st.columns(10)
-                    with col_r1:
-                        r_tl = st.number_input(f"TL R{r_num}", value=float(def_r.get("tl", 75.0)), step=1.0, key=f"tl_{r_idx}")
-                    with col_r2:
-                        r_vm = st.number_input(f"Vmax R{r_num}", value=float(def_r.get("vmax", 19.5)), step=0.1, key=f"vm_{r_idx}")
-                    with col_r3:
-                        r_acc = st.number_input(f"AccMax R{r_num}", value=float(def_r.get("acc_max", 4.5)), step=0.1, key=f"acc_{r_idx}")
-                    with col_r4:
-                        r_dec = st.number_input(f"DecMax R{r_num}", value=float(def_r.get("dec_max", -7.0)), step=0.1, key=f"dec_{r_idx}")
-                    with col_r5:
-                        r_tlh_v = st.number_input(f"TL High Vol R{r_num}", value=float(def_r.get("tl_high_vol", 50.0)), step=1.0, key=f"tlhv_{r_idx}")
-                    with col_r6:
-                        r_tlh_p = st.number_input(f"TL High % R{r_num}", value=float(def_r.get("tl_high_pct", 40.0)), step=1.0, key=f"tlhp_{r_idx}")
-                    with col_r7:
-                        r_ach = st.number_input(f"Acc High (n) R{r_num}", value=int(def_r.get("acc_high_n", 2)), step=1, key=f"ach_{r_idx}")
-                    with col_r8:
-                        r_dch = st.number_input(f"Dec High (n) R{r_num}", value=int(def_r.get("dec_high_n", 2)), step=1, key=f"dch_{r_idx}")
-                    with col_r9:
-                        r_tl30 = st.number_input(f"TLMax 30'' R{r_num}", value=float(def_r.get("tlmax_30", 65.0)), step=1.0, key=f"tl30_{r_idx}")
-                    with col_r10:
-                        r_cmj_pw = st.number_input(f"CMJ Watt R{r_num}", value=float(def_r.get("cmj_power", 4500.0)), step=10.0, key=f"cmjpw_{r_idx}")
+                    with st.container(border=True):
+                        st.markdown(
+                            f"<div style='display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;'>"
+                            f"<div style='display:flex; align-items:center; gap:8px;'>"
+                            f"<span style='background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:12px; font-weight:800; padding:2px 10px; border-radius:6px;'>ROUND {r_num}</span>"
+                            f"<span style='font-size:12.5px; font-weight:700; color:#ffffff;'>Parametri Meccanici & Salto</span>"
+                            f"</div>"
+                            f"<span style='font-size:11px; color:#94a3b8; font-weight:600;'>{tr('Dati GPS + CMJ Post-Round', 'GPS Data + Post-Round CMJ')}</span>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                        col_r1, col_r2, col_r3, col_r4, col_r5 = st.columns(5)
+                        with col_r1:
+                            r_tl = st.number_input(f"TL (AU) - R{r_num}", value=float(def_r.get("tl", 75.0)), step=1.0, key=f"tl_{r_idx}")
+                        with col_r2:
+                            r_vm = st.number_input(f"Vmax (km/h) - R{r_num}", value=float(def_r.get("vmax", 19.5)), step=0.1, key=f"vm_{r_idx}")
+                        with col_r3:
+                            r_acc = st.number_input(f"AccMax (m/s²) - R{r_num}", value=float(def_r.get("acc_max", 4.5)), step=0.1, key=f"acc_{r_idx}")
+                        with col_r4:
+                            r_dec = st.number_input(f"DecMax (m/s²) - R{r_num}", value=float(def_r.get("dec_max", -7.0)), step=0.1, key=f"dec_{r_idx}")
+                        with col_r5:
+                            r_tl30 = st.number_input(f"TLMax 30'' (AU) - R{r_num}", value=float(def_r.get("tlmax_30", 65.0)), step=1.0, key=f"tl30_{r_idx}")
+
+                        col_r6, col_r7, col_r8, col_r9, col_r10 = st.columns(5)
+                        with col_r6:
+                            r_tlh_v = st.number_input(f"TL High Vol - R{r_num}", value=float(def_r.get("tl_high_vol", 50.0)), step=1.0, key=f"tlhv_{r_idx}")
+                        with col_r7:
+                            r_tlh_p = st.number_input(f"TL High % - R{r_num}", value=float(def_r.get("tl_high_pct", 40.0)), step=1.0, key=f"tlhp_{r_idx}")
+                        with col_r8:
+                            r_ach = st.number_input(f"Acc High (n) - R{r_num}", value=int(def_r.get("acc_high_n", 2)), step=1, key=f"ach_{r_idx}")
+                        with col_r9:
+                            r_dch = st.number_input(f"Dec High (n) - R{r_num}", value=int(def_r.get("dec_high_n", 2)), step=1, key=f"dch_{r_idx}")
+                        with col_r10:
+                            r_cmj_pw = st.number_input(f"CMJ Potenza (W) - R{r_num}", value=float(def_r.get("cmj_power", 4500.0)), step=10.0, key=f"cmjpw_{r_idx}")
 
                     round_rows_inputs.append({
                         "round": r_num,
@@ -936,16 +948,42 @@ def render_move_tennis_test(t):
 
             # Radar comparativo
             categories = ["EDI Esplosività", "TPS Work Capacity", "CMJ Riserva", "GRS Resilienza"]
+            cat_closed = categories + [categories[0]]
+            r1_closed = [t1_data["avg_edi"], t1_data["tps_min"], t1_data["cmj_final"], t1_data["grs_final"], t1_data["avg_edi"]]
+            r2_closed = [t2_data["avg_edi"], t2_data["tps_min"], t2_data["cmj_final"], t2_data["grs_final"], t2_data["avg_edi"]]
             fig_rad = go.Figure()
             fig_rad.add_trace(go.Scatterpolar(
-                r=[t1_data["avg_edi"], t1_data["tps_min"], t1_data["cmj_final"], t1_data["grs_final"]],
-                theta=categories, fill='toself', name=t1_lbl[:25]
+                r=r1_closed,
+                theta=cat_closed,
+                mode='lines+markers',
+                fill='toself',
+                fillcolor='rgba(148, 163, 184, 0.15)',
+                name=t1_lbl[:25],
+                line=dict(color="#94a3b8", width=2, dash='dot'),
+                marker=dict(size=6, color="#94a3b8")
             ))
             fig_rad.add_trace(go.Scatterpolar(
-                r=[t2_data["avg_edi"], t2_data["tps_min"], t2_data["cmj_final"], t2_data["grs_final"]],
-                theta=categories, fill='toself', name=t2_lbl[:25]
+                r=r2_closed,
+                theta=cat_closed,
+                mode='lines+markers',
+                fill='toself',
+                fillcolor='rgba(56, 189, 248, 0.22)',
+                name=t2_lbl[:25],
+                line=dict(color="#38bdf8", width=3),
+                marker=dict(size=7, color="#38bdf8", line=dict(color="#ffffff", width=2))
             ))
-            fig_rad.update_layout(polar=dict(radialaxis=dict(visible=True, range=[40, 105])), showlegend=True, height=380)
+            fig_rad.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[40, 105], tickfont=dict(size=9, color="#94a3b8"), gridcolor="rgba(56, 189, 248, 0.12)"),
+                    angularaxis=dict(tickfont=dict(size=11, color="#ffffff"), gridcolor="rgba(56, 189, 248, 0.18)"),
+                    bgcolor="rgba(0,0,0,0)"
+                ),
+                showlegend=True,
+                legend=dict(font=dict(color="#f8fafc")),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                height=380
+            )
             st.plotly_chart(fig_rad, use_container_width=True)
 
 

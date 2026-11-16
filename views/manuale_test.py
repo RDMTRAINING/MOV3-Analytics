@@ -170,12 +170,12 @@ def render_manuale_test(t=None):
 
         # Header Sezione Area (Stile identico a Manuale Report)
         st.html(
-            f"""<div style="background:#ffffff; border:1px solid #cbd5e1; border-left:6px solid {col_ar}; border-radius:10px; padding:12px 18px; margin-top:24px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(15,23,42,0.03); font-family:'Inter',sans-serif;">
+            f"""<div style="background:linear-gradient(135deg, rgba(13,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%); border:1px solid rgba(56,189,248,0.25); border-left:6px solid {col_ar}; border-radius:10px; padding:12px 18px; margin-top:24px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:'Inter',sans-serif;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="font-size:18px; color:{col_ar};"><i class="bi {ico_ar}"></i></span>
-                    <span style="font-size:15px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.06em;">{ar.upper()}</span>
+                    <span style="font-size:15px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">{ar.upper()}</span>
                 </div>
-                <span style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:800; padding:4px 12px; border-radius:999px; border:1px solid #e2e8f0;">
+                <span style="background:rgba(15,23,42,0.8); color:#94a3b8; font-size:11px; font-weight:800; padding:4px 12px; border-radius:999px; border:1px solid rgba(255,255,255,0.15);">
                     {len(lista_p)} {tr('Protocolli', 'Protocols')}
                 </span>
             </div>"""
@@ -194,7 +194,7 @@ def render_manuale_test(t=None):
             titolo_interp = tr("GUIDA ALL'INTERPRETAZIONE, BENCHMARK & RED FLAGS", "INTERPRETATION GUIDE, BENCHMARKS & RED FLAGS")
 
             # Pillola categoria / badge di sistema
-            badge_custom = f"<span style='background:rgba(245,158,11,0.1); color:#d97706; border:1px solid rgba(245,158,11,0.3); font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; margin-left:6px;'>CUSTOM COACH</span>" if is_custom else f"<span style='background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.3); font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; margin-left:6px;'>OFFICIAL M0V3</span>"
+            badge_custom = f"<span style='background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; margin-left:6px;'>CUSTOM COACH</span>" if is_custom else f"<span style='background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; margin-left:6px;'>OFFICIAL M0V3</span>"
 
             # Pillole per metriche tracciate (Stile Azioni Consentite)
             pill_list = []
@@ -205,27 +205,27 @@ def render_manuale_test(t=None):
                 un_m = m.get('unit', '-')
                 lat_m = m.get('laterality', 'BILATERAL')
                 pill_list.append(
-                    f"<span style='background:#f8fafc; color:#334155; border:1px solid #cbd5e1; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; margin:3px 4px 3px 0;'>"
-                    f"{ico_m} <b>{lbl_m}</b> "
-                    f"<span style='color:#64748b; font-size:10px;'>({un_m})</span> "
-                    f"<span style='font-size:9.5px; background:rgba(2,132,199,0.08); color:#0369a1; padding:1px 5px; border-radius:4px;'>{lat_m}</span>"
+                    f"<span style='background:rgba(15,23,42,0.7); color:#cbd5e1; border:1px solid rgba(56,189,248,0.2); font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; margin:3px 4px 3px 0;'>"
+                    f"{ico_m} <b style='color:#ffffff;'>{lbl_m}</b> "
+                    f"<span style='color:#94a3b8; font-size:10px;'>({un_m})</span> "
+                    f"<span style='font-size:9.5px; background:rgba(2,132,199,0.15); color:#38bdf8; padding:1px 5px; border-radius:4px;'>{lat_m}</span>"
                     f"</span>"
                 )
             metriche_pills_html = "".join(pill_list)
 
-            card_html = f"""<div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:18px 22px; margin-bottom:16px; box-shadow:0 3px 10px rgba(15,23,42,0.03); font-family:'Inter',sans-serif; transition:all 0.2s ease;">
+            card_html = f"""<div style="background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; padding:18px 22px; margin-bottom:16px; box-shadow:0 4px 14px rgba(0,0,0,0.5); font-family:'Inter',sans-serif; transition:all 0.2s ease;">
                 <!-- HEADER CARD -->
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid rgba(56,189,248,0.15); padding-bottom:10px; flex-wrap:wrap; gap:8px;">
                     <div>
-                        <div style="font-size:16px; font-weight:900; color:#0f172a; letter-spacing:0.02em;">
+                        <div style="font-size:16px; font-weight:900; color:#ffffff; letter-spacing:0.02em;">
                             <span style="color:{col_ar}; margin-right:6px;"># {idx+1}</span> {nome_display}
                             {badge_custom}
                         </div>
-                        <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-top:3px;">
-                            <i class="bi bi-tag" style="margin-right:4px;"></i>{tr('Codice Univoco / ID Catalogo:', 'Unique Code / Catalog ID:')} <span style="color:#0284c7; font-family:monospace; font-size:12px;">{nome_tecnico}</span>
+                        <div style="font-size:11.5px; font-weight:700; color:#94a3b8; margin-top:3px;">
+                            <i class="bi bi-tag" style="margin-right:4px;"></i>{tr('Codice Univoco / ID Catalogo:', 'Unique Code / Catalog ID:')} <span style="color:#38bdf8; font-family:monospace; font-size:12px;">{nome_tecnico}</span>
                         </div>
                     </div>
-                    <span style="background:rgba(2,132,199,0.08); color:#0369a1; border:1px solid rgba(2,132,199,0.25); font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.05em;">
+                    <span style="background:rgba(2,132,199,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.05em;">
                         {categoria}
                     </span>
                 </div>
@@ -233,38 +233,38 @@ def render_manuale_test(t=None):
                 <!-- GRIGLIA CONTENUTI -->
                 <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
                     <!-- OBIETTIVO SCIENTIFICO -->
-                    <div style="background:#f8fafc; border-left:4px solid #0284c7; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#0369a1; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    <div style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.2); border-left:4px solid #0ea5e9; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
                             <i class="bi bi-search" style="margin-right:6px;"></i>{tr('OBIETTIVO FISIOLOGICO & BIOMECCANICO', 'PHYSIOLOGICAL & BIOMECHANICAL OBJECTIVE')}
                         </div>
-                        <div style="font-size:13px; color:#1e293b; line-height:1.55; text-align:justify;">
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.55; text-align:justify;">
                             {obiettivi}
                         </div>
                     </div>
 
                     <!-- PROTOCOLLO ESECUZIONE -->
-                    <div style="background:#f0fdf4; border-left:4px solid #10b981; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#15803d; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-left:4px solid #10b981; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#34d399; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
                             <i class="bi bi-stopwatch" style="margin-right:6px;"></i>{tr('PROTOCOLLO OPERATIVO DI ESECUZIONE', 'OPERATIONAL EXECUTION PROTOCOL')}
                         </div>
-                        <div style="font-size:13px; color:#1e293b; line-height:1.55; text-align:justify;">
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.55; text-align:justify;">
                             {esecuzione}
                         </div>
                     </div>
 
                     <!-- INTERPRETAZIONE & BENCHMARK -->
-                    <div style="background:#fffbeb; border-left:4px solid #f59e0b; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#b45309; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-left:4px solid #f59e0b; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
                             <i class="bi bi-bar-chart-line-fill" style="margin-right:6px;"></i>{titolo_interp}
                         </div>
-                        <div style="font-size:13px; color:#1e293b; line-height:1.55; text-align:justify;">
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.55; text-align:justify;">
                             {interpretazione}
                         </div>
                     </div>
 
                     <!-- METRICHE TRACCIATE -->
-                    <div style="background:#faf5ff; border-left:4px solid #8b5cf6; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#6b21a8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
+                    <div style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-left:4px solid #8b5cf6; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#c084fc; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
                             <i class="bi bi-sliders" style="margin-right:6px;"></i>{tr('VARIABILI & METRICHE TRACCIATE DALLO SCHEMA', 'VARIABLES & METRICS TRACKED BY SCHEMA')} ({len(metriche)})
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:4px;">
@@ -274,8 +274,8 @@ def render_manuale_test(t=None):
                 </div>
 
                 <!-- FOOTER SCIENTIFICO -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin-top:10px; font-size:11px; color:#64748b;">
-                    <i class="bi bi-cpu" style="margin-right:5px; color:#0284c7;"></i><b>M0V3 Algorithmic Core:</b> {tr('Elaborazione computazionale proprietaria su standard ISO/IMU, bio-indicatori di asimmetria e algoritmi di readiness neuromuscolare.', 'Proprietary computational processing based on ISO/IMU standards, asymmetry bio-indicators and neuromuscular readiness algorithms.')}
+                <div style="background:rgba(15,23,42,0.6); border:1px solid rgba(56,189,248,0.18); border-radius:8px; padding:8px 12px; margin-top:10px; font-size:11px; color:#94a3b8;">
+                    <i class="bi bi-cpu" style="margin-right:5px; color:#38bdf8;"></i><b style="color:#ffffff;">M0V3 Algorithmic Core:</b> {tr('Elaborazione computazionale proprietaria su standard ISO/IMU, bio-indicatori di asimmetria e algoritmi di readiness neuromuscolare.', 'Proprietary computational processing based on ISO/IMU standards, asymmetry bio-indicators and neuromuscular readiness algorithms.')}
                 </div>
             </div>"""
 

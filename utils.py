@@ -1013,9 +1013,9 @@ def render_acwr_executive_block(
     def _render_acwr_progress(pct_v, bar_col):
         fill_w = min(100.0, max(0.0, (pct_v / 160.0) * 100.0))
         return (
-            "<div style='width:100%; height:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; position:relative; overflow:hidden;'>"
+            "<div style='width:100%; height:18px; background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:6px; position:relative; overflow:hidden;'>"
             f"<div style='position:absolute; left:0; top:2px; bottom:2px; width:{fill_w:.1f}%; background:{bar_col}; border-radius:4px;'></div>"
-            "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#0f172a; z-index:3;' title='100% Baseline'></div>"
+            "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#ffffff; z-index:3; box-shadow:0 0 4px #ffffff;' title='100% Baseline'></div>"
             "</div>"
         )
 
@@ -1033,12 +1033,12 @@ def render_acwr_executive_block(
             diff_acwr[c_a] = 0.0
 
     parametri_acwr_rows = [
-        ("Minuti", tr("Durata (Time)", "Duration (Time)"), "VOLUME", "#0284c7", "#e0f2fe"),
-        ("Training Load", "Training Load", "VOLUME", "#0284c7", "#e0f2fe"),
-        ("TL_High", "Training Load High", "HIGH INTENSITY", "#dc2626", "#fee2e2"),
-        ("High Decel IMU", tr("Decelerazioni Intense IMU", "High Decelerations Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2"),
-        ("High Accel IMU", tr("Accelerazioni Intense IMU", "High Accelerations Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2"),
-        ("Azioni Int. IMU >2", tr('Azioni Intense >2"', 'Mid/High Actions >2" Events'), "VOLUME", "#0284c7", "#e0f2fe"),
+        ("Minuti", tr("Durata (Time)", "Duration (Time)"), "VOLUME", "#38bdf8", "rgba(14, 165, 233, 0.20)"),
+        ("Training Load", "Training Load", "VOLUME", "#38bdf8", "rgba(14, 165, 233, 0.20)"),
+        ("TL_High", "Training Load High", "HIGH INTENSITY", "#f43f5e", "rgba(244, 63, 94, 0.20)"),
+        ("High Decel IMU", tr("Decelerazioni Intense IMU", "High Decelerations Events"), "HIGH INTENSITY", "#f43f5e", "rgba(244, 63, 94, 0.20)"),
+        ("High Accel IMU", tr("Accelerazioni Intense IMU", "High Accelerations Events"), "HIGH INTENSITY", "#f43f5e", "rgba(244, 63, 94, 0.20)"),
+        ("Azioni Int. IMU >2", tr('Azioni Intense >2"', 'Mid/High Actions >2" Events'), "VOLUME", "#38bdf8", "rgba(14, 165, 233, 0.20)"),
     ]
 
     lbl_hdr_param = tr("Parametro & Area", "Parameter & Area")
@@ -1049,26 +1049,26 @@ def render_acwr_executive_block(
     banner_html = ""
     if title_banner:
         banner_html = (
-            f"<div style='background:#0f172a; border-bottom:2px solid {title_accent}; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
-            f"<span style='color:white; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:0.8px;'>{title_banner}</span>"
-            f"<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{str_win_range}</span>"
+            f"<div style='background:linear-gradient(135deg, #0d1e38 0%, #081120 100%); border-bottom:2px solid {title_accent}; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
+            f"<span style='color:#ffffff; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:0.8px;'>{title_banner}</span>"
+            f"<span style='background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{str_win_range}</span>"
             "</div>"
         )
 
     html_acwr_tbl = (
-        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:20px; font-family:\"Inter\", sans-serif;'>"
+        "<div style='background:linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border:1.2px solid rgba(56, 189, 248, 0.22); border-radius:12px; overflow:hidden; box-shadow:0 8px 30px -4px rgba(0,0,0,0.5); margin-bottom:20px; font-family:\"Inter\", sans-serif;'>"
         f"{banner_html}"
-        "<div style='background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
-        f"<div style='font-size:12px; color:#334155;'><b>{lbl_ctx_acute}:</b> <span style='color:#0ea5e9; font-weight:800;'>{str_win_range}</span></div>"
-        f"<div style='font-size:12px; color:#64748b;'><b>{lbl_ctx_chronic}:</b> {str_base_range}</div>"
+        "<div style='background:rgba(8, 17, 32, 0.75); border-bottom:1px solid rgba(56, 189, 248, 0.18); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+        f"<div style='font-size:12px; color:#cbd5e1;'><b>{lbl_ctx_acute}:</b> <span style='color:#38bdf8; font-weight:800;'>{str_win_range}</span></div>"
+        f"<div style='font-size:12px; color:#94a3b8;'><b>{lbl_ctx_chronic}:</b> {str_base_range}</div>"
         "</div>"
         "<table style='width:100%; border-collapse:collapse;'>"
-        "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; width:28%;'>{lbl_hdr_param}</th>"
-        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; width:16%;'>{lbl_hdr_acute}</th>"
-        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; width:18%;'>{lbl_hdr_chronic}</th>"
-        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:800; color:#0ea5e9; text-transform:uppercase; letter-spacing:0.5px; width:20%;'>{lbl_hdr_pct}</th>"
-        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; width:18%;'>{lbl_hdr_bar}</th>"
+        "<tr style='background:#0d1e38; border-bottom:2px solid rgba(56, 189, 248, 0.28);'>"
+        f"<th style='text-align:left; padding:12px 14px; font-size:11px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.5px; width:28%;'>{lbl_hdr_param}</th>"
+        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; width:16%;'>{lbl_hdr_acute}</th>"
+        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; width:18%;'>{lbl_hdr_chronic}</th>"
+        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; width:20%;'>{lbl_hdr_pct}</th>"
+        f"<th style='text-align:center; padding:12px 14px; font-size:11px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.5px; width:18%;'>{lbl_hdr_bar}</th>"
         "</tr>"
     )
 
@@ -1080,13 +1080,13 @@ def render_acwr_executive_block(
         z_bg, z_fg, z_bar, _ = _acwr_zone_meta(p_ac)
         delta_str = f"{d_ac:+.0f}%" if v_ch > 0 else "N/A"
         html_acwr_tbl += (
-            "<tr style='border-bottom:1px solid #f1f5f9;'>"
+            "<tr style='border-bottom:1px solid rgba(255, 255, 255, 0.08);'>"
             f"<td style='padding:14px 14px;'>"
-            f"<div style='font-weight:700; color:#0f172a; font-size:14px;'>{label_p}</div>"
+            f"<div style='font-weight:700; color:#ffffff; font-size:14px;'>{label_p}</div>"
             f"<span style='display:inline-block; margin-top:3px; background:{cat_bg}; color:{cat_fg}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;'>{cat_tag}</span>"
             "</td>"
-            f"<td style='padding:14px 14px; text-align:center; font-weight:900; font-size:20px; color:#0f172a;'>{v_ac:.0f}</td>"
-            f"<td style='padding:14px 14px; text-align:center; font-weight:700; font-size:17px; color:#64748b;'>{v_ch:.0f}</td>"
+            f"<td style='padding:14px 14px; text-align:center; font-weight:900; font-size:20px; color:#ffffff;'>{v_ac:.0f}</td>"
+            f"<td style='padding:14px 14px; text-align:center; font-weight:700; font-size:17px; color:#94a3b8;'>{v_ch:.0f}</td>"
             f"<td style='padding:14px 14px; text-align:center;'>"
             f"<span style='background:{z_bg}; color:{z_fg}; padding:5px 12px; border-radius:8px; font-weight:900; font-size:18px; display:inline-block;'>{p_ac:.0f}%</span>"
             f"<div style='font-size:11px; font-weight:700; color:{z_fg}; margin-top:4px;'>({delta_str} {lbl_vs})</div>"
@@ -1163,9 +1163,9 @@ def render_acwr_executive_block(
                 r=r_closed, theta=theta_closed,
                 mode='lines+markers',
                 fill='toself',
-                fillcolor='rgba(15, 23, 42, 0.16)',
-                line=dict(color='#0f172a', width=3.5),
-                marker=dict(size=8, color='#0f172a', line=dict(color='white', width=1.5)),
+                fillcolor='rgba(56, 189, 248, 0.22)',
+                line=dict(color='#38bdf8', width=3.5),
+                marker=dict(size=8, color='#38bdf8', line=dict(color='#ffffff', width=2)),
                 name=tr('% Raggiunta', 'Percentage Reached'),
                 hovertemplate="%{theta}<br>ACWR: <b>%{r:.0f}%</b><extra></extra>"
             ))
@@ -1176,11 +1176,11 @@ def render_acwr_executive_block(
                     gridshape='linear',
                     bgcolor='rgba(0,0,0,0)',
                     angularaxis=dict(
-                        tickfont=dict(size=12, color='#0f172a', family='Inter, sans-serif'),
+                        tickfont=dict(size=12, color='#ffffff', family='Inter, sans-serif'),
                         rotation=90,
                         direction='clockwise',
-                        gridcolor='#e2e8f0',
-                        linecolor='#cbd5e1'
+                        gridcolor='rgba(56, 189, 248, 0.18)',
+                        linecolor='rgba(56, 189, 248, 0.25)'
                     ),
                     radialaxis=dict(
                         visible=True,
@@ -1188,7 +1188,7 @@ def render_acwr_executive_block(
                         tickvals=[50, 80, 100, 125, 150],
                         ticktext=['50%', '80%', '100%', '125%', '150%'],
                         tickfont=dict(size=9, color='#94a3b8'),
-                        gridcolor='#f1f5f9',
+                        gridcolor='rgba(56, 189, 248, 0.12)',
                         angle=90,
                         tickangle=90
                     )
@@ -1207,12 +1207,12 @@ def render_acwr_executive_block(
             leg_over = tr("Overload (150%)", "Overload (150%)")
             leg_val = tr("% Raggiunta", "% Reached")
             st.markdown(
-                "<div style='display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:14px; padding:8px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-top:4px; font-size:11px; font-weight:600; color:#475569;'>"
+                "<div style='display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:14px; padding:8px 10px; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:8px; margin-top:4px; font-size:11px; font-weight:600; color:#cbd5e1;'>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #38bdf8; display:inline-block;'></span>{leg_low}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:3px solid #10b981; display:inline-block;'></span>{leg_avg}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #f59e0b; display:inline-block;'></span>{leg_high}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #ef4444; display:inline-block;'></span>{leg_over}</div>"
-                f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; border-radius:50%; background:#0f172a; display:inline-block;'></span><b style='color:#0f172a;'>{leg_val}</b></div>"
+                f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; border-radius:50%; background:#38bdf8; display:inline-block;'></span><b style='color:#38bdf8;'>{leg_val}</b></div>"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -1222,9 +1222,9 @@ def render_acwr_executive_block(
             z_bg, z_fg, z_bar, z_lbl = _acwr_zone_meta(pct_idx)
             d_str = f"{diff_idx:+.0f}%" if has_chronic else "N/A"
             return (
-                f"<div style='background:white; border:1px solid #e2e8f0; border-left:5px solid {z_bar}; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); font-family:\"Inter\", sans-serif;'>"
+                f"<div style='background:linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-left:5px solid {z_bar}; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 8px 24px -4px rgba(0,0,0,0.5); font-family:\"Inter\", sans-serif;'>"
                 "<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
-                f"<span style='font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.8px;'>{title_idx}</span>"
+                f"<span style='font-size:12px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.8px;'>{title_idx}</span>"
                 f"<span style='background:{z_bg}; color:{z_fg}; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; letter-spacing:0.4px;'>{z_lbl}</span>"
                 "</div>"
                 "<div style='display:flex; align-items:baseline; gap:10px; margin-bottom:10px;'>"
@@ -1232,7 +1232,7 @@ def render_acwr_executive_block(
                 f"<span style='font-size:14px; font-weight:800; color:{z_fg}; background:{z_bg}; padding:2px 8px; border-radius:6px;'>{d_str} {lbl_vs}</span>"
                 "</div>"
                 f"{_render_acwr_progress(pct_idx, z_bar)}"
-                f"<div style='font-size:11px; color:#64748b; margin-top:8px; line-height:1.35;'>{formula_desc}</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:8px; line-height:1.35;'>{formula_desc}</div>"
                 "</div>"
             )
 
@@ -1273,12 +1273,12 @@ def render_acwr_executive_block(
         lbl_wr_b = lbl_hdr_chronic
         lbl_wr_d = tr("% Raggiunta (Delta)", "Percentage Reached (Delta)")
         html_wr_det = (
-            "<table style='width:100%; border-collapse:collapse; font-family:\"Inter\", sans-serif;'>"
-            "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-            f"<th style='text-align:left; padding:10px 12px; font-size:11px; color:#64748b; text-transform:uppercase;'>{lbl_wr_p}</th>"
-            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#0f172a; text-transform:uppercase;'>{lbl_wr_w}</th>"
-            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#64748b; text-transform:uppercase;'>{lbl_wr_b}</th>"
-            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#0ea5e9; text-transform:uppercase;'>{lbl_wr_d}</th>"
+            "<table style='width:100%; border-collapse:collapse; font-family:\"Inter\", sans-serif; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:10px; overflow:hidden;'>"
+            "<tr style='background:#0d1e38; border-bottom:2px solid rgba(56,189,248,0.28);'>"
+            f"<th style='text-align:left; padding:10px 12px; font-size:11px; color:#cbd5e1; text-transform:uppercase;'>{lbl_wr_p}</th>"
+            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#ffffff; text-transform:uppercase;'>{lbl_wr_w}</th>"
+            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#94a3b8; text-transform:uppercase;'>{lbl_wr_b}</th>"
+            f"<th style='text-align:center; padding:10px 12px; font-size:11px; color:#38bdf8; text-transform:uppercase;'>{lbl_wr_d}</th>"
             "</tr>"
         )
         for col_m, lbl_m in wr_items:
@@ -1289,10 +1289,10 @@ def render_acwr_executive_block(
             z_bg_m, z_fg_m, _, _ = _acwr_zone_meta(p_m)
             d_m_str = f"{d_m:+.0f}%" if r_b > 0 else "N/A"
             html_wr_det += (
-                "<tr style='border-bottom:1px solid #f1f5f9;'>"
-                f"<td style='padding:10px 12px; font-weight:700; color:#334155; font-size:13px;'>{lbl_m}</td>"
-                f"<td style='padding:10px 12px; text-align:center; font-weight:800; color:#0f172a; font-size:14px;'>{r_w:.2f}</td>"
-                f"<td style='padding:10px 12px; text-align:center; font-weight:600; color:#64748b; font-size:14px;'>{r_b:.2f}</td>"
+                "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'>"
+                f"<td style='padding:10px 12px; font-weight:700; color:#f8fafc; font-size:13px;'>{lbl_m}</td>"
+                f"<td style='padding:10px 12px; text-align:center; font-weight:800; color:#ffffff; font-size:14px;'>{r_w:.2f}</td>"
+                f"<td style='padding:10px 12px; text-align:center; font-weight:600; color:#94a3b8; font-size:14px;'>{r_b:.2f}</td>"
                 f"<td style='padding:10px 12px; text-align:center;'><span style='background:{z_bg_m}; color:{z_fg_m}; padding:3px 9px; border-radius:6px; font-weight:800; font-size:13px;'>{p_m:.0f}% ({d_m_str})</span></td>"
                 "</tr>"
             )
@@ -1314,14 +1314,14 @@ def acwr_zone_meta(pct_v):
 
 
 def render_pct_progress_bar(pct_v, bar_col=None):
-    """Barra di progresso 0..160% con tacca nera sul 100% (62.5% della larghezza)."""
+    """Barra di progresso 0..160% con tacca sul 100% (62.5% della larghezza)."""
     if bar_col is None:
         _, _, bar_col, _ = acwr_zone_meta(pct_v)
     fill_w = min(100.0, max(0.0, (pct_v / 160.0) * 100.0))
     return (
-        "<div style='width:100%; height:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; position:relative; overflow:hidden;'>"
+        "<div style='width:100%; height:18px; background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:6px; position:relative; overflow:hidden;'>"
         f"<div style='position:absolute; left:0; top:2px; bottom:2px; width:{fill_w:.1f}%; background:{bar_col}; border-radius:4px;'></div>"
-        "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#0f172a; z-index:3;' title='100% Baseline'></div>"
+        "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#ffffff; z-index:3; box-shadow:0 0 4px #ffffff;' title='100% Baseline'></div>"
         "</div>"
     )
 
@@ -1418,9 +1418,9 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
                 r=r_closed, theta=theta_closed,
                 mode='lines+markers',
                 fill='toself',
-                fillcolor='rgba(15, 23, 42, 0.16)',
-                line=dict(color='#0f172a', width=3.5),
-                marker=dict(size=8, color='#0f172a', line=dict(color='white', width=1.5)),
+                fillcolor='rgba(56, 189, 248, 0.22)',
+                line=dict(color='#38bdf8', width=3.5),
+                marker=dict(size=8, color='#38bdf8', line=dict(color='#ffffff', width=2)),
                 name=tr('% Raggiunta', 'Percentage Reached'),
                 hovertemplate="%{theta}<br><b>%{r:.0f}%</b><extra></extra>"
             ))
@@ -1430,11 +1430,11 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
                     gridshape='linear',
                     bgcolor='rgba(0,0,0,0)',
                     angularaxis=dict(
-                        tickfont=dict(size=12, color='#0f172a', family='Inter, sans-serif'),
+                        tickfont=dict(size=12, color='#ffffff', family='Inter, sans-serif'),
                         rotation=90,
                         direction='clockwise',
-                        gridcolor='#e2e8f0',
-                        linecolor='#cbd5e1'
+                        gridcolor='rgba(56, 189, 248, 0.18)',
+                        linecolor='rgba(56, 189, 248, 0.25)'
                     ),
                     radialaxis=dict(
                         visible=True,
@@ -1442,7 +1442,7 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
                         tickvals=[50, 80, 100, 125, 150],
                         ticktext=['50%', '80%', '100%', '125%', '150%'],
                         tickfont=dict(size=9, color='#94a3b8'),
-                        gridcolor='#f1f5f9',
+                        gridcolor='rgba(56, 189, 248, 0.12)',
                         angle=90,
                         tickangle=90
                     )
@@ -1460,12 +1460,12 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
             leg_over = tr("Overload (150%)", "Overload (150%)")
             leg_val = tr("% Raggiunta", "% Reached")
             st.markdown(
-                "<div style='display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:14px; padding:8px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-top:4px; font-size:11px; font-weight:600; color:#475569;'>"
+                "<div style='display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:14px; padding:8px 10px; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:8px; margin-top:4px; font-size:11px; font-weight:600; color:#cbd5e1;'>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #38bdf8; display:inline-block;'></span>{leg_low}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:3px solid #10b981; display:inline-block;'></span>{lbl_ref_legend}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #f59e0b; display:inline-block;'></span>{leg_high}</div>"
                 f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:18px; border-top:2px dashed #ef4444; display:inline-block;'></span>{leg_over}</div>"
-                f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; border-radius:50%; background:#0f172a; display:inline-block;'></span><b style='color:#0f172a;'>{leg_val}</b></div>"
+                f"<div style='display:flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; border-radius:50%; background:#38bdf8; display:inline-block;'></span><b style='color:#38bdf8;'>{leg_val}</b></div>"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -1475,9 +1475,9 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
             z_bg, z_fg, z_bar, z_lbl = acwr_zone_meta(pct_idx)
             d_str = f"{diff_idx:+.0f}%" if has_ref else "N/A"
             return (
-                f"<div style='background:white; border:1px solid #e2e8f0; border-left:5px solid {z_bar}; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); font-family:\"Inter\", sans-serif;'>"
+                f"<div style='background:linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-left:5px solid {z_bar}; border-radius:12px; padding:16px 18px; margin-bottom:14px; box-shadow:0 8px 24px -4px rgba(0,0,0,0.5); font-family:\"Inter\", sans-serif;'>"
                 "<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
-                f"<span style='font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.8px;'>{title_idx}</span>"
+                f"<span style='font-size:12px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.8px;'>{title_idx}</span>"
                 f"<span style='background:{z_bg}; color:{z_fg}; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; letter-spacing:0.4px;'>{z_lbl}</span>"
                 "</div>"
                 "<div style='display:flex; align-items:baseline; gap:10px; margin-bottom:10px;'>"
@@ -1485,7 +1485,7 @@ def render_executive_hexagon_profile(val_cur, val_ref, lbl_ref_legend, lbl_vs, c
                 f"<span style='font-size:14px; font-weight:800; color:{z_fg}; background:{z_bg}; padding:2px 8px; border-radius:6px;'>{d_str} {lbl_vs}</span>"
                 "</div>"
                 f"{render_pct_progress_bar(pct_idx, z_bar)}"
-                f"<div style='font-size:11px; color:#64748b; margin-top:8px; line-height:1.35;'>{formula_desc}</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:8px; line-height:1.35;'>{formula_desc}</div>"
                 "</div>"
             )
 
@@ -1520,26 +1520,26 @@ def render_executive_bands_section(title_banner, subtitle_ctx, bands_data, lbl_c
     bands_data: lista di tuple (label_short, label_full, val_cur, val_ref, accent_hex, badge_bg)
     """
     hdr_html = (
-        "<div style='background:#0f172a; border-bottom:2px solid #0ea5e9; border-radius:12px 12px 0 0; padding:13px 18px; display:flex; justify-content:space-between; align-items:center; font-family:\"Inter\", sans-serif;'>"
+        "<div style='background:linear-gradient(135deg, #0d1e38 0%, #081120 100%); border-bottom:2px solid #0ea5e9; border-radius:12px 12px 0 0; padding:13px 18px; display:flex; justify-content:space-between; align-items:center; font-family:\"Inter\", sans-serif;'>"
         f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{title_banner}</span>"
-        f"<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{subtitle_ctx}</span>"
+        f"<span style='background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{subtitle_ctx}</span>"
         "</div>"
     )
-    cards_grid = "<div style='display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; margin-bottom:16px; font-family:\"Inter\", sans-serif;'>"
+    cards_grid = "<div style='display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; padding:16px; background:rgba(8, 17, 32, 0.85); border:1px solid rgba(56, 189, 248, 0.22); border-top:none; border-radius:0 0 12px 12px; margin-bottom:16px; font-family:\"Inter\", sans-serif;'>"
     for lbl_s, lbl_f, vc, vr, acc_col, b_bg in bands_data:
         pv = (vc / vr * 100.0) if vr > 0 else 0.0
         dv = pv - 100.0 if vr > 0 else 0.0
         z_bg, z_fg, z_bar, _ = acwr_zone_meta(pv)
         d_str = f"{dv:+.0f}%" if vr > 0 else "N/A"
         cards_grid += (
-            f"<div style='background:white; border:1px solid #e2e8f0; border-top:4px solid {acc_col}; border-radius:10px; padding:14px; box-shadow:0 1px 3px rgba(15,23,42,0.03);'>"
+            f"<div style='background:linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-top:4px solid {acc_col}; border-radius:10px; padding:14px; box-shadow:0 4px 16px rgba(0,0,0,0.4);'>"
             "<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-            f"<span style='font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase;'>{lbl_f}</span>"
+            f"<span style='font-size:11px; font-weight:800; color:#ffffff; text-transform:uppercase;'>{lbl_f}</span>"
             f"<span style='background:{b_bg}; color:{acc_col}; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px;'>{lbl_s}</span>"
             "</div>"
             "<div style='display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;'>"
-            f"<span style='font-size:26px; font-weight:900; color:#0f172a;'>{vc:.0f}{unit_suffix}</span>"
-            f"<span style='font-size:12px; font-weight:700; color:#64748b;'>{lbl_ref}: {vr:.0f}{unit_suffix}</span>"
+            f"<span style='font-size:26px; font-weight:900; color:#ffffff;'>{vc:.0f}{unit_suffix}</span>"
+            f"<span style='font-size:12px; font-weight:700; color:#94a3b8;'>{lbl_ref}: {vr:.0f}{unit_suffix}</span>"
             "</div>"
             "<div style='display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;'>"
             f"<span style='background:{z_bg}; color:{z_fg}; font-size:13px; font-weight:900; padding:2px 8px; border-radius:6px;'>{pv:.0f}%</span>"
@@ -1561,7 +1561,7 @@ def render_executive_bands_section(title_banner, subtitle_ctx, bands_data, lbl_c
     with col_pie:
         with st.container(border=True):
             lbl_d_title = tr("Ripartizione % per Fascia d'Intensità", "Percentage Breakdown by Intensity Band")
-            st.markdown(f"<div style='font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px;'>{lbl_d_title}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:12px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px;'>{lbl_d_title}</div>", unsafe_allow_html=True)
             fig_pie = go.Figure(data=[go.Pie(
                 labels=labels_full,
                 values=vals_c,
@@ -1581,28 +1581,28 @@ def render_executive_bands_section(title_banner, subtitle_ctx, bands_data, lbl_c
                 for l_f, c_h in zip(labels_full, cols_hex)
             ])
             st.markdown(
-                f"<div style='display:flex; flex-wrap:wrap; justify-content:center; gap:14px; padding:7px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:11px; font-weight:700; color:#475569;'>{leg_items}</div>",
+                f"<div style='display:flex; flex-wrap:wrap; justify-content:center; gap:14px; padding:7px 10px; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:8px; font-size:11px; font-weight:700; color:#cbd5e1;'>{leg_items}</div>",
                 unsafe_allow_html=True
             )
 
     with col_bar:
         with st.container(border=True):
             lbl_b_title = tr("Confronto Diretto vs Baseline di Riferimento", "Direct Comparison vs Reference Baseline")
-            st.markdown(f"<div style='font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px;'>{lbl_b_title}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:12px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px;'>{lbl_b_title}</div>", unsafe_allow_html=True)
             fig_b = go.Figure(data=[
                 go.Bar(
                     name=lbl_cur, x=labels_short, y=vals_c,
                     marker_color=cols_hex,
                     text=[f"{v:.0f}{unit_suffix}" for v in vals_c],
                     textposition='outside', cliponaxis=False,
-                    textfont=dict(size=12, weight='bold', color='#0f172a')
+                    textfont=dict(size=12, weight='bold', color='#ffffff')
                 ),
                 go.Bar(
                     name=lbl_ref, x=labels_short, y=vals_r,
-                    marker_color='#cbd5e1',
+                    marker_color='#475569',
                     text=[f"{v:.0f}{unit_suffix}" for v in vals_r],
                     textposition='outside', cliponaxis=False,
-                    textfont=dict(size=11, color='#64748b')
+                    textfont=dict(size=11, color='#94a3b8')
                 )
             ])
             max_y_b = max(max(vals_c + vals_r, default=10.0) * 1.25, 10.0)
@@ -1610,14 +1610,14 @@ def render_executive_bands_section(title_banner, subtitle_ctx, bands_data, lbl_c
                 height=290, barmode='group',
                 margin=dict(l=15, r=15, t=20, b=10),
                 showlegend=False,
-                yaxis=dict(range=[0, max_y_b], showgrid=True, gridcolor='#f1f5f9', zeroline=False),
+                yaxis=dict(range=[0, max_y_b], showgrid=True, gridcolor='rgba(56, 189, 248, 0.12)', zeroline=False),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
             st.plotly_chart(fig_b, use_container_width=True, key=f"{chart_key_prefix}_bar")
             st.markdown(
-                "<div style='display:flex; justify-content:center; gap:18px; padding:7px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:11px; font-weight:700; color:#475569;'>"
+                "<div style='display:flex; justify-content:center; gap:18px; padding:7px 10px; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:8px; font-size:11px; font-weight:700; color:#cbd5e1;'>"
                 f"<div style='display:flex; align-items:center; gap:6px;'><span style='width:12px; height:10px; border-radius:3px; background:#0ea5e9; display:inline-block;'></span>{lbl_cur}</div>"
-                f"<div style='display:flex; align-items:center; gap:6px;'><span style='width:12px; height:10px; border-radius:3px; background:#cbd5e1; display:inline-block;'></span>{lbl_ref}</div>"
+                f"<div style='display:flex; align-items:center; gap:6px;'><span style='width:12px; height:10px; border-radius:3px; background:#475569; display:inline-block;'></span>{lbl_ref}</div>"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -1858,12 +1858,12 @@ def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
     sub = kwargs.get('subtext', sottotitolo)
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
-        f"<div class='no-print' style='background: white; "
-        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(10, 25, 47, 0.22); "
-        f"border-left: 5px solid {acc}; box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05);'>"
-        f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
-        f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
-        + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")
+        f"<div class='no-print' style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); "
+        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(56, 189, 248, 0.22); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.65), 0 0 16px rgba(14, 165, 233, 0.08);'>"
+        f"<div style='font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
+        f"<div style='font-size: 24px; font-weight: 900; color: #ffffff; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
+        + (f"<div style='font-size: 12px; color: #94a3b8; font-weight: 600;'>{sub}</div>" if sub else "")
         + "</div>"
     )
 
@@ -4394,7 +4394,7 @@ def get_athlete_initials(name):
 
 def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra_info=None):
     """
-    Renders an executive compact athlete strip (Opzione A, ~65px) in MOV3 style.
+    Renders an executive compact athlete strip (Opzione A, ~65px) in MOV3 Dark Cockpit style.
     Features:
     - Glowing avatar monogram with athlete initials
     - Athlete name in prominent bold uppercase (font-size 21px, font-weight 900)
@@ -4411,7 +4411,7 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
     # Tag principale Atleta Attivo
     lbl_attivo = tr("M0V3 ATLETA ATTIVO", "M0V3 ACTIVE ATHLETE")
     badges_html.append(
-        f"<span style='background:rgba(14,165,233,0.12); color:#0284c7; font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; border:1px solid rgba(14,165,233,0.25); text-transform:uppercase; display:inline-flex; align-items:center; gap:4px;'>"
+        f"<span style='background:rgba(14,165,233,0.18); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); text-transform:uppercase; display:inline-flex; align-items:center; gap:5px; box-shadow:0 0 10px rgba(14,165,233,0.15);'>"
         f"<i class='bi bi-person-fill'></i>{lbl_attivo}</span>"
     )
 
@@ -4420,8 +4420,8 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
         n_sess = len(df_atleta)
         lbl_sess_w = tr("sessioni", "sessions")
         badges_html.append(
-            f"<span style='background:#f8fafc; color:#475569; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:4px;'>"
-            f"<i class='bi bi-database' style='color:#0ea5e9;'></i><b>{n_sess}</b> {lbl_sess_w}</span>"
+            f"<span style='background:rgba(8,17,32,0.85); color:#cbd5e1; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.22); display:inline-flex; align-items:center; gap:5px;'>"
+            f"<i class='bi bi-database' style='color:#38bdf8;'></i><b style='color:#ffffff;'>{n_sess}</b> {lbl_sess_w}</span>"
         )
         if 'Date_obj' in df_atleta.columns:
             df_sorted = df_atleta.dropna(subset=['Date_obj']).sort_values('Date_obj', ascending=False)
@@ -4439,8 +4439,8 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
                 lbl_ult = tr("Ultima:", "Latest:")
                 dt_formatted = dt_last.strftime("%d/%m/%Y")
                 badges_html.append(
-                    f"<span style='background:#f8fafc; color:#475569; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:4px;'>"
-                    f"<i class='bi bi-calendar3' style='color:#0ea5e9;'></i>{lbl_ult} <b>{dt_formatted}</b> ({d_txt})</span>"
+                    f"<span style='background:rgba(8,17,32,0.85); color:#cbd5e1; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.22); display:inline-flex; align-items:center; gap:5px;'>"
+                    f"<i class='bi bi-calendar3' style='color:#38bdf8;'></i>{lbl_ult} <b style='color:#ffffff;'>{dt_formatted}</b> ({d_txt})</span>"
                 )
 
     # Badges extra per i filtri secondari affiancati (Stagione, Settimana, Match, ecc.)
@@ -4448,22 +4448,22 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
         for b in extra_badges:
             if b:
                 badges_html.append(
-                    f"<span style='background:rgba(56,189,248,0.08); color:#0369a1; font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3); display:inline-flex; align-items:center; gap:4px;'>"
-                    f"<i class='bi bi-funnel-fill' style='color:#0ea5e9;'></i>{b}</span>"
+                    f"<span style='background:rgba(56,189,248,0.12); color:#38bdf8; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3); display:inline-flex; align-items:center; gap:5px;'>"
+                    f"<i class='bi bi-funnel-fill' style='color:#38bdf8;'></i>{b}</span>"
                 )
 
     all_badges_str = "".join(badges_html)
 
     strip_html = (
-        f"<div class='no-print' style='background: white; "
-        f"border: 1px solid #e2e8f0; border-left: 6px solid #0ea5e9; border-radius: 14px; "
-        f"padding: 12px 20px; margin-top: 8px; margin-bottom: 20px; box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;'>"
+        f"<div class='no-print' style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); "
+        f"border: 1px solid rgba(56, 189, 248, 0.25); border-left: 6px solid #0ea5e9; border-radius: 14px; "
+        f"padding: 12px 20px; margin-top: 8px; margin-bottom: 20px; box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.65), 0 0 18px rgba(14, 165, 233, 0.10); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;'>"
         f"<div style='display:flex; align-items:center; gap:14px;'>"
         f"<div style='width:46px; height:46px; border-radius:10px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "
         f"border:2px solid #0ea5e9; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:19px; "
-        f"font-weight:900; box-shadow:0 3px 10px rgba(14,165,233,0.25); flex-shrink:0; letter-spacing:0.5px;'>{initials}</div>"
+        f"font-weight:900; box-shadow:0 0 14px rgba(14,165,233,0.35); flex-shrink:0; letter-spacing:0.5px;'>{initials}</div>"
         f"<div>"
-        f"<div style='font-size:21px; font-weight:900; color:#0f172a; letter-spacing:-0.4px; line-height:1.15; text-transform:uppercase;'>{ath_name}</div>"
+        f"<div style='font-size:21px; font-weight:900; color:#ffffff; letter-spacing:-0.4px; line-height:1.15; text-transform:uppercase;'>{ath_name}</div>"
         f"</div>"
         f"</div>"
         f"<div style='display:flex; align-items:center; gap:8px; flex-wrap:wrap;'>"
@@ -4476,7 +4476,7 @@ def render_athlete_hero_strip(ath_name, df_atleta=None, extra_badges=None, extra
 
 def render_dual_athlete_strip(ath1, ath2, session_type=None, week=None, extra_badges=None):
     """
-    Renders an executive dual-athlete comparison strip (Testa a Testa).
+    Renders an executive dual-athlete comparison strip (Testa a Testa) in Dark Cockpit style.
     - Ath1 (Focus): Cyan accent #0ea5e9
     - Ath2 (Benchmark): Amber/orange accent #f59e0b
     - Central VS divider
@@ -4489,21 +4489,21 @@ def render_dual_athlete_strip(ath1, ath2, session_type=None, week=None, extra_ba
     if session_type:
         lbl_tip = tr('Tipologia:', 'Type:')
         tags.append(
-            f"<span style='background:#f8fafc; color:#334155; font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:4px;'>"
-            f"<i class='bi bi-tag-fill' style='color:#0ea5e9;'></i>{lbl_tip} <b>{session_type}</b></span>"
+            f"<span style='background:rgba(8,17,32,0.85); color:#cbd5e1; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.22); display:inline-flex; align-items:center; gap:5px;'>"
+            f"<i class='bi bi-tag-fill' style='color:#38bdf8;'></i>{lbl_tip} <b style='color:#ffffff;'>{session_type}</b></span>"
         )
     if week:
         lbl_sett = tr('Settimana:', 'Week:')
         tags.append(
-            f"<span style='background:#f8fafc; color:#334155; font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:4px;'>"
-            f"<i class='bi bi-calendar-week' style='color:#0ea5e9;'></i>{lbl_sett} <b>{week}</b></span>"
+            f"<span style='background:rgba(8,17,32,0.85); color:#cbd5e1; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.22); display:inline-flex; align-items:center; gap:5px;'>"
+            f"<i class='bi bi-calendar-week' style='color:#38bdf8;'></i>{lbl_sett} <b style='color:#ffffff;'>{week}</b></span>"
         )
     if extra_badges:
         for b in extra_badges:
             if b:
                 tags.append(
-                    f"<span style='background:rgba(56,189,248,0.08); color:#0369a1; font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3); display:inline-flex; align-items:center; gap:4px;'>"
-                    f"<i class='bi bi-funnel-fill' style='color:#0ea5e9;'></i>{b}</span>"
+                    f"<span style='background:rgba(56,189,248,0.12); color:#38bdf8; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3); display:inline-flex; align-items:center; gap:5px;'>"
+                    f"<i class='bi bi-funnel-fill' style='color:#38bdf8;'></i>{b}</span>"
                 )
     tags_html = "".join(tags)
 
@@ -4511,27 +4511,27 @@ def render_dual_athlete_strip(ath1, ath2, session_type=None, week=None, extra_ba
     lbl_bench = tr("RIFERIMENTO BENCHMARK 100%", "100% BENCHMARK")
 
     dual_html = (
-        f"<div class='no-print' style='background: white; "
-        f"border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 20px; margin-top: 8px; margin-bottom: 20px; "
-        f"box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;'>"
+        f"<div class='no-print' style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); "
+        f"border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px 20px; margin-top: 8px; margin-bottom: 20px; "
+        f"box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.65), 0 0 18px rgba(14, 165, 233, 0.10); font-family:\"Inter\", sans-serif; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;'>"
         f"<div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap;'>"
         f"<div style='display:flex; align-items:center; gap:10px;'>"
         f"<div style='width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); "
         f"border:2px solid #0ea5e9; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:18px; "
-        f"font-weight:900; box-shadow:0 3px 8px rgba(14,165,233,0.25); flex-shrink:0;'>{init1}</div>"
+        f"font-weight:900; box-shadow:0 0 12px rgba(14,165,233,0.35); flex-shrink:0;'>{init1}</div>"
         f"<div>"
-        f"<div style='font-size:18px; font-weight:900; color:#0f172a; text-transform:uppercase;'>{ath1}</div>"
-        f"<span style='background:rgba(14,165,233,0.12); color:#0284c7; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;'>{lbl_focus}</span>"
+        f"<div style='font-size:18px; font-weight:900; color:#ffffff; text-transform:uppercase;'>{ath1}</div>"
+        f"<span style='background:rgba(14,165,233,0.18); color:#38bdf8; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1px solid rgba(56,189,248,0.3);'>{lbl_focus}</span>"
         f"</div>"
         f"</div>"
-        f"<div style='background:#f1f5f9; color:#64748b; font-size:12px; font-weight:900; padding:4px 10px; border-radius:999px; border:1px solid #cbd5e1;'>VS</div>"
+        f"<div style='background:rgba(14,165,233,0.18); color:#38bdf8; font-size:12px; font-weight:900; padding:4px 10px; border-radius:8px; border:1px solid rgba(56,189,248,0.35); letter-spacing:1px;'>VS</div>"
         f"<div style='display:flex; align-items:center; gap:10px;'>"
         f"<div style='width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg, #1c1917 0%, #292524 100%); "
         f"border:2px solid #f59e0b; display:flex; align-items:center; justify-content:center; color:#fbbf24; font-size:18px; "
-        f"font-weight:900; box-shadow:0 3px 8px rgba(245,158,11,0.25); flex-shrink:0;'>{init2}</div>"
+        f"font-weight:900; box-shadow:0 0 12px rgba(245,158,11,0.35); flex-shrink:0;'>{init2}</div>"
         f"<div>"
-        f"<div style='font-size:18px; font-weight:900; color:#0f172a; text-transform:uppercase;'>{ath2}</div>"
-        f"<span style='background:rgba(245,158,11,0.12); color:#b45309; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;'>{lbl_bench}</span>"
+        f"<div style='font-size:18px; font-weight:900; color:#ffffff; text-transform:uppercase;'>{ath2}</div>"
+        f"<span style='background:rgba(245,158,11,0.18); color:#fbbf24; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1px solid rgba(245,158,11,0.35);'>{lbl_bench}</span>"
         f"</div>"
         f"</div>"
         f"</div>"

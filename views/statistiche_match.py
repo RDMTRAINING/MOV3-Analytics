@@ -679,11 +679,11 @@ def render_statistiche_match(t):
                     yaxis=dict(
                         title=y_axis_title,
                         showgrid=True,
-                        gridcolor="#f1f5f9",
-                        tickfont=dict(family="Inter", size=11)
+                        gridcolor="rgba(56, 189, 248, 0.12)",
+                        tickfont=dict(family="Inter", size=11, color="#cbd5e1")
                     ),
-                    plot_bgcolor="#ffffff",
-                    paper_bgcolor="#ffffff",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     height=360,
                     margin=dict(l=45, r=20, t=20, b=90),
                     showlegend=False
@@ -850,15 +850,15 @@ def render_statistiche_match(t):
 
                     fig_bench.update_layout(
                         barmode='group',
-                        plot_bgcolor="#ffffff",
-                        paper_bgcolor="#ffffff",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        paper_bgcolor="rgba(0,0,0,0)",
                         height=360,
                         margin=dict(l=20, r=20, t=35, b=25),
-                        legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=1, font=dict(size=9.5))
+                        legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=1, font=dict(size=9.5, color="#f8fafc"))
                     )
                     for i in [1, 2]:
-                        fig_bench.update_xaxes(tickfont=dict(size=9.5, family="Inter"), row=i, col=1)
-                        fig_bench.update_yaxes(showgrid=True, gridcolor="#f1f5f9", tickfont=dict(size=9.5), row=i, col=1)
+                        fig_bench.update_xaxes(tickfont=dict(size=9.5, family="Inter", color="#cbd5e1"), row=i, col=1)
+                        fig_bench.update_yaxes(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(size=9.5, color="#94a3b8"), row=i, col=1)
 
                     st.plotly_chart(fig_bench, use_container_width=True)
 
@@ -937,13 +937,14 @@ def render_statistiche_match(t):
                     labels={'tl': tr('Training Load Totale Reale (AU)', 'Real Training Load (AU)'), 'dec': tr('Decelerazioni High IMU', 'High Decelerations IMU'), 'surface': tr('Superficie', 'Surface')}
                 )
                 fig_surf.update_layout(
-                    title=dict(text=f"<b>{tr('Dinamica di Gioco Reale per Superficie (Training Load vs Decelerazioni High IMU)', 'Court Dynamics by Surface (Training Load vs High Decelerations)')}</b>", font=dict(size=13, family="Inter")),
-                    plot_bgcolor="#ffffff",
-                    paper_bgcolor="#ffffff",
+                    title=dict(text=f"<b>{tr('Dinamica di Gioco Reale per Superficie (Training Load vs Decelerazioni High IMU)', 'Court Dynamics by Surface (Training Load vs High Decelerations)')}</b>", font=dict(size=13, family="Inter", color="#ffffff")),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     height=340,
                     margin=dict(l=40, r=20, t=40, b=40),
-                    xaxis=dict(showgrid=True, gridcolor="#f1f5f9"),
-                    yaxis=dict(showgrid=True, gridcolor="#f1f5f9")
+                    xaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                    legend=dict(font=dict(color="#f8fafc"))
                 )
                 st.plotly_chart(fig_surf, use_container_width=True)
 
@@ -1022,13 +1023,13 @@ def render_statistiche_match(t):
                                 hovertemplate="<b>Fascia: %{x}</b><br>Training Load Medio: <b>%{y:.0f} TL</b><extra></extra>"
                             ))
                             fig_rk_bar.update_layout(
-                                title=dict(text=f"<b>{tr('Training Load Medio Reale per Fascia di Ranking Avversario (Tier)', 'Real Mean Training Load by Opponent Ranking Tier')}</b>", font=dict(size=13, family="Inter")),
-                                plot_bgcolor="#ffffff",
-                                paper_bgcolor="#ffffff",
+                                title=dict(text=f"<b>{tr('Training Load Medio Reale per Fascia di Ranking Avversario (Tier)', 'Real Mean Training Load by Opponent Ranking Tier')}</b>", font=dict(size=13, family="Inter", color="#ffffff")),
+                                plot_bgcolor="rgba(0,0,0,0)",
+                                paper_bgcolor="rgba(0,0,0,0)",
                                 height=310,
                                 margin=dict(l=35, r=20, t=40, b=30),
-                                yaxis=dict(showgrid=True, gridcolor="#f1f5f9", title=tr("Training Load Medio (TL)", "Mean Training Load (TL)")),
-                                xaxis=dict(showgrid=False)
+                                yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1"), title=dict(text=tr("Training Load Medio (TL)", "Mean Training Load (TL)"), font=dict(color="#cbd5e1"))),
+                                xaxis=dict(showgrid=False, tickfont=dict(color="#cbd5e1"))
                             )
                             st.plotly_chart(fig_rk_bar, use_container_width=True)
                         else:
@@ -1045,13 +1046,14 @@ def render_statistiche_match(t):
                             labels={'opponent_rank': tr('Ranking Avversario ATP', 'ATP Opponent Rank'), 'tl': tr('Training Load Totale Reale', 'Real Training Load'), 'result': tr('Esito', 'Result')}
                         )
                         fig_rk.update_layout(
-                            title=dict(text=f"<b>{tr('Training Load Reale vs Ranking Avversario', 'Training Load vs Opponent Ranking')}</b>", font=dict(size=13, family="Inter")),
-                            plot_bgcolor="#ffffff",
-                            paper_bgcolor="#ffffff",
+                            title=dict(text=f"<b>{tr('Training Load Reale vs Ranking Avversario', 'Training Load vs Opponent Ranking')}</b>", font=dict(size=13, family="Inter", color="#ffffff")),
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
                             height=310,
                             margin=dict(l=40, r=20, t=40, b=40),
-                            xaxis=dict(showgrid=True, gridcolor="#f1f5f9", autorange="reversed"),
-                            yaxis=dict(showgrid=True, gridcolor="#f1f5f9")
+                            xaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1"), autorange="reversed"),
+                            yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                            legend=dict(font=dict(color="#f8fafc"))
                         )
                         st.plotly_chart(fig_rk, use_container_width=True)
 
@@ -1145,19 +1147,20 @@ def render_statistiche_match(t):
                         fig_srv.update_layout(
                             title=dict(
                                 text=f"<b>{tr('Costo Fisico Vivo del Punto (TL High / pt)', 'Live Physical Cost per Point (TL High / pt)')}</b>",
-                                font=dict(size=13, family="Inter")
+                                font=dict(size=13, family="Inter", color="#ffffff")
                             ),
-                            plot_bgcolor="#ffffff",
-                            paper_bgcolor="#ffffff",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
                             height=310,
                             margin=dict(l=40, r=20, t=50, b=40),
                             yaxis=dict(
                                 showgrid=True,
-                                gridcolor="#f1f5f9",
+                                gridcolor="rgba(56, 189, 248, 0.12)",
                                 range=[0, max_y],
-                                title=tr("Costo Vivo (AU/pt)", "Live Cost (AU/pt)")
+                                title=dict(text=tr("Costo Vivo (AU/pt)", "Live Cost (AU/pt)"), font=dict(color="#cbd5e1")),
+                                tickfont=dict(color="#cbd5e1")
                             ),
-                            xaxis=dict(showgrid=False),
+                            xaxis=dict(showgrid=False, tickfont=dict(color="#cbd5e1")),
                             showlegend=False
                         )
                         st.plotly_chart(fig_srv, use_container_width=True)
@@ -1183,20 +1186,21 @@ def render_statistiche_match(t):
                                 y=y_vals,
                                 mode='lines',
                                 name=tr('Tendenza Lineare', 'Linear Trend'),
-                                line=dict(color='#64748b', dash='dash', width=2),
+                                line=dict(color='#38bdf8', dash='dash', width=2),
                                 hoverinfo='skip'
                             ))
                         fig_ace.update_layout(
                             title=dict(
                                 text=f"<b>{tr('Ace vs Costo Fisico Vivo per Punto', 'Aces vs Live Physical Cost per Point')}</b>",
-                                font=dict(size=13, family="Inter")
+                                font=dict(size=13, family="Inter", color="#ffffff")
                             ),
-                            plot_bgcolor="#ffffff",
-                            paper_bgcolor="#ffffff",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
                             height=310,
                             margin=dict(l=40, r=20, t=50, b=40),
-                            xaxis=dict(showgrid=True, gridcolor="#f1f5f9"),
-                            yaxis=dict(showgrid=True, gridcolor="#f1f5f9")
+                            xaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                            yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                            legend=dict(font=dict(color="#f8fafc"))
                         )
                         st.plotly_chart(fig_ace, use_container_width=True)
 
@@ -1291,13 +1295,14 @@ def render_statistiche_match(t):
                 ])
                 fig_sr.update_layout(
                     barmode='group',
-                    title=dict(text=f"<b>{tr('Confronto Densità Fisico-Prestativa: Servizio vs Risposta', 'Physical Density Benchmark: Serve vs Return')}</b>", font=dict(size=13, family="Inter")),
-                    plot_bgcolor="#ffffff",
-                    paper_bgcolor="#ffffff",
+                    title=dict(text=f"<b>{tr('Confronto Densità Fisico-Prestativa: Servizio vs Risposta', 'Physical Density Benchmark: Serve vs Return')}</b>", font=dict(size=13, family="Inter", color="#ffffff")),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     height=300,
                     margin=dict(l=20, r=20, t=40, b=30),
-                    yaxis=dict(showgrid=True, gridcolor="#f1f5f9"),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                    xaxis=dict(tickfont=dict(color="#cbd5e1")),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.12)", tickfont=dict(color="#cbd5e1")),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#f8fafc"))
                 )
                 st.plotly_chart(fig_sr, use_container_width=True)
 

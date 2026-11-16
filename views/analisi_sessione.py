@@ -248,7 +248,8 @@ def render_analisi_sessione(t):
                         st.markdown(card_kpi("Readiness", val_html_s, sub_s, acc_s), unsafe_allow_html=True)
 
                 st.markdown(
-                    f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px 16px; margin:14px 0 22px 0; color:#0f172a; font-size:15px;'>{frase_riepilogo(r_vol_s, r_int_s, r_den_s, r_acwr_s)}</div>",
+                    f"<div style='background:linear-gradient(135deg, rgba(13,23,42,0.92) 0%, rgba(15,23,42,0.85) 100%); border:1px solid rgba(56,189,248,0.25); border-left:5px solid #0ea5e9; border-radius:10px; padding:13px 18px; margin:14px 0 22px 0; color:#f8fafc; font-size:14.5px; font-weight:600; line-height:1.5; box-shadow:0 4px 14px rgba(0,0,0,0.4);'>"
+                    f"<i class='bi bi-info-circle-fill' style='color:#38bdf8; margin-right:8px;'></i>{frase_riepilogo(r_vol_s, r_int_s, r_den_s, r_acwr_s)}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -314,12 +315,12 @@ def render_analisi_sessione(t):
                         pct_t_v = (val / vt_ref * 100.0) if has_t else 0.0
                         pct_m_v = (val / vm_ref * 100.0) if has_m else 0.0
                         return (
-                            "<tr style='border-bottom: 1px solid #f1f5f9;'>"
+                            "<tr style='border-bottom: 1px solid rgba(56,189,248,0.12); font-size:13px;'>"
                             "<td style='padding: 13px 12px;'>"
-                            f"<div style='font-weight: 700; color: #0f172a; font-size: 14px;'>{label}</div>"
+                            f"<div style='font-weight: 700; color: #ffffff; font-size: 14px;'>{label}</div>"
                             f"<span style='display:inline-block; margin-top:3px; background:{cat_bg}; color:{cat_fg}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px;'>{cat_tag}</span>"
                             "</td>"
-                            f"<td style='padding: 13px 10px; text-align: center; font-weight: 900; font-size: 19px; color: #0f172a;'>{val_s}</td>"
+                            f"<td style='padding: 13px 10px; text-align: center; font-weight: 900; font-size: 19px; color: #ffffff;'>{val_s}</td>"
                             f"<td style='padding: 13px 10px; text-align: center;'>"
                             f"{render_pct_badge_cell(pct_t_v, pt, has_t, lbl_vs_t)}"
                             f"<div style='font-size:10px; color:#94a3b8; margin-top:2px;'>Ref: {vt_s}</div>"
@@ -337,7 +338,7 @@ def render_analisi_sessione(t):
                         pct_t_tot = max(0.0, 100.0 + pt_avg)
                         pct_m_tot = max(0.0, 100.0 + pm_avg)
                         return (
-                            "<tr style='background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;'>"
+                            "<tr style='background-color: rgba(15, 23, 42, 0.75); border-top: 1px solid rgba(56,189,248,0.2); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
                             f"<td colspan='2' style='padding: 14px 12px; font-weight: 800; color: {color}; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid {color};'>{label}</td>"
                             f"<td style='padding: 14px 10px; text-align: center;'>{render_pct_badge_cell(pct_t_tot, pt_avg, True, lbl_vs_t)}</td>"
                             f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_t_tot, color)}</td>"
@@ -348,37 +349,37 @@ def render_analisi_sessione(t):
 
                     lbl_bn_sess = tr("EXECUTIVE SESSION REPORT — CONFRONTO VS MEDIA TIPOLOGIA & MEDIA MATCH", "EXECUTIVE SESSION REPORT — COMPARISON VS SESSION TYPE & MATCH AVG")
                     html_table = (
-                        "<div style='background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom: 22px; font-family: \"Inter\", sans-serif;'>"
+                        "<div style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.22); overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.5); margin-bottom: 22px; font-family: \"Inter\", sans-serif;'>"
                         "<div style='background:#0f172a; border-bottom:2px solid #0ea5e9; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                         f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_bn_sess}</span>"
-                        f"<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{tipologia_corrente} · {data_sessione_str}</span>"
+                        f"<span style='background:rgba(56,189,248,0.15); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);'>{tipologia_corrente} · {data_sessione_str}</span>"
                         "</div>"
                         "<table style='width: 100%; border-collapse: collapse;'>"
-                        "<tr style='background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;'>"
-                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; width:24%;'>{tr('Parametro & Area', 'Parameter & Area')}</th>"
-                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 700; color: #0f172a; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 800; color: #0ea5e9; text-transform: uppercase; width:32%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; width:32%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th>"
+                        "<tr style='background-color: rgba(15, 23, 42, 0.85); border-bottom: 2px solid rgba(56, 189, 248, 0.2);'>"
+                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; width:24%;'>{tr('Parametro & Area', 'Parameter & Area')}</th>"
+                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 700; color: #ffffff; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; width:32%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; width:32%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th>"
                         "</tr>"
                     )
 
-                    html_table += riga_stat_sess(tr("Durata (min)", "Time (min)"), "VOLUME", "#0284c7", "#e0f2fe", c_min, t_min, m_min, 0, pt_min, pm_min)
-                    html_table += riga_stat_sess("Training Load", "VOLUME", "#0284c7", "#e0f2fe", c_tl, t_tl, m_tl, 0, pt_tl, pm_tl)
-                    html_table += riga_stat_sess(tr('Azioni Intense >2"', 'Intense Actions >2"'), "VOLUME", "#0284c7", "#e0f2fe", c_az2, t_az2, m_az2, 0, pt_az2, pm_az2)
-                    html_table += riga_sunto_sess(tr("Sintesi Volume Generale", "Total General Volume Achievement"), avg_vol_t, avg_vol_m, "#0ea5e9")
+                    html_table += riga_stat_sess(tr("Durata (min)", "Time (min)"), "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", c_min, t_min, m_min, 0, pt_min, pm_min)
+                    html_table += riga_stat_sess("Training Load", "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", c_tl, t_tl, m_tl, 0, pt_tl, pm_tl)
+                    html_table += riga_stat_sess(tr('Azioni Intense >2"', 'Intense Actions >2"'), "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", c_az2, t_az2, m_az2, 0, pt_az2, pm_az2)
+                    html_table += riga_sunto_sess(tr("Sintesi Volume Generale", "Total General Volume Achievement"), avg_vol_t, avg_vol_m, "#38bdf8")
                     html_table += "<tr><td colspan='6' style='height: 10px; border:none;'></td></tr>"
 
-                    html_table += riga_stat_sess(tr("Accelerazioni Alta Int.", "High Acc Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2", c_acc, t_acc, m_acc, 0, pt_acc, pm_acc)
-                    html_table += riga_stat_sess(tr("Decelerazioni Alta Int.", "High Dec Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2", c_dec, t_dec, m_dec, 0, pt_dec, pm_dec)
-                    html_table += riga_stat_sess("Training Load High", "HIGH INTENSITY", "#dc2626", "#fee2e2", c_tlh, t_tlh, m_tlh, 0, pt_tlh, pm_tlh)
+                    html_table += riga_stat_sess(tr("Accelerazioni Alta Int.", "High Acc Events"), "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", c_acc, t_acc, m_acc, 0, pt_acc, pm_acc)
+                    html_table += riga_stat_sess(tr("Decelerazioni Alta Int.", "High Dec Events"), "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", c_dec, t_dec, m_dec, 0, pt_dec, pm_dec)
+                    html_table += riga_stat_sess("Training Load High", "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", c_tlh, t_tlh, m_tlh, 0, pt_tlh, pm_tlh)
                     html_table += riga_sunto_sess(tr("Sintesi Volume Alta Intensità", "Total High Intensity Volume Achievement"), avg_int_t, avg_int_m, "#ef4444")
                     html_table += "<tr><td colspan='6' style='height: 10px; border:none;'></td></tr>"
 
-                    html_table += riga_stat_sess("TL / min", "WORK RATE", "#b45309", "#fef3c7", c_tl_pm, t_tl_pm, m_tl_pm, 1, pt_tl_pm, pm_tl_pm)
-                    html_table += riga_stat_sess("High Acc / min", "WORK RATE", "#b45309", "#fef3c7", c_acc_pm, t_acc_pm, m_acc_pm, 1, pt_acc_pm, pm_acc_pm)
-                    html_table += riga_stat_sess("High Dec / min", "WORK RATE", "#b45309", "#fef3c7", c_dec_pm, t_dec_pm, m_dec_pm, 1, pt_dec_pm, pm_dec_pm)
-                    html_table += riga_stat_sess(tr("Azioni Intense / min", "Intense Actions / min"), "WORK RATE", "#b45309", "#fef3c7", c_az2_pm, t_az2_pm, m_az2_pm, 1, pt_az2_pm, pm_az2_pm)
-                    html_table += riga_stat_sess("TL High / min", "WORK RATE", "#b45309", "#fef3c7", c_tlh_pm, t_tlh_pm, m_tlh_pm, 1, pt_tlh_pm, pm_tlh_pm)
+                    html_table += riga_stat_sess("TL / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", c_tl_pm, t_tl_pm, m_tl_pm, 1, pt_tl_pm, pm_tl_pm)
+                    html_table += riga_stat_sess("High Acc / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", c_acc_pm, t_acc_pm, m_acc_pm, 1, pt_acc_pm, pm_acc_pm)
+                    html_table += riga_stat_sess("High Dec / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", c_dec_pm, t_dec_pm, m_dec_pm, 1, pt_dec_pm, pm_dec_pm)
+                    html_table += riga_stat_sess(tr("Azioni Intense / min", "Intense Actions / min"), "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", c_az2_pm, t_az2_pm, m_az2_pm, 1, pt_az2_pm, pm_az2_pm)
+                    html_table += riga_stat_sess("TL High / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", c_tlh_pm, t_tlh_pm, m_tlh_pm, 1, pt_tlh_pm, pm_tlh_pm)
                     html_table += riga_sunto_sess(tr("Sintesi Work Rate", "Total Work Rate Achievement"), avg_den_t, avg_den_m, "#f59e0b")
 
                     html_table += "</table></div>"

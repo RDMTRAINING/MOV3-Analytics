@@ -560,22 +560,25 @@ def render_carico_interno(t):
 
             layout_axes = dict(
                 barmode='stack',
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color="#cbd5e1", family="Inter"),
                 title=dict(
                     text=f"Carico Interno (sRPE) vs {parametro_gps_sel}{' + Wellness Totale' if (mostra_wellness_overlay and 'wellness_totale' in df_merged.columns) else ''} — {atleta_sel}",
-                    font=dict(size=15, color="#0f172a")
+                    font=dict(size=15, color="#ffffff")
                 ),
                 height=430,
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=dict(text="Data"), type='category', tickangle=-45),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#cbd5e1")),
+                xaxis=dict(title=dict(text="Data", font=dict(color="#cbd5e1")), type='category', tickangle=-45, tickfont=dict(color="#94a3b8"), gridcolor="rgba(56,189,248,0.1)"),
                 yaxis=dict(
-                    title=dict(text="Carico Interno (sRPE [TL])", font=dict(color="#0ea5e9")),
-                    tickfont=dict(color="#0ea5e9"),
+                    title=dict(text="Carico Interno (sRPE [TL])", font=dict(color="#38bdf8")),
+                    tickfont=dict(color="#38bdf8"),
                     showgrid=True,
-                    gridcolor="#f1f5f9"
+                    gridcolor="rgba(56,189,248,0.12)"
                 ),
                 yaxis2=dict(
-                    title=dict(text=f"Carico Esterno ({parametro_gps_sel})", font=dict(color="#e11d48")),
-                    tickfont=dict(color="#e11d48"),
+                    title=dict(text=f"Carico Esterno ({parametro_gps_sel})", font=dict(color="#f87171")),
+                    tickfont=dict(color="#f87171"),
                     overlaying="y",
                     side="right",
                     showgrid=False
@@ -584,8 +587,8 @@ def render_carico_interno(t):
 
             if mostra_wellness_overlay and 'wellness_totale' in df_merged.columns:
                 layout_axes['yaxis3'] = dict(
-                    title=dict(text="Wellness (1-10)", font=dict(color="#a855f7")),
-                    tickfont=dict(color="#a855f7"),
+                    title=dict(text="Wellness (1-10)", font=dict(color="#c084fc")),
+                    tickfont=dict(color="#c084fc"),
                     overlaying="y",
                     side="right",
                     anchor="free",
@@ -610,8 +613,12 @@ def render_carico_interno(t):
                         marker=dict(colors=[color_map.get(l, '#94a3b8') for l in df_pie['tipologia']])
                     )])
                     fig_pie.update_layout(
-                        title=dict(text=tr("Distribuzione Carico Interno per Tipologia", "Internal Load Distribution by Type"), font=dict(size=14)),
+                        title=dict(text=tr("Distribuzione Carico Interno per Tipologia", "Internal Load Distribution by Type"), font=dict(size=14, color="#ffffff")),
                         height=280,
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        font=dict(color="#cbd5e1"),
+                        legend=dict(font=dict(color="#cbd5e1")),
                         margin=dict(l=10, r=10, t=35, b=10)
                     )
                     st.plotly_chart(fig_pie, use_container_width=True)
@@ -673,11 +680,14 @@ def render_carico_interno(t):
                 fig_w.add_trace(go.Scatter(x=df_w['data'], y=df_w['doms'], name="DOMS / Dolore Muscolare", mode="lines+markers", line=dict(color="#8b5cf6", width=2)))
 
             fig_w.update_layout(
-                title=dict(text="Trend Parametri Wellness Mattutino (Scala 1-10)", font=dict(size=14)),
+                title=dict(text="Trend Parametri Wellness Mattutino (Scala 1-10)", font=dict(size=14, color="#ffffff")),
                 height=360,
-                yaxis=dict(range=[0.5, 10.5], dtick=1, gridcolor="#f1f5f9"),
-                xaxis=dict(type='category', tickangle=-45),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#cbd5e1", family="Inter"),
+                yaxis=dict(range=[0.5, 10.5], dtick=1, gridcolor="rgba(56,189,248,0.12)", tickfont=dict(color="#94a3b8")),
+                xaxis=dict(type='category', tickangle=-45, tickfont=dict(color="#94a3b8"), gridcolor="rgba(56,189,248,0.08)"),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#cbd5e1"))
             )
             st.plotly_chart(fig_w, use_container_width=True)
 

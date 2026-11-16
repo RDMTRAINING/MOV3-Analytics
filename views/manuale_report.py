@@ -1647,12 +1647,12 @@ def render_manuale_report(t):
 
         # Header Sezione Area
         st.html(
-            f"""<div style="background:#ffffff; border:1px solid #cbd5e1; border-left:6px solid {col_ar}; border-radius:10px; padding:12px 18px; margin-top:24px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(15,23,42,0.03); font-family:'Inter',sans-serif;">
+            f"""<div style="background:linear-gradient(135deg, rgba(13,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%); border:1px solid rgba(56,189,248,0.25); border-left:6px solid {col_ar}; border-radius:10px; padding:12px 18px; margin-top:24px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:'Inter',sans-serif;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="font-size:18px; color:{col_ar};"><i class="bi {ico_ar}"></i></span>
-                    <span style="font-size:15px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.06em;">{ar.upper()}</span>
+                    <span style="font-size:15px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">{ar.upper()}</span>
                 </div>
-                <span style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:800; padding:4px 12px; border-radius:999px; border:1px solid #e2e8f0;">
+                <span style="background:rgba(15,23,42,0.8); color:#94a3b8; font-size:11px; font-weight:800; padding:4px 12px; border-radius:999px; border:1px solid rgba(255,255,255,0.15);">
                     {len(lista_m)} {tr('Moduli', 'Modules')}
                 </span>
             </div>"""
@@ -1665,7 +1665,7 @@ def render_manuale_report(t):
 
             # Pillole per azioni consentite
             azioni_pills_html = "".join([
-                f"<span style='background:#f8fafc; color:#334155; border:1px solid #cbd5e1; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; margin:2px 3px 2px 0;'>"
+                f"<span style='background:rgba(15,23,42,0.7); color:#cbd5e1; border:1px solid rgba(56,189,248,0.2); font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; margin:2px 3px 2px 0;'>"
                 f"<i class='bi bi-check2-circle' style='color:{col_ar};'></i>{az}"
                 f"</span>"
                 for az in mod.get('azioni_consentite', [])
@@ -1675,14 +1675,14 @@ def render_manuale_report(t):
             biblio_items = mod.get('bibliografia', [])
             if biblio_items:
                 biblio_html_list = "".join([
-                    f"<div style='margin-bottom:5px; font-size:11.5px; line-height:1.5; color:#1e293b;'>"
-                    f"<span style='color:#b45309; font-weight:800; margin-right:4px;'>•</span><i>{b}</i>"
+                    f"<div style='margin-bottom:5px; font-size:11.5px; line-height:1.5; color:#cbd5e1;'>"
+                    f"<span style='color:#fbbf24; font-weight:800; margin-right:4px;'>•</span><i>{b}</i>"
                     f"</div>"
                     for b in biblio_items
                 ])
                 biblio_block = f"""
-                <div style="background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:12px;">
-                    <div style="font-size:10.5px; font-weight:900; color:#92400e; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
+                <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:12px;">
+                    <div style="font-size:10.5px; font-weight:900; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
                         <i class="bi bi-book-half" style="margin-right:6px;"></i>{tr('Riferimenti Bibliografici & Validazione Scientifica', 'Bibliographic References & Scientific Validation')}
                     </div>
                     {biblio_html_list}
@@ -1690,23 +1690,23 @@ def render_manuale_report(t):
                 """
             else:
                 biblio_block = f"""
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin-top:10px; font-size:11px; color:#64748b;">
-                    <i class="bi bi-cpu" style="margin-right:5px; color:#0284c7;"></i><b>M0V3 Algorithmic Core:</b> {tr('Elaborazione computazionale proprietaria su standard ISO/IMU.', 'Proprietary computational processing based on ISO/IMU standards.')}
+                <div style="background:rgba(15,23,42,0.6); border:1px solid rgba(56,189,248,0.18); border-radius:8px; padding:8px 12px; margin-top:10px; font-size:11px; color:#94a3b8;">
+                    <i class="bi bi-cpu" style="margin-right:5px; color:#38bdf8;"></i><b style="color:#ffffff;">M0V3 Algorithmic Core:</b> {tr('Elaborazione computazionale proprietaria su standard ISO/IMU.', 'Proprietary computational processing based on ISO/IMU standards.')}
                 </div>
                 """
 
-            card_html = f"""<div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:18px 22px; margin-bottom:16px; box-shadow:0 3px 10px rgba(15,23,42,0.03); font-family:'Inter',sans-serif; transition:all 0.2s ease;">
+            card_html = f"""<div style="background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; padding:18px 22px; margin-bottom:16px; box-shadow:0 4px 14px rgba(0,0,0,0.5); font-family:'Inter',sans-serif; transition:all 0.2s ease;">
                 <!-- HEADER CARD -->
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid rgba(56,189,248,0.15); padding-bottom:10px; flex-wrap:wrap; gap:8px;">
                     <div>
-                        <div style="font-size:16px; font-weight:900; color:#0f172a; letter-spacing:0.02em;">
+                        <div style="font-size:16px; font-weight:900; color:#ffffff; letter-spacing:0.02em;">
                             <span style="color:{col_ar}; margin-right:6px;"># {idx+1}</span> {nome_display}
                         </div>
-                        <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-top:2px;">
-                            <i class="bi bi-tag" style="margin-right:4px;"></i>{tr('Nome Modulo nel Catalogo Admin:', 'Admin Catalog Module Name:')} <span style="color:#0284c7; font-family:monospace; font-size:12px;">{nome_tecnico}</span>
+                        <div style="font-size:11.5px; font-weight:700; color:#94a3b8; margin-top:2px;">
+                            <i class="bi bi-tag" style="margin-right:4px;"></i>{tr('Nome Modulo nel Catalogo Admin:', 'Admin Catalog Module Name:')} <span style="color:#38bdf8; font-family:monospace; font-size:12px;">{nome_tecnico}</span>
                         </div>
                     </div>
-                    <span style="background:rgba(2,132,199,0.08); color:#0369a1; border:1px solid rgba(2,132,199,0.25); font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.05em;">
+                    <span style="background:rgba(2,132,199,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.05em;">
                         {ar}
                     </span>
                 </div>
@@ -1714,28 +1714,28 @@ def render_manuale_report(t):
                 <!-- GRIGLIA CONTENUTI -->
                 <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
                     <!-- COSA ANALIZZA -->
-                    <div style="background:#f8fafc; border-left:4px solid #0284c7; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#0369a1; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    <div style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.2); border-left:4px solid #0ea5e9; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
                             <i class="bi bi-search" style="margin-right:6px;"></i>{tr('COSA ANALIZZA', 'WHAT IT ANALYZES')}
                         </div>
-                        <div style="font-size:13px; color:#1e293b; line-height:1.55; text-align:justify;">
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.55; text-align:justify;">
                             {mod['cosa_analizza']}
                         </div>
                     </div>
 
                     <!-- A COSA SERVE -->
-                    <div style="background:#f0fdf4; border-left:4px solid #10b981; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#15803d; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-left:4px solid #10b981; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#34d399; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
                             <i class="bi bi-bullseye" style="margin-right:6px;"></i>{tr('A COSA SERVE (VALORE PER IL COACH)', 'WHAT IT IS FOR (COACH VALUE)')}
                         </div>
-                        <div style="font-size:13px; color:#1e293b; line-height:1.55; text-align:justify;">
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.55; text-align:justify;">
                             {mod['a_cosa_serve']}
                         </div>
                     </div>
 
                     <!-- AZIONI CONSENTITE -->
-                    <div style="background:#faf5ff; border-left:4px solid #8b5cf6; border-radius:6px; padding:10px 14px;">
-                        <div style="font-size:11px; font-weight:900; color:#6b21a8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
+                    <div style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-left:4px solid #8b5cf6; border-radius:6px; padding:10px 14px;">
+                        <div style="font-size:11px; font-weight:900; color:#c084fc; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">
                             <i class="bi bi-sliders" style="margin-right:6px;"></i>{tr('AZIONI CONSENTITE SULLA PIATTAFORMA', 'PERMITTED PLATFORM ACTIONS')}
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:4px;">

@@ -112,7 +112,7 @@ def render_profilo(t):
         st.markdown(
             card_kpi(
                 tr("Email Account", "Account Email"),
-                f"<div style='font-size:15px; font-weight:800; color:#0f172a; word-break:break-all;'>{email_utente}</div>",
+                f"<div style='font-size:15px; font-weight:800; color:#ffffff; word-break:break-all;'>{email_utente}</div>",
                 f"ID: {uid[:8]}...{uid[-4:]}",
                 "#0ea5e9"
             ),
@@ -122,7 +122,7 @@ def render_profilo(t):
         st.markdown(
             card_kpi(
                 tr("Ruolo di Sistema", "System Role"),
-                f"<span style='font-size:22px; font-weight:900; color:#0f172a;'>{ruolo_utente}</span>",
+                f"<span style='font-size:22px; font-weight:900; color:#ffffff;'>{ruolo_utente}</span>",
                 lbl_atleti_sub,
                 "#10b981"
             ),
@@ -142,7 +142,7 @@ def render_profilo(t):
         st.markdown(
             card_kpi(
                 tr("Sessioni Caricate", "Uploaded Sessions"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{tot_sess_user}</span>",
+                f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{tot_sess_user}</span>",
                 f"{tot_reali} {tr('Reali', 'Real')} · {tot_sim} {tr('Simulate', 'Simulated')}",
                 "#8b5cf6"
             ),
@@ -153,10 +153,10 @@ def render_profilo(t):
 
     # 2. SEZIONE ATLETI ASSEGNATI
     with st.container(border=True):
-        st.markdown(f"#### <i class='bi bi-people-fill'></i> {tr('Atleti Associati al Tuo Profilo', 'Athletes Linked to Your Profile')}", unsafe_allow_html=True)
+        st.markdown(f"#### <i class='bi bi-people-fill' style='color:#38bdf8;'></i> {tr('Atleti Associati al Tuo Profilo', 'Athletes Linked to Your Profile')}", unsafe_allow_html=True)
         if atleti_list:
             pills_html = " ".join([
-                f"<span style='background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; display:inline-block; margin:3px 4px;'>{ath}</span>"
+                f"<span style='background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; display:inline-block; margin:3px 4px;'>{ath}</span>"
                 for ath in atleti_list
             ])
             st.markdown(f"<div style='margin-top:6px;'>{pills_html}</div>", unsafe_allow_html=True)
@@ -169,31 +169,30 @@ def render_profilo(t):
 
     # 3. COLONNA SINISTRA: SICUREZZA & CAMBIO PASSWORD
     with col_left:
-        with st.container(border=True):
-            st.markdown(f"### <i class='bi bi-shield-lock'></i> {t['prof_title']}", unsafe_allow_html=True)
+        with st.form("cambio_password_form", border=True):
+            st.markdown(f"### <i class='bi bi-shield-lock' style='color:#38bdf8;'></i> {t['prof_title']}", unsafe_allow_html=True)
             st.caption(t['prof_info'])
 
-            with st.form("cambio_password_form"):
-                nuova_pw = st.text_input(t['new_pwd'], type="password", help=tr("Minimo 6 caratteri.", "Minimum 6 characters."))
-                conferma_pw = st.text_input(t['conf_pwd'], type="password")
-                
-                submit_pw = st.form_submit_button(t['save_pwd'], type="primary", use_container_width=True)
-                if submit_pw:
-                    if len(nuova_pw) < 6:
-                        st.error(t['err_pwd_len'])
-                    elif nuova_pw != conferma_pw:
-                        st.error(t['err_pwd_match'])
-                    else:
-                        try:
-                            supabase.auth.update_user({"password": nuova_pw})
-                            notify_success(
-                                title=tr("Password Aggiornata", "Password Updated"),
-                                message=t['succ_pwd'],
-                                tipo="toast"
-                            )
-                            st.success(t['succ_pwd'])
-                        except Exception as e:
-                            st.error(f"Errore durante l'aggiornamento password: {e}")
+            nuova_pw = st.text_input(t['new_pwd'], type="password", help=tr("Minimo 6 caratteri.", "Minimum 6 characters."))
+            conferma_pw = st.text_input(t['conf_pwd'], type="password")
+            
+            submit_pw = st.form_submit_button(t['save_pwd'], type="primary", use_container_width=True)
+            if submit_pw:
+                if len(nuova_pw) < 6:
+                    st.error(t['err_pwd_len'])
+                elif nuova_pw != conferma_pw:
+                    st.error(t['err_pwd_match'])
+                else:
+                    try:
+                        supabase.auth.update_user({"password": nuova_pw})
+                        notify_success(
+                            title=tr("Password Aggiornata", "Password Updated"),
+                            message=t['succ_pwd'],
+                            tipo="toast"
+                        )
+                        st.success(t['succ_pwd'])
+                    except Exception as e:
+                        st.error(f"Errore durante l'aggiornamento password: {e}")
 
     # 4. COLONNA DESTRA: PORTABILITÀ DEI DATI (GDPR ART. 20)
     with col_right:

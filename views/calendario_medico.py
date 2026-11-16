@@ -746,14 +746,14 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
 
     # Banner Sintesi Giorno
     st.markdown(
-        f"<div style='background:#ffffff; border:1px solid #cbd5e1; border-left:6px solid {st_day_col}; border-radius:10px; padding:12px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-family:\"Inter\",sans-serif;'>"
+        f"<div style='background:linear-gradient(135deg, rgba(13,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%); border:1px solid rgba(56,189,248,0.25); border-left:6px solid {st_day_col}; border-radius:10px; padding:12px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-family:\"Inter\",sans-serif; box-shadow:0 4px 14px rgba(0,0,0,0.4);'>"
         f"<div>"
-        f"<span style='font-size:16px; font-weight:900; color:#0f172a; margin-right:12px;'>DATA: {giorno_insp}</span>"
-        f"<span style='background:rgba(15,23,42,0.06); color:#0f172a; font-weight:700; font-size:12px; padding:3px 10px; border-radius:6px;'>"
+        f"<span style='font-size:16px; font-weight:900; color:#ffffff; margin-right:12px;'>DATA: {giorno_insp}</span>"
+        f"<span style='background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); font-weight:700; font-size:12px; padding:3px 10px; border-radius:6px;'>"
         f"ATLETA: {atleta_sel}</span>"
         f"</div>"
         f"<div>"
-        f"<span style='display:inline-flex; align-items:center; gap:6px; background:#f8fafc; border:1px solid #cbd5e1; padding:4px 12px; border-radius:999px; font-weight:800; font-size:12px; color:{st_day_col};'>"
+        f"<span style='display:inline-flex; align-items:center; gap:6px; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.15); padding:4px 12px; border-radius:999px; font-weight:800; font-size:12px; color:{st_day_col};'>"
         f"<span style='width:8px; height:8px; border-radius:50%; background:{st_day_col};'></span>{st_day_lbl[0]}</span>"
         f"</div>"
         f"</div>",
@@ -766,14 +766,14 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
     with col_ins1:
         with st.container(border=True):
             st.markdown(
-                f"<div style='font-size:12.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
-                f"<i class='bi bi-lightning-charge' style='color:#0ea5e9; font-size:15px;'></i>Carichi di Lavoro (GPS & sRPE)</div>",
+                f"<div style='font-size:12.5px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
+                f"<i class='bi bi-lightning-charge' style='color:#38bdf8; font-size:15px;'></i>Carichi di Lavoro (GPS & sRPE)</div>",
                 unsafe_allow_html=True
             )
             if day_data.get('gps_presente'):
                 st.markdown(
-                    f"<div style='font-size:12px; color:#334155; margin-bottom:8px; line-height:1.6;'>"
-                    f"<b>GPS Training Load:</b> <span style='color:#0284c7; font-weight:800;'>{day_data.get('training_load_gps', 0):.0f} AU</span><br>"
+                    f"<div style='font-size:12px; color:#cbd5e1; margin-bottom:8px; line-height:1.6;'>"
+                    f"<b>GPS Training Load:</b> <span style='color:#38bdf8; font-weight:800;'>{day_data.get('training_load_gps', 0):.0f} AU</span><br>"
                     f"<b>Minuti Tracciati:</b> {day_data.get('minuti_gps', 0):.0f} min<br>"
                     f"<b>TL High Intensity:</b> {day_data.get('tl_high_gps', 0):.0f} AU<br>"
                     f"<b>Accelerazioni / Decel:</b> {day_data.get('high_accel_imu', 0):.0f} / {day_data.get('high_decel_imu', 0):.0f}<br>"
@@ -781,7 +781,7 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                     unsafe_allow_html=True
                 )
             else:
-                st.markdown(f"<div style='font-size:11.5px; color:#64748b; font-style:italic; margin-bottom:8px;'>{tr('Nessun dato GPS satellitare registrato.', 'No GPS satellite data recorded.')}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:11.5px; color:#94a3b8; font-style:italic; margin-bottom:8px;'>{tr('Nessun dato GPS satellitare registrato.', 'No GPS satellite data recorded.')}</div>", unsafe_allow_html=True)
 
             # Alert Superamento Soglia 70% Training Load in Carico Adattato
             if day_data.get('overload_adattato'):
@@ -794,7 +794,7 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                     f"On this Adapted Load day, Training Load (<b>{tl_val_ov:.0f} AU</b>) exceeded the 70% threshold of the athlete's historical mean (Threshold: <b>{soglia_ov:.0f} AU</b> — Reached <b>{pct_ov:.0f}%</b> of mean)."
                 )
                 st.markdown(
-                    f"<div style='background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #ef4444; border-radius:6px; padding:8px 10px; margin-top:8px; margin-bottom:8px; font-size:11.5px; color:#991b1b; line-height:1.4;'>"
+                    f"<div style='background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-left:4px solid #ef4444; border-radius:6px; padding:8px 10px; margin-top:8px; margin-bottom:8px; font-size:11.5px; color:#fca5a5; line-height:1.4;'>"
                     f"<i class='bi bi-exclamation-triangle-fill' style='margin-right:5px; color:#ef4444;'></i>"
                     f"<b>{att_lbl}</b> {msg_ov}"
                     f"</div>",
@@ -803,17 +803,17 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
 
             if day_data.get('srpe_presente'):
                 lbl_solo_ci = tr("SOLO CARICO INTERNO (NO GPS)", "INTERNAL LOAD ONLY (NO GPS)")
-                tag_no_gps = f"<span style='background:#fee2e2; color:#b91c1c; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;'>{lbl_solo_ci}</span>" if day_data.get('solo_carico_interno') else ""
-                st.markdown(f"<div style='font-size:12px; color:#334155; margin-top:8px; margin-bottom:4px;'><b>{tr('Carico sRPE Totale:', 'Total sRPE Load:')}</b> <span style='color:#c2410c; font-weight:800;'>{day_data.get('srpe_carico', 0):.0f} AU</span> {tag_no_gps}</div>", unsafe_allow_html=True)
+                tag_no_gps = f"<span style='background:rgba(239,68,68,0.2); color:#f87171; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;'>{lbl_solo_ci}</span>" if day_data.get('solo_carico_interno') else ""
+                st.markdown(f"<div style='font-size:12px; color:#cbd5e1; margin-top:8px; margin-bottom:4px;'><b>{tr('Carico sRPE Totale:', 'Total sRPE Load:')}</b> <span style='color:#f97316; font-weight:800;'>{day_data.get('srpe_carico', 0):.0f} AU</span> {tag_no_gps}</div>", unsafe_allow_html=True)
                 for slot in day_data.get('srpe_slots', []):
-                    st.markdown(f"<div style='font-size:11.5px; color:#475569; margin-left:6px; margin-bottom:2px;'>• <b>Slot {slot['slot']}</b> ({slot['tipo']}): {slot['minuti']:.0f}m @ RPE {slot['rpe']:.0f} (<span style='color:#c2410c; font-weight:700;'>{slot['carico']:.0f} AU</span>)</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size:11.5px; color:#94a3b8; margin-left:6px; margin-bottom:2px;'>• <b>Slot {slot['slot']}</b> ({slot['tipo']}): {slot['minuti']:.0f}m @ RPE {slot['rpe']:.0f} (<span style='color:#f97316; font-weight:700;'>{slot['carico']:.0f} AU</span>)</div>", unsafe_allow_html=True)
 
                 # Ponte verso Generatore Dati per stimare carico GPS mancante
                 if day_data.get('solo_carico_interno'):
                     btn_bridge_txt = tr("Stima Carico GPS nel Generatore", "Estimate GPS Load in Generator")
                     st.markdown(
-                        f"<div style='margin-top:6px; margin-bottom:4px; font-size:11px; color:#64748b;'>"
-                        f"<i class='bi bi-sliders' style='color:#0284c7; margin-right:4px;'></i>"
+                        f"<div style='margin-top:6px; margin-bottom:4px; font-size:11px; color:#94a3b8;'>"
+                        f"<i class='bi bi-sliders' style='color:#38bdf8; margin-right:4px;'></i>"
                         f"{tr('Sessione priva di tracciamento GPS. Vuoi stimare i dati cinematici?', 'Session lacks GPS tracking. Estimate kinematic metrics in Generator?')}</div>",
                         unsafe_allow_html=True
                     )
@@ -827,20 +827,20 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
 
             if day_data.get('test_count', 0) > 0:
                 lbl_test_sv = tr(f"Test Fisici Svolti ({day_data['test_count']}):", f"Physical Tests Done ({day_data['test_count']}):")
-                st.markdown(f"<div style='margin-top:10px; font-size:12px; color:#0369a1;'><b>{lbl_test_sv}</b><br>" + "<br>".join([f"• {t_n}" for t_n in day_data['test_presenti']]) + "</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-top:10px; font-size:12px; color:#38bdf8;'><b>{lbl_test_sv}</b><br>" + "<br>".join([f"• {t_n}" for t_n in day_data['test_presenti']]) + "</div>", unsafe_allow_html=True)
 
     # Colonna 2: Stato Biologico & Wellness
     with col_ins2:
         with st.container(border=True):
             st.markdown(
-                f"<div style='font-size:12.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
+                f"<div style='font-size:12.5px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
                 f"<i class='bi bi-heart-pulse' style='color:#a855f7; font-size:15px;'></i>{tr('Stato Biologico & Wellness', 'Biological State & Wellness')}</div>",
                 unsafe_allow_html=True
             )
             if day_data.get('wellness_presente') and day_data.get('wellness_dettagli'):
                 w_d = day_data['wellness_dettagli']
                 w_sc = day_data.get('wellness_score', 0)
-                st.markdown(f"<div style='font-size:13px; font-weight:800; color:#0f172a; margin-bottom:10px;'>Readiness Score: <span style='color:#0284c7;'>{w_sc:.1f} / 10</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:13px; font-weight:800; color:#ffffff; margin-bottom:10px;'>Readiness Score: <span style='color:#38bdf8;'>{w_sc:.1f} / 10</span></div>", unsafe_allow_html=True)
                 
                 params = [
                     (tr("Qualità Sonno", "Sleep Quality"), w_d.get('sonno', 0), "#0ea5e9"),
@@ -852,22 +852,22 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                 for p_n, p_v, p_c in params:
                     pct_w = min(max((p_v / 10.0) * 100, 0), 100)
                     st.markdown(
-                        f"<div style='font-size:11px; color:#475569; display:flex; justify-content:space-between; margin-bottom:2px;'>"
+                        f"<div style='font-size:11px; color:#cbd5e1; display:flex; justify-content:space-between; margin-bottom:2px;'>"
                         f"<span>{p_n}</span><b>{p_v:.1f}/10</b></div>"
-                        f"<div style='background:#f1f5f9; height:6px; border-radius:3px; margin-bottom:7px; overflow:hidden;'>"
+                        f"<div style='background:rgba(255,255,255,0.08); height:6px; border-radius:3px; margin-bottom:7px; overflow:hidden;'>"
                         f"<div style='width:{pct_w}%; background:{p_c}; height:100%; border-radius:3px;'></div></div>",
                         unsafe_allow_html=True
                     )
                 if day_data.get('wellness_alerts'):
-                    st.markdown("<div style='margin-top:6px; font-size:11px; font-weight:700; color:#b91c1c;'>" + "<br>".join([f"<i class='bi bi-exclamation-triangle'></i> {a}" for a in day_data['wellness_alerts']]) + "</div>", unsafe_allow_html=True)
+                    st.markdown("<div style='margin-top:6px; font-size:11px; font-weight:700; color:#f87171;'>" + "<br>".join([f"<i class='bi bi-exclamation-triangle'></i> {a}" for a in day_data['wellness_alerts']]) + "</div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div style='font-size:11.5px; color:#64748b; font-style:italic;'>{tr('Nessun questionario wellness compilato in questa data.', 'No wellness survey completed on this date.')}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:11.5px; color:#94a3b8; font-style:italic;'>{tr('Nessun questionario wellness compilato in questa data.', 'No wellness survey completed on this date.')}</div>", unsafe_allow_html=True)
 
     # Colonna 3: Diario Medico, Fisio & Logistica
     with col_ins3:
         with st.container(border=True):
             st.markdown(
-                f"<div style='font-size:12.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
+                f"<div style='font-size:12.5px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px;'>"
                 f"<i class='bi bi-journal-medical' style='color:#e11d48; font-size:15px;'></i>{tr('Diario Clinico & Fisioterapico', 'Clinical & Physio Log')}</div>",
                 unsafe_allow_html=True
             )
@@ -881,12 +881,12 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                     vas_str = f" · VAS {vas}/10" if vas is not None else ""
                     ind_staff = ev.get('indicazioni_staff')
                     note_clin = ev.get('note_cliniche_dettaglio')
-                    ind_html = f"<div style='color:#0f172a; margin-top:4px; font-weight:600;'><b>{tr('Indicazioni Staff:', 'Staff Directions:')}</b> {ind_staff}</div>" if ind_staff else ""
-                    note_html = f"<div style='color:#475569; margin-top:2px;'><b>{tr('Note:', 'Notes:')}</b> {note_clin}</div>" if note_clin else ""
+                    ind_html = f"<div style='color:#38bdf8; margin-top:4px; font-weight:600;'><b>{tr('Indicazioni Staff:', 'Staff Directions:')}</b> {ind_staff}</div>" if ind_staff else ""
+                    note_html = f"<div style='color:#94a3b8; margin-top:2px;'><b>{tr('Note:', 'Notes:')}</b> {note_clin}</div>" if note_clin else ""
                     st.markdown(
-                        f"<div style='background:#f8fafc; border:1px solid #cbd5e1; border-left:4px solid {STATUS_COLORS.get(st_ev, '#334155')}; border-radius:6px; padding:8px 10px; margin-bottom:6px; font-size:11.5px;'>"
-                        f"<b>[{t_ev}]</b> {distr}{vas_str}<br>"
-                        f"<span style='color:#64748b; font-size:11px;'>{ev.get('sottotipo_evento', '')}</span>"
+                        f"<div style='background:rgba(15,23,42,0.65); border:1px solid rgba(56,189,248,0.18); border-left:4px solid {STATUS_COLORS.get(st_ev, '#334155')}; border-radius:6px; padding:8px 10px; margin-bottom:6px; font-size:11.5px; color:#e2e8f0;'>"
+                        f"<b style='color:#ffffff;'>[{t_ev}]</b> {distr}{vas_str}<br>"
+                        f"<span style='color:#94a3b8; font-size:11px;'>{ev.get('sottotipo_evento', '')}</span>"
                         f"{ind_html}"
                         f"{note_html}"
                         f"</div>",
@@ -2379,8 +2379,7 @@ def render_calendario_medico(t):
     lbl_et_1 = tr("Inserimento & Gestione Registro", "Data Entry & Registry")
     lbl_et_2 = tr("Allenamenti GYM e Fisico", "GYM & Fitness Sessions")
     lbl_et_3 = tr("Correlazione Carichi & Clinica (AU)", "Loads & Clinical Correlation (AU)")
-    lbl_et_4 = tr("Master Timeline & Calendario", "Master Timeline & Calendar")
-    all_et_tabs = [lbl_et_1, lbl_et_2, lbl_et_3, lbl_et_4]
+    all_et_tabs = [lbl_et_1, lbl_et_2, lbl_et_3]
 
     user_perms = st.session_state.get('user_permessi_moduli')
     tabs_disponibili_et = []
@@ -2395,7 +2394,7 @@ def render_calendario_medico(t):
                 tabs_disponibili_et.append(lbl_et_1)
             if "Allenamenti GYM e Fisico" in et_perms or any("GYM" in r or "Fisico" in r for r in et_perms):
                 tabs_disponibili_et.append(lbl_et_2)
-            tabs_disponibili_et.extend([lbl_et_3, lbl_et_4])
+            tabs_disponibili_et.append(lbl_et_3)
             if not tabs_disponibili_et:
                 tabs_disponibili_et = list(all_et_tabs)
 
@@ -2684,31 +2683,34 @@ def render_calendario_medico(t):
             for r_item in recs_filtrati:
                 r_id = r_item.get('id')
                 r_st = r_item.get('status_operativo', 'DISPONIBILE')
-                st_color = STATUS_COLORS.get(r_st, '#334155')
+                st_color = STATUS_COLORS.get(r_st, '#38bdf8')
                 d_range = f"{r_item.get('data_inizio')}" if r_item.get('data_inizio') == r_item.get('data_fine') else f"{r_item.get('data_inizio')} -> {r_item.get('data_fine')}"
                 vas_val = f"VAS {r_item.get('scala_dolore_vas')}" if r_item.get('scala_dolore_vas') is not None else "-"
+                tipo_sch = r_item.get('tipo_scheda', 'EVENTO')
+                cat_bg = "rgba(14, 165, 233, 0.18)" if tipo_sch == 'TRATTAMENTO' else ("rgba(239, 68, 68, 0.18)" if tipo_sch == 'INFORTUNIO' else "rgba(245, 158, 11, 0.18)")
+                cat_fg = "#38bdf8" if tipo_sch == 'TRATTAMENTO' else ("#f87171" if tipo_sch == 'INFORTUNIO' else "#fbbf24")
                 
                 rows_reg_html += (
-                    f"<tr style='border-bottom:1px solid #f1f5f9; font-size:12px;'>"
-                    f"<td style='padding:8px 10px; font-weight:700; color:#0f172a;'>{d_range}</td>"
-                    f"<td style='padding:8px 10px;'><span style='background:#f8fafc; border:1px solid #cbd5e1; border-left:3px solid {st_color}; padding:2px 8px; border-radius:4px; font-weight:800; font-size:11px;'>{r_item.get('tipo_scheda')}</span></td>"
-                    f"<td style='padding:8px 10px; font-weight:700;'>{r_item.get('distretto_anatomico', '-')} ({r_item.get('lato', '-')})</td>"
-                    f"<td style='padding:8px 10px; color:#64748b;'>{r_item.get('sottotipo_evento', '-')}</td>"
-                    f"<td style='padding:8px 10px; text-align:center; font-weight:700; color:#be123c;'>{vas_val}</td>"
-                    f"<td style='padding:8px 10px; color:#334155; font-size:11.5px;'>{r_item.get('indicazioni_staff', '-') or '-'}</td>"
+                    f"<tr style='border-bottom:1px solid rgba(56,189,248,0.12); font-size:12px; color:#e2e8f0;'>"
+                    f"<td style='padding:10px 12px; font-weight:700; color:#ffffff;'>{d_range}</td>"
+                    f"<td style='padding:10px 12px;'><span style='background:{cat_bg}; color:{cat_fg}; border:1px solid {cat_fg}44; border-left:3px solid {st_color}; padding:3px 9px; border-radius:5px; font-weight:800; font-size:11px; display:inline-block;'>{tipo_sch}</span></td>"
+                    f"<td style='padding:10px 12px; font-weight:700; color:#ffffff;'>{r_item.get('distretto_anatomico', '-')} ({r_item.get('lato', '-')})</td>"
+                    f"<td style='padding:10px 12px; color:#94a3b8;'>{r_item.get('sottotipo_evento', '-')}</td>"
+                    f"<td style='padding:10px 12px; text-align:center; font-weight:800; color:#f87171;'>{vas_val}</td>"
+                    f"<td style='padding:10px 12px; color:#cbd5e1; font-size:11.5px;'>{r_item.get('indicazioni_staff', '-') or '-'}</td>"
                     f"</tr>"
                 )
 
             st.markdown(
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; overflow-x:auto; margin-bottom:16px;'>"
+                f"<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:10px; overflow-x:auto; margin-bottom:16px; box-shadow:0 4px 14px rgba(0,0,0,0.5);'>"
                 f"<table style='width:100%; border-collapse:collapse; font-family:\"Inter\",sans-serif;'>"
-                f"<thead><tr style='background:#0f172a; color:#f8fafc; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px;'>"
-                f"<th style='padding:8px 10px; text-align:left;'>Periodo</th>"
-                f"<th style='padding:8px 10px; text-align:left;'>Categoria</th>"
-                f"<th style='padding:8px 10px; text-align:left;'>Distretto (Lato)</th>"
-                f"<th style='padding:8px 10px; text-align:left;'>Dettaglio Evento</th>"
-                f"<th style='padding:8px 10px; text-align:center;'>Dolore</th>"
-                f"<th style='padding:8px 10px; text-align:left;'>Indicazioni Staff</th>"
+                f"<thead><tr style='background:rgba(15,23,42,0.9); color:#38bdf8; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                f"<th style='padding:10px 12px; text-align:left;'>Periodo</th>"
+                f"<th style='padding:10px 12px; text-align:left;'>Categoria</th>"
+                f"<th style='padding:10px 12px; text-align:left;'>Distretto (Lato)</th>"
+                f"<th style='padding:10px 12px; text-align:left;'>Dettaglio Evento</th>"
+                f"<th style='padding:10px 12px; text-align:center;'>Dolore</th>"
+                f"<th style='padding:10px 12px; text-align:left;'>Indicazioni Staff</th>"
                 f"</tr></thead><tbody>{rows_reg_html}</tbody></table></div>",
                 unsafe_allow_html=True
             )
@@ -2804,9 +2806,3 @@ def render_calendario_medico(t):
     # =========================================================================
     elif active_et_tab == lbl_et_3:
         render_correlazione_clinica(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="et_corr")
-
-    # =========================================================================
-    # TAB 4: MASTER TIMELINE & CALENDARIO
-    # =========================================================================
-    elif active_et_tab == lbl_et_4:
-        render_master_timeline(t, atleta_sel=atleta_sel, atleta_id_sel=atleta_id_sel, key_prefix="et_mt")

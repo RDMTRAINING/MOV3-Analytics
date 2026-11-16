@@ -152,13 +152,13 @@ def render_metric_row_block(
 
         badge_html = render_delta_badge(delta, val)
         is_current = (idx == len(weeks_data) - 1)
-        col_bg = "#f0f9ff" if is_current else "#ffffff"
-        border_col = "#38bdf8" if is_current else "#e2e8f0"
+        col_bg = "rgba(14, 165, 233, 0.18)" if is_current else "rgba(8, 17, 32, 0.85)"
+        border_col = "rgba(56, 189, 248, 0.45)" if is_current else "rgba(56, 189, 248, 0.18)"
 
         weeks_html += (
             f'<div style="flex:1; min-width:95px; background:{col_bg}; border-left:1px solid {border_col}; padding:8px 6px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">'
-            f'<div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:2px;">{w["col_label"]}</div>'
-            f'<div style="font-size:13.5px; font-weight:900; color:#0f172a; margin-bottom:3px; word-break:keep-all;">{str_val}</div>'
+            f'<div style="font-size:10px; font-weight:800; color:#cbd5e1; text-transform:uppercase; margin-bottom:2px;">{w["col_label"]}</div>'
+            f'<div style="font-size:13.5px; font-weight:900; color:#ffffff; margin-bottom:3px; word-break:keep-all;">{str_val}</div>'
             f'<div>{badge_html}</div>'
             f'</div>'
         )
@@ -177,18 +177,18 @@ def render_metric_row_block(
         plot_hover_texts.append(hover_info)
 
     block_html = (
-        f'<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px -2px rgba(15,23,42,0.06); margin-bottom:6px; font-family:\'Inter\', sans-serif;">'
-        f'<div style="display:flex; flex-direction:row; align-items:stretch; border-bottom:1px solid #e2e8f0; background:#f8fafc;">'
-        f'<div style="width:38px; background:#0f172a; color:#f8fafc; display:flex; align-items:center; justify-content:center; padding:6px 0;">'
+        f'<div style="background:linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-radius:12px; overflow:hidden; box-shadow:0 8px 30px -4px rgba(0,0,0,0.5); margin-bottom:6px; font-family:\'Inter\', sans-serif;">'
+        f'<div style="display:flex; flex-direction:row; align-items:stretch; border-bottom:1px solid rgba(56, 189, 248, 0.18); background:rgba(8, 17, 32, 0.85);">'
+        f'<div style="width:38px; background:#0d1e38; color:#38bdf8; display:flex; align-items:center; justify-content:center; padding:6px 0;">'
         f'<span style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:10.5px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase;">{metric_vertical_title}</span>'
         f'</div>'
-        f'<div style="width:170px; background:#ffffff; padding:12px 14px; display:flex; align-items:center; justify-content:center; text-align:center; border-right:2px solid #e2e8f0;">'
-        f'<div style="font-size:12.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">{metric_box_title}</div>'
+        f'<div style="width:170px; background:rgba(8, 17, 32, 0.85); padding:12px 14px; display:flex; align-items:center; justify-content:center; text-align:center; border-right:1px solid rgba(56, 189, 248, 0.18);">'
+        f'<div style="font-size:12.5px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.04em;">{metric_box_title}</div>'
         f'</div>'
-        f'<div style="width:160px; background:#ffffff; padding:8px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:2px solid #e2e8f0;">'
-        f'<div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Season Average</div>'
-        f'<div style="font-size:19px; font-weight:900; color:#0f172a; line-height:1.1;">{str_season_avg}</div>'
-        f'<div style="font-size:10.5px; font-weight:700; color:#0284c7; margin-top:3px;">(Media 8 sett: {str_avg_8w})</div>'
+        f'<div style="width:160px; background:rgba(8, 17, 32, 0.85); padding:8px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:1px solid rgba(56, 189, 248, 0.18);">'
+        f'<div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Season Average</div>'
+        f'<div style="font-size:19px; font-weight:900; color:#ffffff; line-height:1.1;">{str_season_avg}</div>'
+        f'<div style="font-size:10.5px; font-weight:700; color:#38bdf8; margin-top:3px;">(Media 8 sett: {str_avg_8w})</div>'
         f'</div>'
         f'<div style="flex:1; display:flex; flex-direction:row; overflow-x:auto;">'
         f'{weeks_html}'
@@ -208,12 +208,12 @@ def render_metric_row_block(
         y=plot_y_values,
         marker=dict(
             color=plot_colors,
-            line=dict(color='#0f172a', width=1.5),
+            line=dict(color='#38bdf8', width=1.5),
             opacity=0.92
         ),
         text=plot_text_labels,
         textposition='outside',
-        textfont=dict(size=11, color='#0f172a', family='Inter, sans-serif'),
+        textfont=dict(size=11, color='#ffffff', family='Inter, sans-serif'),
         cliponaxis=False,
         hoverinfo='text',
         hovertext=plot_hover_texts,
@@ -224,11 +224,11 @@ def render_metric_row_block(
         fig.add_hline(
             y=season_avg_val,
             line_dash="dash",
-            line_color="#475569",
+            line_color="#38bdf8",
             line_width=1.5,
             annotation_text=f"Season Avg: {str_season_avg}",
             annotation_position="top left",
-            annotation_font=dict(size=10, color="#475569", family='Inter, sans-serif')
+            annotation_font=dict(size=10, color="#38bdf8", family='Inter, sans-serif')
         )
 
     if avg_8w_val > 0 and abs(avg_8w_val - season_avg_val) > 0.01:
@@ -239,25 +239,25 @@ def render_metric_row_block(
             line_width=1.5,
             annotation_text=f"Media 8 sett: {str_avg_8w}",
             annotation_position="bottom right",
-            annotation_font=dict(size=10, color="#0284c7", family='Inter, sans-serif')
+            annotation_font=dict(size=10, color="#38bdf8", family='Inter, sans-serif')
         )
 
     fig.update_layout(
         height=190,
         margin=dict(l=30, r=20, t=18, b=26),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(248,250,252,0.6)',
+        plot_bgcolor='rgba(0,0,0,0)',
         xaxis=dict(
-            tickfont=dict(size=11, color='#475569', family='Inter, sans-serif'),
+            tickfont=dict(size=11, color='#cbd5e1', family='Inter, sans-serif'),
             showgrid=False,
-            linecolor='#cbd5e1'
+            linecolor='rgba(56, 189, 248, 0.25)'
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='#e2e8f0',
+            gridcolor='rgba(56, 189, 248, 0.12)',
             range=[0, max_y],
-            tickfont=dict(size=9.5, color='#64748b'),
-            zerolinecolor='#cbd5e1'
+            tickfont=dict(size=9.5, color='#94a3b8'),
+            zerolinecolor='rgba(56, 189, 248, 0.25)'
         ),
         showlegend=False
     )
@@ -322,22 +322,22 @@ def render_metric_month_row_block(
                 chart_text = f"{int(round(val)):,}".replace(",", ".")
 
             badge_html = render_delta_badge(delta, val)
-            col_bg = "#ffffff"
-            border_col = "#e2e8f0"
+            col_bg = "rgba(8, 17, 32, 0.85)"
+            border_col = "rgba(56, 189, 248, 0.18)"
             p_color = get_bar_color_by_delta(delta, val)
         else:
-            str_val = "<span style='color:#94a3b8; font-weight:700;'>-</span>"
-            badge_html = "<span style='color:#cbd5e1; font-size:11px; font-weight:700;'>-</span>"
-            col_bg = "#f8fafc"
-            border_col = "#e2e8f0"
+            str_val = "<span style='color:#64748b; font-weight:700;'>-</span>"
+            badge_html = "<span style='color:#64748b; font-size:11px; font-weight:700;'>-</span>"
+            col_bg = "rgba(6, 11, 20, 0.50)"
+            border_col = "rgba(56, 189, 248, 0.10)"
             chart_text = "0"
-            p_color = "#cbd5e1"
+            p_color = "#334155"
             delta = 0.0
 
         months_html += (
             f'<div style="flex:1; min-width:62px; background:{col_bg}; border-left:1px solid {border_col}; padding:8px 4px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">'
-            f'<div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:2px;">{m_lbl}</div>'
-            f'<div style="font-size:12px; font-weight:900; color:#0f172a; margin-bottom:3px; word-break:keep-all;">{str_val}</div>'
+            f'<div style="font-size:10px; font-weight:800; color:#cbd5e1; text-transform:uppercase; margin-bottom:2px;">{m_lbl}</div>'
+            f'<div style="font-size:12px; font-weight:900; color:#ffffff; margin-bottom:3px; word-break:keep-all;">{str_val}</div>'
             f'<div>{badge_html}</div>'
             f'</div>'
         )
@@ -361,18 +361,18 @@ def render_metric_month_row_block(
     sub_avg_lbl = f"(Media su {n_active_months} mesi attivi)"
 
     block_html = (
-        f'<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px -2px rgba(15,23,42,0.06); margin-bottom:6px; font-family:\'Inter\', sans-serif;">'
-        f'<div style="display:flex; flex-direction:row; align-items:stretch; border-bottom:1px solid #e2e8f0; background:#f8fafc;">'
-        f'<div style="width:38px; background:#0f172a; color:#f8fafc; display:flex; align-items:center; justify-content:center; padding:6px 0;">'
+        f'<div style="background:linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-radius:12px; overflow:hidden; box-shadow:0 8px 30px -4px rgba(0,0,0,0.5); margin-bottom:6px; font-family:\'Inter\', sans-serif;">'
+        f'<div style="display:flex; flex-direction:row; align-items:stretch; border-bottom:1px solid rgba(56, 189, 248, 0.18); background:rgba(8, 17, 32, 0.85);">'
+        f'<div style="width:38px; background:#0d1e38; color:#38bdf8; display:flex; align-items:center; justify-content:center; padding:6px 0;">'
         f'<span style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:10.5px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase;">{metric_vertical_title}</span>'
         f'</div>'
-        f'<div style="width:165px; background:#ffffff; padding:12px 14px; display:flex; align-items:center; justify-content:center; text-align:center; border-right:2px solid #e2e8f0;">'
-        f'<div style="font-size:12px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">{metric_box_title}</div>'
+        f'<div style="width:165px; background:rgba(8, 17, 32, 0.85); padding:12px 14px; display:flex; align-items:center; justify-content:center; text-align:center; border-right:1px solid rgba(56, 189, 248, 0.18);">'
+        f'<div style="font-size:12px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.04em;">{metric_box_title}</div>'
         f'</div>'
-        f'<div style="width:160px; background:#ffffff; padding:8px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:2px solid #e2e8f0;">'
-        f'<div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Season Average</div>'
-        f'<div style="font-size:18px; font-weight:900; color:#0f172a; line-height:1.1;">{str_season_avg}</div>'
-        f'<div style="font-size:10px; font-weight:700; color:#0284c7; margin-top:3px;">{sub_avg_lbl}</div>'
+        f'<div style="width:160px; background:rgba(8, 17, 32, 0.85); padding:8px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:1px solid rgba(56, 189, 248, 0.18);">'
+        f'<div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Season Average</div>'
+        f'<div style="font-size:18px; font-weight:900; color:#ffffff; line-height:1.1;">{str_season_avg}</div>'
+        f'<div style="font-size:10px; font-weight:700; color:#38bdf8; margin-top:3px;">{sub_avg_lbl}</div>'
         f'</div>'
         f'<div style="flex:1; display:flex; flex-direction:row; overflow-x:auto;">'
         f'{months_html}'
@@ -392,12 +392,12 @@ def render_metric_month_row_block(
         y=plot_y_values,
         marker=dict(
             color=plot_colors,
-            line=dict(color='#0f172a', width=1.5),
+            line=dict(color='#38bdf8', width=1.5),
             opacity=0.92
         ),
         text=plot_text_labels,
         textposition='outside',
-        textfont=dict(size=10.5, color='#0f172a', family='Inter, sans-serif'),
+        textfont=dict(size=10.5, color='#ffffff', family='Inter, sans-serif'),
         cliponaxis=False,
         hoverinfo='text',
         hovertext=plot_hover_texts,
@@ -408,29 +408,29 @@ def render_metric_month_row_block(
         fig.add_hline(
             y=season_avg_val,
             line_dash="dash",
-            line_color="#475569",
+            line_color="#38bdf8",
             line_width=1.5,
             annotation_text=f"Media Stagionale: {str_season_avg}",
             annotation_position="top left",
-            annotation_font=dict(size=10, color="#475569", family='Inter, sans-serif')
+            annotation_font=dict(size=10, color="#38bdf8", family='Inter, sans-serif')
         )
 
     fig.update_layout(
         height=190,
         margin=dict(l=30, r=20, t=18, b=26),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(248,250,252,0.6)',
+        plot_bgcolor='rgba(0,0,0,0)',
         xaxis=dict(
-            tickfont=dict(size=11, color='#475569', family='Inter, sans-serif'),
+            tickfont=dict(size=11, color='#cbd5e1', family='Inter, sans-serif'),
             showgrid=False,
-            linecolor='#cbd5e1'
+            linecolor='rgba(56, 189, 248, 0.25)'
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='#e2e8f0',
+            gridcolor='rgba(56, 189, 248, 0.12)',
             range=[0, max_y],
-            tickfont=dict(size=9.5, color='#64748b'),
-            zerolinecolor='#cbd5e1'
+            tickfont=dict(size=9.5, color='#94a3b8'),
+            zerolinecolor='rgba(56, 189, 248, 0.25)'
         ),
         showlegend=False
     )
@@ -494,13 +494,13 @@ def get_seasonal_tournament_axis_data(weeks_list, week_start_key='week_start', c
 def render_surface_legend_banner():
     st.markdown(
         """
-        <div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 14px; margin-top:8px; margin-bottom:12px; font-size:11px; font-weight:700; color:#475569;'>
-            <span style='color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;'><i class='bi bi-trophy-fill' style='color:#f59e0b; margin-right:4px;'></i>SUPERFICI TORNEI:</span>
+        <div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.22); border-radius:8px; padding:7px 14px; margin-top:8px; margin-bottom:12px; font-size:11px; font-weight:700; color:#cbd5e1;'>
+            <span style='color:#ffffff; text-transform:uppercase; letter-spacing:0.5px;'><i class='bi bi-trophy-fill' style='color:#f59e0b; margin-right:4px;'></i>SUPERFICI TORNEI:</span>
             <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#ea580c; border-radius:2px; display:inline-block;'></span>Terra Rossa (Clay)</span>
             <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#059669; border-radius:2px; display:inline-block;'></span>Erba (Grass)</span>
             <span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:10px; height:10px; background:#0284c7; border-radius:2px; display:inline-block;'></span>Cemento (Hard)</span>
-            <span style='color:#cbd5e1;'>|</span>
-            <span style='color:#64748b;'>Tipologia: <b>[S]</b> Singolare · <b>[D]</b> Doppio · <b>[S+D]</b> Entrambi</span>
+            <span style='color:rgba(56,189,248,0.3);'>|</span>
+            <span style='color:#94a3b8;'>Tipologia: <b>[S]</b> Singolare · <b>[D]</b> Doppio · <b>[S+D]</b> Entrambi</span>
         </div>
         """,
         unsafe_allow_html=True
@@ -532,14 +532,14 @@ def render_spline_metric_chart(
     Se presente tournaments_highlights, evidenzia con bande e orientamento verticale i tornei giocati.
     """
     header_html = (
-        f'<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px 12px 0 0; padding:12px 18px; margin-top:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:\'Inter\', sans-serif;">'
+        f'<div style="background:linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border:1px solid rgba(56, 189, 248, 0.22); border-radius:12px 12px 0 0; padding:12px 18px; margin-top:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:\'Inter\', sans-serif;">'
         f'<div>'
-        f'<span style="font-size:13.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">{title}</span>'
-        f'<span style="font-size:11.5px; font-weight:600; color:#64748b; margin-left:8px;">{subtitle}</span>'
+        f'<span style="font-size:13.5px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.04em;">{title}</span>'
+        f'<span style="font-size:11.5px; font-weight:600; color:#94a3b8; margin-left:8px;">{subtitle}</span>'
         f'</div>'
         f'<div style="display:flex; gap:10px; align-items:center;">'
-        f'<span style="background:#f1f5f9; color:#334155; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px;">Media: <b style="color:#0f172a;">{season_avg_str}</b></span>'
-        f'<span style="background:#fef3c7; color:#b45309; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px;">Picco: <b style="color:#92400e;">{peak_val_str}</b></span>'
+        f'<span style="background:rgba(14, 165, 233, 0.15); border:1px solid rgba(56, 189, 248, 0.3); color:#38bdf8; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px;">Media: <b style="color:#ffffff;">{season_avg_str}</b></span>'
+        f'<span style="background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.3); color:#f59e0b; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:6px;">Picco: <b style="color:#fcd34d;">{peak_val_str}</b></span>'
         f'</div>'
         f'</div>'
     )
@@ -579,7 +579,7 @@ def render_spline_metric_chart(
         fillcolor=fill_color,
         text=text_labels,
         textposition='top center',
-        textfont=dict(size=10.5, color='#0f172a', family='Inter, sans-serif'),
+        textfont=dict(size=10.5, color='#ffffff', family='Inter, sans-serif'),
         cliponaxis=False,
         hoverinfo='text',
         hovertext=hover_texts
@@ -590,11 +590,11 @@ def render_spline_metric_chart(
         fig.add_hline(
             y=season_avg_val,
             line_dash="dash",
-            line_color="#64748b",
+            line_color="#38bdf8",
             line_width=1.5,
             annotation_text=f"Media Stagione: {season_avg_str}",
             annotation_position="bottom right",
-            annotation_font=dict(size=10, color="#64748b", family='Inter, sans-serif')
+            annotation_font=dict(size=10, color="#38bdf8", family='Inter, sans-serif')
         )
 
     has_tournaments = bool(tournaments_highlights)
@@ -602,19 +602,19 @@ def render_spline_metric_chart(
         height=420 if has_tournaments else 260,
         margin=dict(l=35, r=25, t=25, b=130 if has_tournaments else 30),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(248,250,252,0.6)',
+        plot_bgcolor='rgba(0,0,0,0)',
         xaxis=dict(
-            tickfont=dict(size=9.5, color='#334155', family='Inter, sans-serif'),
+            tickfont=dict(size=9.5, color='#cbd5e1', family='Inter, sans-serif'),
             showgrid=False,
-            linecolor='#cbd5e1',
+            linecolor='rgba(56, 189, 248, 0.25)',
             tickangle=-90 if has_tournaments else 0
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='#f1f5f9',
+            gridcolor='rgba(56, 189, 248, 0.12)',
             range=[0, max_y],
-            tickfont=dict(size=9.5, color='#64748b'),
-            zerolinecolor='#cbd5e1'
+            tickfont=dict(size=9.5, color='#94a3b8'),
+            zerolinecolor='rgba(56, 189, 248, 0.25)'
         ),
         showlegend=False
     )
@@ -810,20 +810,20 @@ def render_acwr_risk_chart(
         height=490 if has_tourn_acwr else 380,
         margin=dict(l=35, r=25, t=30, b=130 if has_tourn_acwr else 40),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(248,250,252,0.6)',
+        plot_bgcolor='rgba(0,0,0,0)',
         xaxis=dict(
-            tickfont=dict(size=9.5 if is_daily else 9.5, color='#334155', family='Inter, sans-serif'),
+            tickfont=dict(size=9.5 if is_daily else 9.5, color='#cbd5e1', family='Inter, sans-serif'),
             showgrid=False,
-            linecolor='#cbd5e1',
+            linecolor='rgba(56, 189, 248, 0.25)',
             tickangle=-90 if has_tourn_acwr else 0,
             nticks=20 if is_daily else None
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='#f1f5f9',
+            gridcolor='rgba(56, 189, 248, 0.12)',
             range=[0, max_y],
-            tickfont=dict(size=9.5, color='#64748b'),
-            zerolinecolor='#cbd5e1',
+            tickfont=dict(size=9.5, color='#94a3b8'),
+            zerolinecolor='rgba(56, 189, 248, 0.25)',
             ticksuffix="%"
         ),
         legend=dict(
@@ -832,7 +832,7 @@ def render_acwr_risk_chart(
             y=1.02,
             xanchor="right",
             x=1,
-            font=dict(size=11, color="#334155")
+            font=dict(size=11, color="#f8fafc")
         )
     )
 
@@ -937,7 +937,7 @@ def render_trend_stagionale(t):
         st.markdown(
             card_kpi(
                 tr("Stagione Sportiva", "Sports Season"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{stagione_sel}</span>",
+                f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{stagione_sel}</span>",
                 f"{giocatore_selezionato}",
                 "#0ea5e9"
             ),
@@ -947,7 +947,7 @@ def render_trend_stagionale(t):
         st.markdown(
             card_kpi(
                 tr("Sessioni Svolte", "Completed Sessions"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{tot_sess_stagione}</span>",
+                f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{tot_sess_stagione}</span>",
                 f"{tot_reali_stagione} {tr('Reali', 'Real')} · {n_settimane_attive_stagione} {tr('Settimane attive', 'Active weeks')}",
                 "#10b981"
             ),
@@ -958,7 +958,7 @@ def render_trend_stagionale(t):
         st.markdown(
             card_kpi(
                 tr("Volume Orario Stagione", "Total Season Hours"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{ore_tot:.1f} h</span>",
+                f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{ore_tot:.1f} h</span>",
                 f"{tot_min_stagione:,.0f} {tr('minuti complessivi', 'total minutes')}",
                 "#8b5cf6"
             ),
@@ -969,7 +969,7 @@ def render_trend_stagionale(t):
         st.markdown(
             card_kpi(
                 tr("Training Load Totale", "Total Season Load"),
-                f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{tot_tl_stagione:,.0f}</span>",
+                f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{tot_tl_stagione:,.0f}</span>",
                 f"{tr('Media settimanale', 'Weekly avg')}: {media_sett_tl:,.0f} TL",
                 "#f59e0b"
             ),
@@ -2026,7 +2026,7 @@ def render_trend_stagionale(t):
                 st.markdown(
                     card_kpi(
                         tr("Superficie Principale", "Primary Surface"),
-                        f"<span style='font-size:22px; font-weight:900; color:#0f172a;'>{top_surf[0].upper()}</span>",
+                        f"<span style='font-size:22px; font-weight:900; color:#ffffff;'>{top_surf[0].upper()}</span>",
                         f"{top_surf_pct:.1f}% del tempo totale ({int(top_surf[1]//60)}h {int(top_surf[1]%60):02d}m)",
                         "#f59e0b"
                     ),
@@ -2036,7 +2036,7 @@ def render_trend_stagionale(t):
                 st.markdown(
                     card_kpi(
                         tr("Tipologia Più Frequente", "Most Frequent Session"),
-                        f"<span style='font-size:22px; font-weight:900; color:#0f172a;'>{top_tipo[0].upper()}</span>",
+                        f"<span style='font-size:22px; font-weight:900; color:#ffffff;'>{top_tipo[0].upper()}</span>",
                         f"{top_tipo_pct:.1f}% del lavoro totale ({int(top_tipo[1]//60)}h {int(top_tipo[1]%60):02d}m)",
                         "#0284c7"
                     ),
@@ -2046,7 +2046,7 @@ def render_trend_stagionale(t):
                 st.markdown(
                     card_kpi(
                         tr("Tempo Sparring Totale", "Total Sparring Time"),
-                        f"<span style='font-size:22px; font-weight:900; color:#0f172a;'>{str_sp_tot}</span>",
+                        f"<span style='font-size:22px; font-weight:900; color:#ffffff;'>{str_sp_tot}</span>",
                         f"{int(round(tot_season_sparring_min))} minuti cumulati nell'anno",
                         "#8b5cf6"
                     ),
@@ -2551,7 +2551,7 @@ def render_trend_stagionale(t):
                 st.markdown(
                     card_kpi(
                         tr("Media Stagione (TL High)", "Season Mean (TL High)"),
-                        f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{avg_mono:.2f}</span>",
+                        f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{avg_mono:.2f}</span>",
                         f"{tr('Su', 'Across')} {len(valid_mono)} {tr('settimane con carico', 'active weeks')}",
                         "#0ea5e9"
                     ),
@@ -2742,28 +2742,31 @@ def render_trend_stagionale(t):
             fig_mono.update_layout(
                 margin=dict(l=40, r=40, t=25, b=130 if highlights_mono else 40),
                 height=490 if highlights_mono else 420,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
                 xaxis=dict(
-                    title=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"),
+                    title=dict(text=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"), font=dict(color="#cbd5e1")),
                     tickangle=-90 if highlights_mono else -45,
-                    gridcolor="#f1f5f9",
-                    linecolor="#cbd5e1",
-                    tickfont=dict(size=9.5 if highlights_mono else 11, color="#475569")
+                    gridcolor="rgba(56, 189, 248, 0.12)",
+                    linecolor="rgba(56, 189, 248, 0.25)",
+                    tickfont=dict(size=9.5 if highlights_mono else 11, color="#cbd5e1")
                 ),
                 yaxis=dict(
-                    title=tr("Indice di Monotonia (μ / σ)", "Monotony Index (μ / σ)"),
+                    title=dict(text=tr("Indice di Monotonia (μ / σ)", "Monotony Index (μ / σ)"), font=dict(color="#cbd5e1")),
                     range=[0, max_y_val],
-                    gridcolor="#f1f5f9",
-                    linecolor="#cbd5e1",
-                    tickfont=dict(size=11, color="#475569")
+                    gridcolor="rgba(56, 189, 248, 0.12)",
+                    linecolor="rgba(56, 189, 248, 0.25)",
+                    tickfont=dict(size=11, color="#cbd5e1")
                 ),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1.0
+                    x=1.0,
+                    font=dict(color="#f8fafc")
                 ),
-                hoverlabel=dict(bgcolor="#0f172a", font_color="#ffffff", font_size=12)
+                hoverlabel=dict(bgcolor="#081120", bordercolor="#38bdf8", font_color="#ffffff", font_size=12)
             )
 
             with st.container(border=True):
@@ -2951,7 +2954,7 @@ def render_trend_stagionale(t):
                 st.markdown(
                     card_kpi(
                         tr("Media Stagionale (TL High)", "Season Mean (TL High)"),
-                        f"<span style='font-size:24px; font-weight:900; color:#0f172a;'>{avg_strain:,.0f} AU</span>",
+                        f"<span style='font-size:24px; font-weight:900; color:#ffffff;'>{avg_strain:,.0f} AU</span>",
                         f"{tr('Baseline di riferimento annuale', 'Annual reference baseline')}",
                         "#0ea5e9"
                     ),
@@ -3289,21 +3292,24 @@ def render_trend_stagionale(t):
             fig_strain.update_layout(
                 margin=dict(l=40, r=40, t=25, b=130 if highlights_strain else 40),
                 height=500 if highlights_strain else 430,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
                 xaxis=dict(
-                    title=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"),
+                    title=dict(text=tr("Settimana di Calendario (Data Lunedì)", "Calendar Week (Monday Date)"), font=dict(color="#cbd5e1")),
                     tickangle=-90 if highlights_strain else -45,
-                    gridcolor="#f1f5f9",
-                    linecolor="#cbd5e1",
-                    tickfont=dict(size=9.5 if highlights_strain else 11, color="#475569")
+                    gridcolor="rgba(56, 189, 248, 0.12)",
+                    linecolor="rgba(56, 189, 248, 0.25)",
+                    tickfont=dict(size=9.5 if highlights_strain else 11, color="#cbd5e1")
                 ),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1.0
+                    x=1.0,
+                    font=dict(color="#f8fafc")
                 ),
-                hoverlabel=dict(bgcolor="#0f172a", font_color="#ffffff", font_size=12)
+                hoverlabel=dict(bgcolor="#081120", bordercolor="#38bdf8", font_color="#ffffff", font_size=12)
             )
 
             with st.container(border=True):

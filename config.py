@@ -14,35 +14,50 @@ SUPPORT_EMAIL = "mov3project26@gmail.com"
 
 def setup_plotly_theme():
     pio.templates["m0v3"] = go.layout.Template(layout=dict(
-        font=dict(family="Inter, -apple-system, BlinkMacSystemFont, sans-serif", color="#0f172a", size=12),
-        title=dict(font=dict(family="Inter, -apple-system, BlinkMacSystemFont, sans-serif", color="#0f172a", size=16)),
-        colorway=["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
+        font=dict(family="Inter, -apple-system, BlinkMacSystemFont, sans-serif", color="#f8fafc", size=12),
+        title=dict(font=dict(family="Inter, -apple-system, BlinkMacSystemFont, sans-serif", color="#ffffff", size=16)),
+        colorway=["#38bdf8", "#34d399", "#f59e0b", "#f43f5e", "#a78bfa"],
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         hoverlabel=dict(
-            bgcolor="#0f172a",
-            bordercolor="#334155",
+            bgcolor="#081120",
+            bordercolor="#38bdf8",
             font=dict(family="Inter, sans-serif", color="#f8fafc", size=12)
         ),
+        polar=dict(
+            bgcolor="rgba(0,0,0,0)",
+            angularaxis=dict(
+                gridcolor="rgba(56, 189, 248, 0.18)",
+                linecolor="rgba(56, 189, 248, 0.25)",
+                tickfont=dict(family="Inter, sans-serif", color="#ffffff", size=11)
+            ),
+            radialaxis=dict(
+                gridcolor="rgba(56, 189, 248, 0.12)",
+                linecolor="rgba(56, 189, 248, 0.20)",
+                tickfont=dict(family="Inter, sans-serif", color="#94a3b8", size=9)
+            )
+        ),
         xaxis=dict(
-            gridcolor="#f1f5f9",
-            linecolor="#e2e8f0",
-            tickfont=dict(family="Inter, sans-serif", color="#64748b", size=11),
-            title_font=dict(family="Inter, sans-serif", color="#475569", size=12)
+            gridcolor="rgba(56, 189, 248, 0.12)",
+            linecolor="rgba(56, 189, 248, 0.25)",
+            tickfont=dict(family="Inter, sans-serif", color="#94a3b8", size=11),
+            title_font=dict(family="Inter, sans-serif", color="#cbd5e1", size=12)
         ),
         yaxis=dict(
-            gridcolor="#f1f5f9",
-            zerolinecolor="#e2e8f0",
-            linecolor="#e2e8f0",
-            tickfont=dict(family="Inter, sans-serif", color="#64748b", size=11),
-            title_font=dict(family="Inter, sans-serif", color="#475569", size=12)
+            gridcolor="rgba(56, 189, 248, 0.12)",
+            zerolinecolor="rgba(56, 189, 248, 0.25)",
+            linecolor="rgba(56, 189, 248, 0.25)",
+            tickfont=dict(family="Inter, sans-serif", color="#94a3b8", size=11),
+            title_font=dict(family="Inter, sans-serif", color="#cbd5e1", size=12)
         ),
         legend=dict(
-            font=dict(family="Inter, sans-serif", color="#475569", size=12),
-            bgcolor="rgba(255,255,255,0)"
+            font=dict(family="Inter, sans-serif", color="#cbd5e1", size=12),
+            bgcolor="rgba(0,0,0,0)"
         )
     ))
     pio.templates.default = "m0v3"
+
+setup_plotly_theme()
 
 LOGO_PATH = os.path.join(BASE_DIR, "logo.png") if os.path.exists(os.path.join(BASE_DIR, "logo.png")) else "logo.png"
 LOGO_CIRCULAR_PATH = os.path.join(BASE_DIR, "logo_circular.png") if os.path.exists(os.path.join(BASE_DIR, "logo_circular.png")) else LOGO_PATH
@@ -211,19 +226,52 @@ def get_base64_image(image_file):
             return base64.b64encode(file.read()).decode()
     return ""
 
+SVG_TENNIS_COURT = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 700' fill='none'>"
+    "<defs>"
+    "<radialGradient id='courtGlow' cx='50%' cy='50%' r='50%'>"
+    "<stop offset='0%' stop-color='#0ea5e9' stop-opacity='0.16'/>"
+    "<stop offset='65%' stop-color='#0ea5e9' stop-opacity='0.04'/>"
+    "<stop offset='100%' stop-color='#0ea5e9' stop-opacity='0'/>"
+    "</radialGradient>"
+    "<linearGradient id='courtLine' x1='0%' y1='0%' x2='100%' y2='0%'>"
+    "<stop offset='0%' stop-color='#38bdf8' stop-opacity='0.35'/>"
+    "<stop offset='50%' stop-color='#38bdf8' stop-opacity='0.55'/>"
+    "<stop offset='100%' stop-color='#38bdf8' stop-opacity='0.35'/>"
+    "</linearGradient>"
+    "</defs>"
+    "<rect x='100' y='60' width='1200' height='580' fill='url(#courtGlow)' rx='14'/>"
+    "<rect x='100' y='60' width='1200' height='580' stroke='url(#courtLine)' stroke-width='2'/>"
+    "<line x1='100' y1='132' x2='1300' y2='132' stroke='rgba(56, 189, 248, 0.28)' stroke-width='1.5'/>"
+    "<line x1='100' y1='568' x2='1300' y2='568' stroke='rgba(56, 189, 248, 0.28)' stroke-width='1.5'/>"
+    "<line x1='700' y1='36' x2='700' y2='664' stroke='#38bdf8' stroke-width='2.5' stroke-dasharray='7 4' opacity='0.7'/>"
+    "<circle cx='700' cy='36' r='5' fill='#38bdf8' opacity='0.9'/>"
+    "<circle cx='700' cy='664' r='5' fill='#38bdf8' opacity='0.9'/>"
+    "<line x1='377' y1='132' x2='377' y2='568' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+    "<line x1='1023' y1='132' x2='1023' y2='568' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+    "<line x1='377' y1='350' x2='1023' y2='350' stroke='rgba(56, 189, 248, 0.32)' stroke-width='1.5'/>"
+    "<line x1='100' y1='350' x2='125' y2='350' stroke='rgba(56, 189, 248, 0.45)' stroke-width='2.2'/>"
+    "<line x1='1275' y1='350' x2='1300' y2='350' stroke='rgba(56, 189, 248, 0.45)' stroke-width='2.2'/>"
+    "<circle cx='700' cy='350' r='7' fill='none' stroke='#38bdf8' stroke-width='1.5' opacity='0.6'/>"
+    "<circle cx='700' cy='350' r='2.5' fill='#38bdf8' opacity='0.95'/>"
+    "</svg>"
+)
+COURT_B64 = base64.b64encode(SVG_TENNIS_COURT.encode('utf-8')).decode('utf-8')
+
 def add_custom_css(image_file=None):
     is_authenticated = bool(st.session_state.get('user'))
-    bg_path = CYBER_BG_PATH if (CYBER_BG_PATH and os.path.exists(CYBER_BG_PATH)) else image_file
-    encoded_bg = get_base64_image(bg_path) if (is_authenticated and bg_path and os.path.exists(bg_path)) else ""
     auth_dashboard_bg_css = f"""
     .stApp,
     [data-testid="stAppViewContainer"] {{
-        background-color: #f1f5fa !important;
-        background-image: url(data:image/jpeg;base64,{encoded_bg}) !important;
-        background-size: cover !important;
-        background-position: center center !important;
-        background-repeat: no-repeat !important;
-        background-attachment: fixed !important;
+        background-color: #060b14 !important;
+        background-image: 
+            radial-gradient(ellipse at 50% 0%, rgba(14, 165, 233, 0.16) 0%, rgba(6, 11, 20, 0.96) 65%, #030712 100%),
+            url("data:image/svg+xml;base64,{COURT_B64}") !important;
+        background-position: center top, center 70px !important;
+        background-repeat: no-repeat, no-repeat !important;
+        background-size: 100% 100%, min(1400px, 94vw) auto !important;
+        background-attachment: fixed, fixed !important;
+        color: #f8fafc !important;
     }}
     """ if is_authenticated else ""
     st.markdown(
@@ -259,17 +307,38 @@ def add_custom_css(image_file=None):
     header[data-testid="stHeader"] {{background: transparent !important;}}
     .stDeployButton {{display:none;}}
     
-    /* Sfondo Principale Dashboard (solo quando autenticato) e Sidebar Blu Navy profondo */
+    /* Sfondo Principale Dashboard Dark Cockpit e Sidebar Blu Navy profondo */
     {auth_dashboard_bg_css}
     [data-testid="stMain"],
     section.main {{
         background: transparent !important;
+        color: #f8fafc !important;
     }}
     [data-testid="stSidebar"] {{ 
-        background-color: #0A192F !important; 
-        border-right: 1px solid #1e2d4a; 
+        background-color: #070d18 !important; 
+        border-right: 1px solid rgba(56, 189, 248, 0.2) !important; 
     }}
     [data-testid="stSidebar"] .stRadio label, [data-testid="stSidebar"] .stRadio div {{ color: #e6f1ff !important; }}
+
+    /* Typography Dark Cockpit: Titoli in bianco splendente e testi leggibili */
+    [data-testid="stMain"] h1, 
+    [data-testid="stMain"] h2, 
+    [data-testid="stMain"] h3, 
+    [data-testid="stMain"] h4, 
+    [data-testid="stMain"] h5, 
+    [data-testid="stMain"] h6 {{
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.3px !important;
+    }}
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li {{
+        color: #cbd5e1 !important;
+    }}
+    [data-testid="stMarkdownContainer"] strong,
+    [data-testid="stMarkdownContainer"] b {{
+        color: #ffffff !important;
+    }}
 
     /* Struttura Sidebar: Header Fisso Sticky in cima + Body Scorrevole fluido */
     [data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] {{
@@ -313,12 +382,12 @@ def add_custom_css(image_file=None):
         position: sticky !important;
         top: 0 !important;
         z-index: 99999 !important;
-        background-color: #0A192F !important;
+        background-color: #070d18 !important;
         padding-top: 1.25rem !important;
         padding-bottom: 12px !important;
         margin-bottom: 10px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }}
@@ -347,7 +416,7 @@ def add_custom_css(image_file=None):
     [data-testid="stSidebar"] div.stButton > button {{
         background-color: rgba(255, 255, 255, 0.05) !important;
         color: #cbd5e1 !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
         font-size: 13px !important;
@@ -357,12 +426,12 @@ def add_custom_css(image_file=None):
     [data-testid="stSidebar"] .stButton > button:hover,
     [data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover,
     [data-testid="stSidebar"] div.stButton > button:hover {{
-        background-color: rgba(14, 165, 233, 0.15) !important;
+        background-color: rgba(14, 165, 233, 0.18) !important;
         color: #38bdf8 !important;
-        border-color: rgba(56, 189, 248, 0.4) !important;
+        border-color: rgba(56, 189, 248, 0.45) !important;
     }}
     
-    /* Disabilita la vecchia filigrana: il logo MOV3 è già centrato e splendente nel background 3D */
+    /* Disabilita la vecchia filigrana */
     [data-testid="stAppViewContainer"]::before {{
         display: none !important;
         content: "" !important;
@@ -373,32 +442,86 @@ def add_custom_css(image_file=None):
         }}
     }}
     
-    /* Stile Card e Pannelli High-Contrast M0V3 (Massima leggibilità WCAG AAA su sfondo chiaro - Opzione A: Navy Border) */
+    /* Stile Card e Pannelli Dark Cockpit M0V3 (Dark Glassmorphism, Bordo Cyan Neon) */
     div[data-testid="stVerticalBlockBorderWrapper"],
     [data-testid="stMain"] div[data-testid="stVerticalBlockBorderWrapper"] {{
-        background: #ffffff !important;
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 14px !important;
         overflow: hidden !important;
-        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
-        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
+        border: 1.2px solid rgba(56, 189, 248, 0.22) !important;
+        box-shadow: 0 10px 32px -6px rgba(0, 0, 0, 0.65), 0 0 18px rgba(14, 165, 233, 0.08) !important;
         padding: 18px !important;
+        color: #f8fafc !important;
     }}
 
-    /* Card ed elementi custom nel corpo pagina */
+    /* Card ed elementi custom con stili inline: conversione automatica in Dark Cockpit */
     [data-testid="stMain"] div[style*="background:white"],
     [data-testid="stMain"] div[style*="background: white"],
     [data-testid="stMain"] div[style*="background:#ffffff"],
     [data-testid="stMain"] div[style*="background: #ffffff"],
     [data-testid="stMain"] div[style*="background:#f8fafc"],
     [data-testid="stMain"] div[style*="background: #f8fafc"] {{
-        background: #ffffff !important;
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 14px !important;
         overflow: hidden !important;
-        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
-        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
+        border: 1.2px solid rgba(56, 189, 248, 0.22) !important;
+        box-shadow: 0 10px 32px -6px rgba(0, 0, 0, 0.65), 0 0 18px rgba(14, 165, 233, 0.08) !important;
+        color: #f8fafc !important;
     }}
 
-    /* Grafici Plotly: assicura sempre una superficie bianca pulita ad altissimo contrasto con bordi arrotondati perfetti (Anti-Bleed) */
+    /* Badge ed etichette inline con sfondo bianco convertiti in Dark Pills */
+    [data-testid="stMain"] span[style*="background: white"],
+    [data-testid="stMain"] span[style*="background:white"],
+    [data-testid="stMain"] span[style*="background:#ffffff"],
+    [data-testid="stMain"] span[style*="background: #ffffff"],
+    [data-testid="stMain"] span[style*="background:#f8fafc"],
+    [data-testid="stMain"] span[style*="background: #f8fafc"] {{
+        background: rgba(8, 17, 32, 0.85) !important;
+        border-color: rgba(56, 189, 248, 0.25) !important;
+        color: #f8fafc !important;
+    }}
+
+    /* Subcard interne (griglie e riquadri secondari) */
+    [data-testid="stMain"] div[style*="background:#f1f5f9"],
+    [data-testid="stMain"] div[style*="background: #f1f5f9"] {{
+        background: rgba(8, 17, 32, 0.75) !important;
+        border-color: rgba(56, 189, 248, 0.18) !important;
+        color: #f8fafc !important;
+    }}
+
+    /* Normalizzazione colori testi inline originariamente pensati per sfondo bianco */
+    [data-testid="stMain"] [style*="color: #0f172a"],
+    [data-testid="stMain"] [style*="color:#0f172a"],
+    [data-testid="stMain"] [style*="color: rgb(15, 23, 42)"],
+    [data-testid="stMain"] [style*="color: #1e293b"],
+    [data-testid="stMain"] [style*="color:#1e293b"] {{
+        color: #ffffff !important;
+    }}
+    [data-testid="stMain"] [style*="color: #475569"],
+    [data-testid="stMain"] [style*="color:#475569"] {{
+        color: #cbd5e1 !important;
+    }}
+    [data-testid="stMain"] [style*="color: #64748b"],
+    [data-testid="stMain"] [style*="color:#64748b"] {{
+        color: #94a3b8 !important;
+    }}
+    [data-testid="stMain"] [style*="color: #0284c7"],
+    [data-testid="stMain"] [style*="color:#0284c7"],
+    [data-testid="stMain"] [style*="color: #0369a1"] {{
+        color: #38bdf8 !important;
+    }}
+    [data-testid="stMain"] [style*="border: 1px solid #e2e8f0"],
+    [data-testid="stMain"] [style*="border:1px solid #e2e8f0"],
+    [data-testid="stMain"] [style*="border-bottom: 1px solid #f1f5f9"],
+    [data-testid="stMain"] [style*="border-bottom:1px solid #f1f5f9"] {{
+        border-color: rgba(56, 189, 248, 0.20) !important;
+    }}
+
+    /* Grafici Plotly: assicura superficie dark glassmorphism ad altissimo contrasto */
     .stPlotlyChart,
     div[data-testid="stPlotlyChart"],
     .stPlotlyChart > div,
@@ -410,11 +533,13 @@ def add_custom_css(image_file=None):
     }}
 
     .stPlotlyChart {{
-        background: #ffffff !important;
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.85) 0%, rgba(8, 15, 28, 0.94) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
         border-radius: 14px !important;
         overflow: hidden !important;
-        border: 1.2px solid rgba(10, 25, 47, 0.22) !important;
-        box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05) !important;
+        border: 1.2px solid rgba(56, 189, 248, 0.20) !important;
+        box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.5) !important;
         padding: 10px !important;
     }}
 
@@ -428,6 +553,33 @@ def add_custom_css(image_file=None):
         overflow: hidden !important;
     }}
 
+    /* Plotly SVG: Rimuove sfondi grigi/bianchi interni e normalizza testi SVG scuri su scuro */
+    .js-plotly-plot rect.bg,
+    .js-plotly-plot rect.plotbg,
+    .js-plotly-plot .polarbg {{
+        fill: transparent !important;
+        opacity: 0 !important;
+    }}
+    .js-plotly-plot .polargrid {{
+        stroke: rgba(56, 189, 248, 0.20) !important;
+    }}
+    .js-plotly-plot text[fill="#0f172a"],
+    .js-plotly-plot text[fill="rgb(15, 23, 42)"],
+    .js-plotly-plot text[fill="#1e293b"],
+    .js-plotly-plot text[fill="rgb(30, 41, 59)"] {{
+        fill: #ffffff !important;
+    }}
+    .js-plotly-plot text[fill="#475569"],
+    .js-plotly-plot text[fill="rgb(71, 85, 105)"],
+    .js-plotly-plot text[fill="#334155"],
+    .js-plotly-plot text[fill="rgb(51, 65, 85)"] {{
+        fill: #cbd5e1 !important;
+    }}
+    .js-plotly-plot text[fill="#64748b"],
+    .js-plotly-plot text[fill="rgb(100, 116, 139)"] {{
+        fill: #94a3b8 !important;
+    }}
+
     /* Sidebar esente: mantiene dark cockpit nativo */
     [data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] {{
         background-color: transparent !important;
@@ -439,112 +591,207 @@ def add_custom_css(image_file=None):
         padding: 0 !important;
     }}
     
-    /* Stile Pulsanti Enterprise M0V3 */
+    /* Stile Pulsanti Enterprise M0V3 Dark Cockpit */
     .stButton > button, .stDownloadButton > button {{
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         font-weight: 700 !important;
-        font-size: 13px !important;
-        letter-spacing: 0.2px !important;
-        transition: all 0.15s ease-in-out !important;
+        font-size: 13.5px !important;
+        letter-spacing: 0.3px !important;
+        transition: all 0.2s ease-in-out !important;
     }}
     .stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
-        background-color: #0ea5e9 !important;
-        border-color: #0ea5e9 !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%) !important;
+        border: none !important;
         color: #ffffff !important;
-        box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2) !important;
+        box-shadow: 0 4px 18px rgba(14, 165, 233, 0.40) !important;
     }}
     .stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {{
-        background-color: #0284c7 !important;
-        border-color: #0284c7 !important;
+        background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%) !important;
+        box-shadow: 0 6px 24px rgba(14, 165, 233, 0.55) !important;
+        transform: translateY(-1px) !important;
     }}
-    .stButton > button[kind="secondary"] {{
-        background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #0f172a !important;
+    .stButton > button[kind="secondary"], .stDownloadButton > button[kind="secondary"] {{
+        background-color: #081120 !important;
+        border: 1px solid rgba(56, 189, 248, 0.28) !important;
+        color: #f8fafc !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
     }}
-    .stButton > button[kind="secondary"]:hover {{
-        border-color: #0ea5e9 !important;
-        color: #0ea5e9 !important;
-        background-color: #f8fafc !important;
+    .stButton > button[kind="secondary"]:hover, .stDownloadButton > button[kind="secondary"]:hover {{
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+        background-color: rgba(14, 165, 233, 0.15) !important;
+        box-shadow: 0 0 14px rgba(14, 165, 233, 0.30) !important;
     }}
 
     /* Stile Tabs Moderne */
     button[data-baseweb="tab"] {{
         font-weight: 700 !important;
         font-size: 14px !important;
-        color: #64748b !important;
+        color: #94a3b8 !important;
         padding: 10px 20px !important;
         letter-spacing: 0.2px !important;
     }}
     button[data-baseweb="tab"][aria-selected="true"] {{
-        color: #0ea5e9 !important;
-        border-bottom-color: #0ea5e9 !important;
+        color: #38bdf8 !important;
+        border-bottom-color: #38bdf8 !important;
     }}
 
     /* Stile Navigazione Tab M0V3 Executive (Persistente e Reattivo) */
     div[data-testid="stSegmentedControl"] {{
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
+        background: #081120 !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
         border-radius: 10px !important;
         padding: 4px !important;
         margin-top: 4px !important;
         margin-bottom: 16px !important;
         gap: 6px !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
     }}
     div[data-testid="stSegmentedControl"] button {{
         border-radius: 7px !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 700 !important;
         font-size: 13.5px !important;
-        color: #475569 !important;
+        color: #94a3b8 !important;
         border: 1px solid transparent !important;
         padding: 8px 16px !important;
         transition: all 0.15s ease-in-out !important;
         background: transparent !important;
     }}
     div[data-testid="stSegmentedControl"] button:hover {{
-        color: #0284c7 !important;
-        background: rgba(14, 165, 233, 0.08) !important;
-        border-color: rgba(14, 165, 233, 0.2) !important;
+        color: #38bdf8 !important;
+        background: rgba(14, 165, 233, 0.12) !important;
+        border-color: rgba(14, 165, 233, 0.25) !important;
     }}
     div[data-testid="stSegmentedControl"] button[aria-checked="true"],
     div[data-testid="stSegmentedControl"] button[data-checked="true"] {{
-        background: #0ea5e9 !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
         color: #ffffff !important;
         font-weight: 800 !important;
-        box-shadow: 0 2px 8px -1px rgba(14, 165, 233, 0.45) !important;
-        border-color: #0284c7 !important;
+        box-shadow: 0 2px 10px rgba(14, 165, 233, 0.5) !important;
+        border-color: #38bdf8 !important;
     }}
 
     /* Stile Selettori e Tendine MOV3 Executive (Dropdowns, MultiSelect, DateInput) */
     div[data-testid="stSelectbox"] > div > div,
     div[data-testid="stDateInput"] > div > div,
-    div[data-testid="stMultiSelect"] > div > div {{
+    div[data-testid="stMultiSelect"] > div > div,
+    div[data-baseweb="input"],
+    div[data-baseweb="base-input"],
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input {{
         border-radius: 10px !important;
-        border: 1.5px solid #0ea5e9 !important;
-        background-color: #ffffff !important;
+        border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+        background-color: #081120 !important;
         font-weight: 700 !important;
         font-size: 14px !important;
-        color: #0f172a !important;
-        box-shadow: 0 2px 6px rgba(14, 165, 233, 0.08) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
         transition: all 0.2s ease-in-out !important;
         min-height: 42px !important;
     }}
     div[data-testid="stSelectbox"] > div > div:hover,
     div[data-testid="stDateInput"] > div > div:hover,
-    div[data-testid="stMultiSelect"] > div > div:hover {{
-        border-color: #0284c7 !important;
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.22) !important;
+    div[data-testid="stMultiSelect"] > div > div:hover,
+    div[data-baseweb="input"]:focus-within {{
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 14px rgba(14, 165, 233, 0.35) !important;
     }}
     div[data-testid="stSelectbox"] label,
     div[data-testid="stDateInput"] label,
-    div[data-testid="stMultiSelect"] label {{
+    div[data-testid="stMultiSelect"] label,
+    div[data-testid="stTextInput"] label,
+    div[data-testid="stNumberInput"] label {{
         font-weight: 800 !important;
         font-size: 11.5px !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        color: #475569 !important;
+        letter-spacing: 0.6px !important;
+        color: #94a3b8 !important;
+    }}
+    ul[data-testid="stSelectboxVirtualDropdown"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[role="listbox"] {{
+        background-color: #081120 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 10px !important;
+        color: #f8fafc !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+    }}
+    li[role="option"] {{
+        color: #e2e8f0 !important;
+        background-color: transparent !important;
+    }}
+    li[role="option"]:hover, li[role="option"][aria-selected="true"] {{
+        background-color: rgba(14, 165, 233, 0.22) !important;
+        color: #38bdf8 !important;
+    }}
+    div[data-baseweb="tag"] {{
+        background-color: rgba(14, 165, 233, 0.2) !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+    }}
+
+    /* Stile Tabelle e DataFrame Dark Cockpit */
+    [data-testid="stDataFrame"],
+    div[data-testid="stTable"],
+    .report-table table,
+    [data-testid="stMain"] table {{
+        background-color: #081120 !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }}
+    .report-table th,
+    [data-testid="stMain"] table th {{
+        background-color: #0d1e38 !important;
+        color: #38bdf8 !important;
+        border-bottom: 2px solid rgba(56, 189, 248, 0.3) !important;
+    }}
+    .report-table td,
+    [data-testid="stMain"] table td {{
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #e2e8f0 !important;
+    }}
+    [data-testid="stMain"] table tr[style*="background"] {{
+        background-color: #0d1e38 !important;
+    }}
+    [data-testid="stMain"] table td span[style*="color: #0f172a"],
+    [data-testid="stMain"] table td span[style*="color:#0f172a"] {{
+        color: #ffffff !important;
+    }}
+
+    /* Stile Metriche Native */
+    [data-testid="stMetric"] {{
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }}
+    [data-testid="stMetricLabel"] p,
+    [data-testid="stMetricLabel"] {{
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+    }}
+    [data-testid="stMetricValue"] {{
+        color: #ffffff !important;
+        font-weight: 900 !important;
+    }}
+
+    /* Stile Expander Dark */
+    div[data-testid="stExpander"] {{
+        background: linear-gradient(165deg, rgba(13, 23, 42, 0.88) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }}
+    div[data-testid="stExpander"] details summary {{
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }}
 
     /* =========================================================================
@@ -552,9 +799,9 @@ def add_custom_css(image_file=None):
        ========================================================================= */
     /* Floating Toast HUD: Dark glassmorphism, bordo verde smeraldo e ombra ad alta visibilità */
     div[data-testid="stToast"] {{
-        background: rgba(15, 23, 42, 0.95) !important;
+        background: rgba(8, 15, 28, 0.96) !important;
         border: 1px solid rgba(16, 185, 129, 0.5) !important;
-        box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 0 16px rgba(16, 185, 129, 0.3) !important;
+        box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.7), 0 0 16px rgba(16, 185, 129, 0.3) !important;
         border-radius: 12px !important;
         backdrop-filter: blur(14px) !important;
         -webkit-backdrop-filter: blur(14px) !important;
@@ -573,15 +820,18 @@ def add_custom_css(image_file=None):
 
     /* Stile Modale Streamlit (st.dialog) con bordo M0V3 e accenti emerald */
     div[data-testid="stModal"] > div[role="dialog"] {{
+        background: #081120 !important;
         border-radius: 16px !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.5), 0 0 25px rgba(16, 185, 129, 0.25) !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(14, 165, 233, 0.25) !important;
         overflow: hidden !important;
+        color: #f8fafc !important;
     }}
     div[data-testid="stModal"] header {{
-        background: #f8fafc !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+        background: #0d1e38 !important;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
         padding: 14px 20px !important;
+        color: #ffffff !important;
     }}
 
     .report-table table, .report-table th, .report-table td {{ font-size: 14px !important; font-weight: bold !important; font-family: 'Inter', sans-serif !important; }}
@@ -593,13 +843,27 @@ def add_custom_css(image_file=None):
         [data-testid="stAppViewContainer"]::before {{ display: none !important; }}
         .print-only {{ display: block !important; }}
         .page-break {{ break-before: page !important; page-break-before: always !important; margin: 0 !important; padding: 0 !important; }}
-        body, .stApp {{ background-color: white !important; color: black !important; zoom: 0.85 !important; }}
+        body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{ 
+            background: white !important; 
+            background-image: none !important;
+            color: black !important; 
+            zoom: 0.85 !important; 
+        }}
+        div[data-testid="stVerticalBlockBorderWrapper"],
+        [data-testid="stMain"] div[data-testid="stVerticalBlockBorderWrapper"],
+        [data-testid="stMain"] div[style*="background"] {{
+            background: white !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
+            color: black !important;
+        }}
         .block-container {{ padding-top: 0rem !important; padding-bottom: 0rem !important; max-width: 100% !important; }}
         div[data-testid="stVerticalBlock"] {{ gap: 0.2rem !important; }}
         div[data-testid="stVerticalBlock"] > div {{ padding-bottom: 0rem !important; padding-top: 0rem !important; }}
+        h1, h2, h3, h4, h5, h6, p, span, div {{ color: black !important; }}
         h3 {{ margin-top: 0rem !important; margin-bottom: 25px !important; }}
-        .report-table, .report-table * {{ color: black !important; border-color: #ccc !important; }}
-        .stPlotlyChart {{ break-inside: avoid !important; page-break-inside: avoid !important; }}
+        .report-table, .report-table * {{ color: black !important; border-color: #ccc !important; background: white !important; }}
+        .stPlotlyChart {{ break-inside: avoid !important; page-break-inside: avoid !important; background: white !important; }}
         * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
     }}
     </style>
@@ -607,16 +871,16 @@ def add_custom_css(image_file=None):
 
 
 def render_page_header(title, subtitle="", badge="M0V3 PERFORMANCE ANALYTICS", icon=None, **kwargs):
-    sub_html = f"<p style='margin: 4px 0 0 0; color: #475569; font-size: 14px; font-weight: 500;'>{subtitle}</p>" if subtitle else ""
-    icon_html = f"<i class='bi {icon}' style='margin-right: 8px; color: #0ea5e9;'></i>" if icon else ""
+    sub_html = f"<p style='margin: 4px 0 0 0; color: #94a3b8; font-size: 14px; font-weight: 500;'>{subtitle}</p>" if subtitle else ""
+    icon_html = f"<i class='bi {icon}' style='margin-right: 8px; color: #38bdf8;'></i>" if icon else ""
     st.markdown(f"""
     <div id="top-of-page" style="height:0; width:0; margin:0; padding:0;"></div>
-    <div class="no-print" style="background: white; padding: 20px 24px; border-radius: 14px; border: 1px solid #e2e8f0; border-left: 6px solid #0ea5e9; margin-bottom: 22px; box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 6px;">
-            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#0ea5e9; box-shadow:0 0 6px #38bdf8;"></span>
+    <div class="no-print" style="background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); padding: 20px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25); border-left: 6px solid #0ea5e9; margin-bottom: 22px; box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(14, 165, 233, 0.12);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; font-weight: 800; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#0ea5e9; box-shadow:0 0 8px #38bdf8;"></span>
             {badge}
         </div>
-        <h1 style="margin: 0; padding: 0; color: #0f172a; font-size: 24px; font-weight: 900; line-height: 1.2;">{icon_html}{title}</h1>
+        <h1 style="margin: 0; padding: 0; color: #ffffff; font-size: 24px; font-weight: 900; line-height: 1.2;">{icon_html}{title}</h1>
         {sub_html}
     </div>
     """, unsafe_allow_html=True)
@@ -627,11 +891,11 @@ def _build_meta_cells_html(items):
     for idx, item in enumerate(items):
         lbl, val = item[0], item[1]
         is_acc = item[2] if len(item) > 2 else False
-        val_color = "#0ea5e9" if is_acc else "#0f172a"
-        border_r = "border-right: 1px solid #e2e8f0; padding-right: 18px;" if idx < len(items) - 1 else ""
+        val_color = "#38bdf8" if is_acc else "#ffffff"
+        border_r = "border-right: 1px solid rgba(56, 189, 248, 0.18); padding-right: 18px;" if idx < len(items) - 1 else ""
         cells.append(
             f"<div style='{border_r} display: flex; flex-direction: column; gap: 2px;'>"
-            f"<span style='font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px;'>{lbl}</span>"
+            f"<span style='font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px;'>{lbl}</span>"
             f"<span style='font-size: 14px; font-weight: 800; color: {val_color};'>{val}</span>"
             f"</div>"
         )
@@ -639,10 +903,10 @@ def _build_meta_cells_html(items):
 
 
 def render_meta_bar(items):
-    """Renders a clean enterprise metadata bar with white card styling."""
+    """Renders a clean enterprise metadata bar with Dark Cockpit card styling."""
     inner_html = _build_meta_cells_html(items)
     st.markdown(
-        f"<div class='no-print' style='background: white; padding: 12px 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 18px; box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.04); margin-top: 2px; flex-wrap: wrap;'>{inner_html}</div>",
+        f"<div class='no-print' style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.22); display: flex; align-items: center; gap: 18px; box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6), 0 0 14px rgba(14, 165, 233, 0.08); margin-top: 2px; flex-wrap: wrap;'>{inner_html}</div>",
         unsafe_allow_html=True,
     )
 
@@ -675,7 +939,7 @@ def render_tab_navigation(tab_items, key, default=None):
     expected_val = tab_items[cur_idx]
 
     # 2. Inizializzazione o allineamento (es. cambio lingua IT <-> EN o primo caricamento)
-    if widget_key not in st.session_state or st.session_state[widget_key] not in tab_items:
+    if widget_key not in st.session_state or st.session_state[widget_key] not in tab_items or st.session_state[widget_key] is None:
         st.session_state[widget_key] = expected_val
 
     # 3. segmented_control con default=None per garantire elemento ID stabile al 100%
@@ -695,9 +959,9 @@ def render_tab_navigation(tab_items, key, default=None):
         return selected
     else:
         # Se selected è None (l'utente ha cliccato sul tab già attivo deselezionandolo)
-        # ripristiniamo immediatamente la selezione attiva precedente
+        # In Streamlit st.session_state[widget_key] non può essere modificato dopo l'instanziazione nello stesso run.
+        # Restituiamo il valore fallback memorizzato nell'indice di stato logico.
         fallback_val = tab_items[cur_idx]
-        st.session_state[widget_key] = fallback_val
         st.session_state[key] = fallback_val
         return fallback_val
 

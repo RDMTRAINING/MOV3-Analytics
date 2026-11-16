@@ -293,7 +293,8 @@ def render_analisi_match(t):
                 st.markdown(card_kpi("Readiness", val_html, sub, accento), unsafe_allow_html=True)
 
         st.markdown(
-            f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px 16px; margin:14px 0 22px 0; color:#0f172a; font-size:15px;'>{frase_riepilogo(r_vol, r_int, r_den, r_acwr)}</div>",
+            f"<div style='background:linear-gradient(135deg, rgba(13,23,42,0.92) 0%, rgba(15,23,42,0.85) 100%); border:1px solid rgba(56,189,248,0.25); border-left:5px solid #0ea5e9; border-radius:10px; padding:13px 18px; margin:14px 0 22px 0; color:#f8fafc; font-size:14.5px; font-weight:600; line-height:1.5; box-shadow:0 4px 14px rgba(0,0,0,0.4);'>"
+            f"<i class='bi bi-info-circle-fill' style='color:#38bdf8; margin-right:8px;'></i>{frase_riepilogo(r_vol, r_int, r_den, r_acwr)}</div>",
             unsafe_allow_html=True
         )
     # --- TABS DI NAVIGAZIONE (PERSISTENTI & REATTIVI M0V3) ---
@@ -353,13 +354,13 @@ def render_analisi_match(t):
                 has_r = val_m > 0
                 pct_v = (val_c / val_m * 100.0) if has_r else 0.0
                 return (
-                    "<tr style='border-bottom: 1px solid #f1f5f9;'>"
+                    "<tr style='border-bottom: 1px solid rgba(56,189,248,0.12); font-size:13px;'>"
                     "<td style='padding: 13px 14px;'>"
-                    f"<div style='font-weight: 700; color: #0f172a; font-size: 14px;'>{label}</div>"
+                    f"<div style='font-weight: 700; color: #ffffff; font-size: 14px;'>{label}</div>"
                     f"<span style='display:inline-block; margin-top:3px; background:{cat_bg}; color:{cat_fg}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;'>{cat_tag}</span>"
                     "</td>"
-                    f"<td style='padding: 13px 14px; text-align: center; font-weight: 900; font-size: 19px; color: #0f172a;'>{val_c_str}</td>"
-                    f"<td style='padding: 13px 14px; text-align: center; font-weight: 700; font-size: 16px; color: #64748b;'>{val_m_str}</td>"
+                    f"<td style='padding: 13px 14px; text-align: center; font-weight: 900; font-size: 19px; color: #ffffff;'>{val_c_str}</td>"
+                    f"<td style='padding: 13px 14px; text-align: center; font-weight: 700; font-size: 16px; color: #94a3b8;'>{val_m_str}</td>"
                     f"<td style='padding: 13px 14px; text-align: center;'>{render_pct_badge_cell(pct_v, diff_pct, has_r, lbl_vs_m)}</td>"
                     f"<td style='padding: 13px 14px;'>{render_pct_progress_bar(pct_v)}</td>"
                     "</tr>"
@@ -368,7 +369,7 @@ def render_analisi_match(t):
             def riga_sunto_exec(label, avg_diff_pct, color):
                 pct_tot = max(0.0, 100.0 + avg_diff_pct)
                 return (
-                    "<tr style='background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;'>"
+                    "<tr style='background-color: rgba(15, 23, 42, 0.75); border-top: 1px solid rgba(56,189,248,0.2); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
                     f"<td colspan='3' style='padding: 14px 14px; font-weight: 800; color: {color}; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid {color};'>{label}</td>"
                     f"<td style='padding: 14px 14px; text-align: center;'>{render_pct_badge_cell(pct_tot, avg_diff_pct, True, lbl_vs_m)}</td>"
                     f"<td style='padding: 14px 14px;'>{render_pct_progress_bar(pct_tot, color)}</td>"
@@ -377,36 +378,36 @@ def render_analisi_match(t):
 
             lbl_bn_match = tr("EXECUTIVE MATCH REPORT — CONFRONTO VS MEDIA STORICA MATCH", "EXECUTIVE MATCH REPORT — COMPARISON VS HISTORICAL MATCH AVERAGE")
             html_table = (
-                "<div style='background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom: 22px; font-family: \"Inter\", sans-serif;'>"
+                "<div style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.22); overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.5); margin-bottom: 22px; font-family: \"Inter\", sans-serif;'>"
                 "<div style='background:#0f172a; border-bottom:2px solid #0ea5e9; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                 f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_bn_match}</span>"
-                f"<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{data_match} · {sessione_selezionata}</span>"
+                f"<span style='background:rgba(56,189,248,0.15); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);'>{data_match} · {sessione_selezionata}</span>"
                 "</div>"
                 "<table style='width: 100%; border-collapse: collapse;'>"
-                "<tr style='background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;'>"
-                f"<th style='text-align: left; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; width:28%;'>{tr('Parametro & Area', 'Parameter & Area')}</th>"
-                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
-                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
-                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 800; color: #0ea5e9; text-transform: uppercase; letter-spacing: 0.5px; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
-                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
+                "<tr style='background-color: rgba(15, 23, 42, 0.85); border-bottom: 2px solid rgba(56, 189, 248, 0.2);'>"
+                f"<th style='text-align: left; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; width:28%;'>{tr('Parametro & Area', 'Parameter & Area')}</th>"
+                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
+                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
+                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
+                f"<th style='text-align: center; padding: 12px 14px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
                 "</tr>"
             )
 
-            html_table += riga_stat_exec(tr("Durata (min)", "Time (min)"), "VOLUME", "#0284c7", "#e0f2fe", cur_min, avg_min, 0, p_min)
-            html_table += riga_stat_exec("Training Load", "VOLUME", "#0284c7", "#e0f2fe", cur_tl, avg_tl, 0, p_tl)
-            html_table += riga_stat_exec(tr('Azioni Intense >2"', 'Intense Actions >2"'), "VOLUME", "#0284c7", "#e0f2fe", cur_az2, avg_az2, 0, p_az2)
-            html_table += riga_sunto_exec(tr("Sintesi Volume Generale", "Total General Volume Achievement"), avg_vol, "#0ea5e9")
+            html_table += riga_stat_exec(tr("Durata (min)", "Time (min)"), "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", cur_min, avg_min, 0, p_min)
+            html_table += riga_stat_exec("Training Load", "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", cur_tl, avg_tl, 0, p_tl)
+            html_table += riga_stat_exec(tr('Azioni Intense >2"', 'Intense Actions >2"'), "VOLUME", "#38bdf8", "rgba(56,189,248,0.15)", cur_az2, avg_az2, 0, p_az2)
+            html_table += riga_sunto_exec(tr("Sintesi Volume Generale", "Total General Volume Achievement"), avg_vol, "#38bdf8")
             html_table += "<tr><td colspan='5' style='height: 10px; border:none;'></td></tr>"
-            html_table += riga_stat_exec("Training Load High", "HIGH INTENSITY", "#dc2626", "#fee2e2", cur_tlh, avg_tlh, 0, p_tlh)
-            html_table += riga_stat_exec(tr("Accelerazioni Alta Int.", "High Acc Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2", cur_acc, avg_acc, 0, p_acc)
-            html_table += riga_stat_exec(tr("Decelerazioni Alta Int.", "High Dec Events"), "HIGH INTENSITY", "#dc2626", "#fee2e2", cur_dec, avg_dec, 0, p_dec)
+            html_table += riga_stat_exec("Training Load High", "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", cur_tlh, avg_tlh, 0, p_tlh)
+            html_table += riga_stat_exec(tr("Accelerazioni Alta Int.", "High Acc Events"), "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", cur_acc, avg_acc, 0, p_acc)
+            html_table += riga_stat_exec(tr("Decelerazioni Alta Int.", "High Dec Events"), "HIGH INTENSITY", "#f87171", "rgba(239,68,68,0.15)", cur_dec, avg_dec, 0, p_dec)
             html_table += riga_sunto_exec(tr("Sintesi Volume Alta Intensità", "Total High Intensity Volume Achievement"), avg_int, "#ef4444")
             html_table += "<tr><td colspan='5' style='height: 10px; border:none;'></td></tr>"
-            html_table += riga_stat_exec("TL / min", "WORK RATE", "#b45309", "#fef3c7", cur_tl_pm, avg_tl_pm, 1, p_tl_pm)
-            html_table += riga_stat_exec("High Acc / min", "WORK RATE", "#b45309", "#fef3c7", cur_acc_pm, avg_acc_pm, 1, p_acc_pm)
-            html_table += riga_stat_exec("High Dec / min", "WORK RATE", "#b45309", "#fef3c7", cur_dec_pm, avg_dec_pm, 1, p_dec_pm)
-            html_table += riga_stat_exec("TL High / min", "WORK RATE", "#b45309", "#fef3c7", cur_tlh_pm, avg_tlh_pm, 1, p_tlh_pm)
-            html_table += riga_stat_exec(tr("Azioni Intense / min", "Intense Actions / min"), "WORK RATE", "#b45309", "#fef3c7", cur_az2_pm, avg_az2_pm, 1, p_az2_pm)
+            html_table += riga_stat_exec("TL / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", cur_tl_pm, avg_tl_pm, 1, p_tl_pm)
+            html_table += riga_stat_exec("High Acc / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", cur_acc_pm, avg_acc_pm, 1, p_acc_pm)
+            html_table += riga_stat_exec("High Dec / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", cur_dec_pm, avg_dec_pm, 1, p_dec_pm)
+            html_table += riga_stat_exec("TL High / min", "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", cur_tlh_pm, avg_tlh_pm, 1, p_tlh_pm)
+            html_table += riga_stat_exec(tr("Azioni Intense / min", "Intense Actions / min"), "WORK RATE", "#fbbf24", "rgba(245,158,11,0.15)", cur_az2_pm, avg_az2_pm, 1, p_az2_pm)
             html_table += riga_sunto_exec(tr("Sintesi Work Rate", "Total Work Rate Achievement"), avg_den, "#f59e0b")
             html_table += "</table></div>"
             st.markdown(html_table, unsafe_allow_html=True)
@@ -447,8 +448,8 @@ def render_analisi_match(t):
 
             def _badge_norm(d_pct):
                 sign = "+" if d_pct > 0 else ""
-                bg = "#dcfce7" if abs(d_pct) <= 10 else ("#fef3c7" if abs(d_pct) <= 20 else "#fee2e2")
-                fg = "#15803d" if abs(d_pct) <= 10 else ("#b45309" if abs(d_pct) <= 20 else "#b91c1c")
+                bg = "rgba(16, 185, 129, 0.18)" if abs(d_pct) <= 10 else ("rgba(245, 158, 11, 0.18)" if abs(d_pct) <= 20 else "rgba(239, 68, 68, 0.18)")
+                fg = "#34d399" if abs(d_pct) <= 10 else ("#fbbf24" if abs(d_pct) <= 20 else "#f87171")
                 d_str = f"{d_pct:.1f}"
                 return f"<span style='background:{bg}; color:{fg}; padding:2px 7px; border-radius:4px; font-weight:800; font-size:11px;'>{sign}{d_str}%</span>"
 
@@ -464,60 +465,56 @@ def render_analisi_match(t):
 
             gps_cards_html = ""
             if cur_dist > 0:
-                gps_cards_html = f"""
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Distanza / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #0284c7; margin-top: 2px;">{norm_dist_c:.0f} <span style="font-size:12px; font-weight:600; color:#64748b;">m</span></div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_dist_m:.0f} m · {b_dist}</div>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">HML Dist / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #b45309; margin-top: 2px;">{norm_hml_c:.0f} <span style="font-size:12px; font-weight:600; color:#64748b;">m</span></div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_hml_m:.0f} m · {b_hml}</div>
-                    </div>
-                """
+                gps_cards_html = (
+                    f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                    f"<div style='font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;'>Distanza / 60 min</div>"
+                    f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_dist_c:.0f} <span style='font-size:12px; font-weight:600; color:#94a3b8;'>m</span></div>"
+                    f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_dist_m:.0f} m · {b_dist}</div>"
+                    f"</div>"
+                    f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                    f"<div style='font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase;'>HML Dist / 60 min</div>"
+                    f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_hml_c:.0f} <span style='font-size:12px; font-weight:600; color:#94a3b8;'>m</span></div>"
+                    f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_hml_m:.0f} m · {b_hml}</div>"
+                    f"</div>"
+                )
 
-            st.markdown(f"""
-            <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px 20px; margin-bottom: 22px; box-shadow: 0 2px 6px -1px rgba(15,23,42,0.04);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-                    <div style="font-weight: 800; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.6px;">
-                        <i class="bi bi-clock-history" style="color: #0284c7; margin-right: 6px;"></i>
-                        {lbl_norm_title}
-                    </div>
-                    <span style="font-size: 11px; color: #64748b; font-weight: 600;">
-                        {lbl_norm_sub}
-                    </span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">TL / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;">{norm_tl_c:.0f} <span style="font-size:12px; font-weight:600; color:#64748b;">AU</span></div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_tl_m:.0f} AU · {b_tl}</div>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">TL High / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #dc2626; margin-top: 2px;">{norm_tlh_c:.0f} <span style="font-size:12px; font-weight:600; color:#64748b;">AU</span></div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_tlh_m:.0f} AU · {b_tlh}</div>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">High Acc / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #b45309; margin-top: 2px;">{norm_acc_c:.0f}</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_acc_m:.0f} · {b_acc}</div>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">High Dec / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #b45309; margin-top: 2px;">{norm_dec_c:.0f}</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_dec_m:.0f} · {b_dec}</div>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Azioni Int. / 60 min</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #0284c7; margin-top: 2px;">{norm_az2_c:.0f}</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Media: {norm_az2_m:.0f} · {b_az2}</div>
-                    </div>
-                    {gps_cards_html}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            cards_grid_html = (
+                f"<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border-radius:12px; border:1px solid rgba(56,189,248,0.22); padding:16px 20px; margin-bottom:22px; box-shadow:0 4px 14px rgba(0,0,0,0.5);'>"
+                f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(56,189,248,0.15); padding-bottom:8px;'>"
+                f"<div style='font-weight:800; font-size:13px; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;'>"
+                f"<i class='bi bi-clock-history' style='color:#38bdf8; margin-right:6px;'></i>{lbl_norm_title}</div>"
+                f"<span style='font-size:11px; color:#94a3b8; font-weight:600;'>{lbl_norm_sub}</span>"
+                f"</div>"
+                f"<div style='display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;'>"
+                f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                f"<div style='font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;'>TL / 60 min</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_tl_c:.0f} <span style='font-size:12px; font-weight:600; color:#94a3b8;'>AU</span></div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_tl_m:.0f} AU · {b_tl}</div>"
+                f"</div>"
+                f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                f"<div style='font-size:11px; font-weight:700; color:#f87171; text-transform:uppercase;'>TL High / 60 min</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_tlh_c:.0f} <span style='font-size:12px; font-weight:600; color:#94a3b8;'>AU</span></div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_tlh_m:.0f} AU · {b_tlh}</div>"
+                f"</div>"
+                f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                f"<div style='font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase;'>High Acc / 60 min</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_acc_c:.0f}</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_acc_m:.0f} · {b_acc}</div>"
+                f"</div>"
+                f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                f"<div style='font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase;'>High Dec / 60 min</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_dec_c:.0f}</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_dec_m:.0f} · {b_dec}</div>"
+                f"</div>"
+                f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:12px 14px;'>"
+                f"<div style='font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;'>Azioni Int. / 60 min</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#ffffff; margin-top:2px;'>{norm_az2_c:.0f}</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:4px;'>Media: {norm_az2_m:.0f} · {b_az2}</div>"
+                f"</div>"
+                f"{gps_cards_html}"
+                f"</div></div>"
+            )
+            st.markdown(cards_grid_html, unsafe_allow_html=True)
 
             render_executive_hexagon_profile(
                 val_cur=dati_sessione,
