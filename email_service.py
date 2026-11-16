@@ -291,3 +291,138 @@ Supporto: {cfg['user']}
 </html>
 """
     return send_smtp_email(destinatario, subject, html_email, testo_piano)
+
+
+def invia_email_notifica_ticket(ticket_data):
+    """
+    Invia un'email di notifica automatica al team di supporto M0V3 (mov3project26@gmail.com)
+    quando un utente o un membro dello staff apre un ticket di assistenza nella webapp.
+    """
+    cfg = get_smtp_config()
+    destinatario_supporto = cfg["user"]
+    login_url = cfg["base_url"]
+
+    t_id = ticket_data.get("id", "N/A")
+    t_subj = ticket_data.get("subject", "Nessun oggetto")
+    t_user = ticket_data.get("user_email", "Anonimo")
+    t_role = ticket_data.get("user_role", "Utente")
+    t_cat = ticket_data.get("category", "Generale")
+    t_prio = ticket_data.get("priority", "Normale")
+    t_date = ticket_data.get("created_at", "")
+    t_desc = ticket_data.get("description", "")
+    t_att = ticket_data.get("attachment_name") or "Nessun file allegato"
+
+    subject = f"[M0V3 Assistenza] Nuovo Ticket {t_id} — {t_subj} ({t_prio})"
+
+    testo_piano = f"""Nuova richiesta di supporto ricevuta su M0V3 Analytics!
+
+Ticket ID: {t_id}
+Data: {t_date}
+Utente: {t_user} (Ruolo: {t_role})
+Categoria: {t_cat}
+Priorità: {t_prio}
+Allegato: {t_att}
+
+Oggetto: {t_subj}
+
+Descrizione del problema:
+{t_desc}
+
+Puoi visualizzare e rispondere a questo ticket direttamente nel pannello Supporto della Web App:
+{login_url}
+"""
+
+    html_email = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Nuovo Ticket di Supporto M0V3</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f7f9; padding: 35px 15px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER EXECUTIVE -->
+                    <tr>
+                        <td style="background-color: #0f172a; border-bottom: 3px solid #ef4444; padding: 26px 32px; text-align: left;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <div style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: 1px;">M0V3 <span style="color: #0ea5e9; font-weight: 400; font-size: 20px;">ANALYTICS</span></div>
+                                        <div style="font-size: 11.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px;">Help Desk & Incident Management</div>
+                                    </td>
+                                    <td align="right">
+                                        <span style="background: rgba(239, 68, 68, 0.16); color: #f87171; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">{t_id}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- BODY CONTENUTO -->
+                    <tr>
+                        <td style="padding: 34px 32px;">
+                            <h2 style="margin: 0 0 12px 0; color: #0f172a; font-size: 20px; font-weight: 800;">Nuova Segnalazione di Assistenza</h2>
+                            <p style="margin: 0 0 20px 0; color: #475569; font-size: 14.5px; line-height: 1.6;">
+                                Un utente ha aperto un nuovo ticket di supporto tecnico sulla piattaforma. Di seguito i dettagli completi:
+                            </p>
+
+                            <!-- SCHEDA METADATI TICKET -->
+                            <div style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 22px;">
+                                <table width="100%" cellpadding="6" cellspacing="0" style="font-size: 13.5px; color: #334155;">
+                                    <tr>
+                                        <td width="30%" style="font-weight: 700; color: #64748b;">Utente Richiedente:</td>
+                                        <td style="font-weight: 800; color: #0f172a;">{t_user} <span style="color:#64748b; font-weight:600;">({t_role})</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 700; color: #64748b;">Data e Ora:</td>
+                                        <td style="font-weight: 600;">{t_date}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 700; color: #64748b;">Categoria:</td>
+                                        <td style="font-weight: 700; color: #0284c7;">{t_cat}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 700; color: #64748b;">Priorità:</td>
+                                        <td style="font-weight: 800; color: {'#ef4444' if 'Alta' in t_prio or 'Critica' in t_prio else '#0f172a'};">{t_prio}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 700; color: #64748b;">File Allegato:</td>
+                                        <td style="font-weight: 600;">{t_att}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- BOX DESCRIZIONE -->
+                            <div style="margin-bottom: 24px;">
+                                <div style="font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+                                    Oggetto: <span style="color:#0284c7;">{t_subj}</span>
+                                </div>
+                                <div style="background-color: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 18px; color: #1e293b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{t_desc}</div>
+                            </div>
+
+                            <!-- BOTTONE ACCEDI -->
+                            <div style="text-align: center; margin: 28px 0 16px 0;">
+                                <a href="{login_url}" target="_blank" style="background-color: #0f172a; color: #ffffff; padding: 13px 30px; border-radius: 8px; font-size: 14px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);">
+                                    Apri Web App e Rispondi &rarr;
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 32px; text-align: center; color: #94a3b8; font-size: 11.5px; line-height: 1.5;">
+                            Notifica automatica generata dal modulo Assistenza di <b>M0V3 Analytics</b>.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+    return send_smtp_email(destinatario_supporto, subject, html_email, testo_piano)

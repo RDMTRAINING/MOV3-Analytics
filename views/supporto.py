@@ -14,6 +14,7 @@ from config import (
     render_tab_navigation,
 )
 from utils import card_kpi
+from email_service import invia_email_notifica_ticket
 
 TICKETS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data_supporto")
 TICKETS_FILE = os.path.join(TICKETS_DIR, "tickets.json")
@@ -246,17 +247,34 @@ def render_supporto(t):
                         description=descrizione,
                         uploaded_file=allegato
                     )
-                    st.success(f"{tr('Segnalazione inviata con successo!', 'Ticket successfully submitted!')} ID: **{new_t['id']}**")
+                    st.success(f"{tr('Segnalazione registrata con successo!', 'Ticket successfully submitted!')} ID: **{new_t['id']}**")
                     
-                    # Callout con link rapido mailto
-                    mailto_link = build_mailto_url(new_t['id'], new_t['subject'], curr_email, new_t['description'])
-                    st.markdown(
-                        f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
-                        f"<span style='color:#0369a1; font-size:12.5px; font-weight:600;'><i class='bi bi-info-circle-fill' style='color:#0284c7; margin-right:6px;'></i>{tr('Il ticket è registrato nel sistema. Puoi anche inviare una notifica email diretta con 1 click:', 'The ticket is registered. You can also send a direct email notification with 1 click:')}</span>"
-                        f"<a href='{mailto_link}' target='_blank' style='background:#0284c7; color:#ffffff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;'><i class='bi bi-envelope-fill'></i> Notifica Email a {SUPPORT_EMAIL}</a>"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
+                    # Invio automatico notifica email SMTP a mov3project26@gmail.com
+                    ok_mail, msg_mail = False, ""
+                    try:
+                        ok_mail, msg_mail = invia_email_notifica_ticket(new_t)
+                    except Exception as e_mail:
+                        msg_mail = str(e_mail)
+
+                    if ok_mail:
+                        st.markdown(
+                            f"<div style='background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; align-items:center; gap:10px;'>"
+                            f"<i class='bi bi-check-circle-fill' style='color:#16a34a; font-size:18px;'></i>"
+                            f"<span style='color:#166534; font-size:13px; font-weight:700;'>"
+                            f"{tr('Notifica email inoltrata istantaneamente all assistente MOV3 (' + SUPPORT_EMAIL + '). Riceverai riscontro a breve.', 'Email alert automatically dispatched to MOV3 Support (' + SUPPORT_EMAIL + '). You will receive a response shortly.')}"
+                            f"</span>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        mailto_link = build_mailto_url(new_t['id'], new_t['subject'], curr_email, new_t['description'])
+                        st.markdown(
+                            f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            f"<span style='color:#0369a1; font-size:12.5px; font-weight:600;'><i class='bi bi-info-circle-fill' style='color:#0284c7; margin-right:6px;'></i>{tr('Il ticket è registrato. Puoi anche inviare una notifica email diretta con 1 click:', 'The ticket is registered. You can also send a direct email notification with 1 click:')}</span>"
+                            f"<a href='{mailto_link}' target='_blank' style='background:#0284c7; color:#ffffff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;'><i class='bi bi-envelope-fill'></i> Notifica Email a {SUPPORT_EMAIL}</a>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
 
     # -------------------------------------------------------------------------
     # TAB 2: STORICO TICKET & CHAT DIRETTA CON ADMIN
