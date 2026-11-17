@@ -1,6 +1,7 @@
 # Copyright 2026 Riccardo Di Maio - M0V3 S.r.l. Tutti i diritti riservati.
 # Proprietary Sports Science & Clinical Performance Intelligence Architecture.
 import os
+import time
 import re
 import secrets
 from datetime import timedelta
@@ -166,7 +167,7 @@ def render_coda_tagli_kanban(t):
             unsafe_allow_html=True
         )
     else:
-        cols_order = ['completato', 'atleta', 'data_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at', 'id']
+        cols_order = ['completato', 'atleta', 'data_sessione', 'tipologia_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at', 'id']
         cols_present = [c for c in cols_order if c in df_pending.columns]
         df_editor_input = df_pending[cols_present].copy()
 
@@ -190,6 +191,10 @@ def render_coda_tagli_kanban(t):
                     disabled=True,
                     format="YYYY-MM-DD"
                 ),
+                "tipologia_sessione": st.column_config.TextColumn(
+                    "Tipologia Sessione",
+                    disabled=True
+                ),
                 "tipologia_superficie": st.column_config.TextColumn(
                     "Superficie / Ambiente",
                     disabled=True
@@ -204,7 +209,7 @@ def render_coda_tagli_kanban(t):
                 ),
                 "id": None,
             },
-            disabled=["atleta", "data_sessione", "tipologia_superficie", "orari_note_taglio", "created_at"],
+            disabled=["atleta", "data_sessione", "tipologia_sessione", "tipologia_superficie", "orari_note_taglio", "created_at"],
             hide_index=True,
             use_container_width=True
         )
@@ -234,12 +239,12 @@ def render_coda_tagli_kanban(t):
     if not df_completed.empty:
         st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
         with st.expander(f"Archivio Storico Tagli Completati ({len(df_completed)})", expanded=False):
-            cols_c = ['atleta', 'data_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at']
+            cols_c = ['atleta', 'data_sessione', 'tipologia_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at']
             cols_c_present = [c for c in cols_c if c in df_completed.columns]
             st.dataframe(df_completed[cols_c_present], use_container_width=True, hide_index=True)
 
             dict_restore = {
-                f"{r.get('atleta', 'Atleta')} ({r.get('data_sessione', '')} - {r.get('tipologia_superficie', '')})": str(r.get('id'))
+                f"{r.get('atleta', 'Atleta')} ({r.get('data_sessione', '')} - {r.get('tipologia_sessione', '')} - {r.get('tipologia_superficie', '')})": str(r.get('id'))
                 for _, r in df_completed.iterrows() if r.get('id')
             }
             if dict_restore:

@@ -4737,8 +4737,8 @@ def check_and_render_notifications():
 # =========================================================================
 
 CODA_TAGLI_COLUMNS = [
-    "id", "created_at", "atleta", "data_sessione", "tipologia_superficie",
-    "orari_note_taglio", "completato"
+    "id", "created_at", "atleta", "data_sessione", "tipologia_sessione",
+    "tipologia_superficie", "orari_note_taglio", "completato"
 ]
 
 OPZIONI_SUPERFICIE_TAGLIO = [
@@ -4823,7 +4823,7 @@ def _save_coda_tagli_local_parquet(df):
         return False
 
 
-def insert_segnalazione_taglio_gps(atleta, data_sessione, tipologia_superficie, orari_note_taglio):
+def insert_segnalazione_taglio_gps(atleta, data_sessione, tipologia_sessione="Non definita", tipologia_superficie="", orari_note_taglio=""):
     """
     Inserisce una nuova segnalazione di taglio GPS.
     Salva su Supabase 'coda_tagli_gps' e aggiorna 'coda_tagli_gps.parquet'.
@@ -4838,6 +4838,7 @@ def insert_segnalazione_taglio_gps(atleta, data_sessione, tipologia_superficie, 
         "created_at": created_at,
         "atleta": str(atleta).strip(),
         "data_sessione": dt_str,
+        "tipologia_sessione": str(tipologia_sessione or "Non definita").strip(),
         "tipologia_superficie": str(tipologia_superficie).strip(),
         "orari_note_taglio": str(orari_note_taglio or "").strip(),
         "completato": False
@@ -4846,7 +4847,13 @@ def insert_segnalazione_taglio_gps(atleta, data_sessione, tipologia_superficie, 
     # 1. Inserimento Supabase
     try:
         if supabase_admin is not None:
-            supabase_admin.table("coda_tagli_gps").insert(new_record).execute()
+            try:
+                supabase_admin.table("coda_tagli_gps").insert(new_record).execute()
+            except Exception as e_sb:
+                if "tipologia_sessione" in str(e_sb).lower():
+                    rec_fb = dict(new_record)
+                    rec_fb.pop("tipologia_sessione", None)
+                    supabase_admin.table("coda_tagli_gps").insert(rec_fb).execute()
     except Exception:
         pass
 
@@ -4945,14 +4952,48 @@ def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
         key="dg_taglio_data_input"
     )
 
-    # 3. Superficie / Ambiente
+    # 3. Tipologia Sessione (menu collegato a chi effettua il login con generali, custom e possibilità di aggiunta)
+    u_obj = st.session_state.get('user')
+    u_email = getattr(u_obj, 'email', '') or (u_obj.get('email', '') if isinstance(u_obj, dict) else '')
+    opzioni_tipo = get_tipologie_sessione(uploader_email=u_email, atleta_nome=atleta_sel)
+
+    try:
+        df_coda_tmp = get_coda_tagli_gps(only_pending=False)
+        if not df_coda_tmp.empty and 'tipologia_sessione' in df_coda_tmp.columns:
+            for extra_t in df_coda_tmp['tipologia_sessione'].dropna().unique():
+                extra_str = str(extra_t).strip()
+                if extra_str and extra_str not in opzioni_tipo:
+                    opzioni_tipo.append(extra_str)
+    except Exception:
+        pass
+
+    lbl_nuova_tipo = tr("+ Aggiungi Nuova...", "+ Add New...")
+    menu_tipo_opzioni = opzioni_tipo + [lbl_nuova_tipo]
+
+    tipo_sel = st.selectbox(
+        tr("Tipologia Sessione", "Session Type"),
+        menu_tipo_opzioni,
+        key="dg_taglio_tipo_sel"
+    )
+
+    if tipo_sel == lbl_nuova_tipo:
+        nuova_tipo_input = st.text_input(
+            tr("Specifica Nuova Tipologia", "Specify New Session Type"),
+            placeholder=tr("Es. Recupero Attivo, Palleggio Veloce, Partitella...", "E.g. Active Recovery, Fast Hitting, Scrimmage..."),
+            key="dg_taglio_custom_tipo_input"
+        )
+        tipologia_effettiva = nuova_tipo_input.strip() if nuova_tipo_input else ""
+    else:
+        tipologia_effettiva = tipo_sel
+
+    # 4. Superficie / Ambiente
     superficie_sel = st.selectbox(
         tr("Superficie / Ambiente", "Surface / Environment"),
         OPZIONI_SUPERFICIE_TAGLIO,
         key="dg_taglio_sup_sel"
     )
 
-    # 4. Note orari effettivi in campo (per escludere tempi morti)
+    # 5. Note orari effettivi in campo (per escludere tempi morti)
     note_sel = st.text_area(
         tr("Note Orari Effettivi in Campo (escludi tempi morti)", "Effective Field Times & Notes (exclude dead time)"),
         placeholder=tr("Es. 10:30 - 12:00, no riscaldamento, pausa pioggia 11:15-11:30...", "E.g. 10:30 - 12:00, no warm-up, rain break 11:15-11:30..."),
@@ -4978,10 +5019,13 @@ def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
     if btn_invia:
         if not atleta_sel:
             st.error(tr("Seleziona o indica un atleta valido.", "Please select or provide a valid athlete."))
+        elif tipo_sel == lbl_nuova_tipo and not tipologia_effettiva:
+            st.error(tr("Inserisci il nome della nuova tipologia di sessione.", "Please enter the name of the new session type."))
         else:
             ok, res_id = insert_segnalazione_taglio_gps(
                 atleta=atleta_sel,
                 data_sessione=data_sel,
+                tipologia_sessione=tipologia_effettiva,
                 tipologia_superficie=superficie_sel,
                 orari_note_taglio=note_sel
             )

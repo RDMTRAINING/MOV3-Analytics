@@ -9,10 +9,14 @@ CREATE TABLE IF NOT EXISTS public.coda_tagli_gps (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     atleta TEXT NOT NULL,
     data_sessione DATE NOT NULL,
+    tipologia_sessione TEXT DEFAULT 'Non definita',
     tipologia_superficie TEXT NOT NULL,
     orari_note_taglio TEXT,
     completato BOOLEAN DEFAULT FALSE NOT NULL
 );
+
+-- Aggiornamento retroattivo per installazioni esistenti
+ALTER TABLE public.coda_tagli_gps ADD COLUMN IF NOT EXISTS tipologia_sessione TEXT DEFAULT 'Non definita';
 
 -- Indici di performance per query veloci e ordinamento To-Do
 CREATE INDEX IF NOT EXISTS idx_coda_tagli_completato ON public.coda_tagli_gps (completato, created_at DESC);
