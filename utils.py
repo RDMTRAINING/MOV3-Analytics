@@ -633,7 +633,7 @@ def download_binary_snapshot(remote_name):
     return None
 
 
-@st.cache_resource(show_spinner=False)
+@st.cache_resource(ttl=180, show_spinner=False)
 def sync_binary_snapshots_on_cold_boot():
     """
     Sincronizzazione Binaria Unica al Cold Boot (Zero Rallentamenti UI):
@@ -868,6 +868,10 @@ def clear_database_cache():
     """Invalida la cache RAM del database per forzare la rilettura istantanea."""
     try:
         _load_database_cached.clear()
+    except Exception:
+        pass
+    try:
+        sync_binary_snapshots_on_cold_boot.clear()
     except Exception:
         pass
     try:
