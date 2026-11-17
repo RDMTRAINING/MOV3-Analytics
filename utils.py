@@ -754,6 +754,19 @@ def sync_binary_snapshots_on_cold_boot():
         except Exception:
             pass
 
+        # H. Sincronizzazione livetennis_cache.json
+        live_rel = "data_supporto/livetennis_cache.json"
+        try:
+            l_bytes = download_binary_snapshot("livetennis_cache.json")
+            if l_bytes:
+                os.makedirs(os.path.dirname(live_rel), exist_ok=True)
+                with open(live_rel, "wb") as f:
+                    f.write(l_bytes)
+            elif os.path.exists(live_rel) and not l_bytes:
+                upload_binary_snapshot(live_rel, "livetennis_cache.json")
+        except Exception:
+            pass
+
         status["synced"] = True
     except Exception:
         pass
