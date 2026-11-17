@@ -81,8 +81,8 @@ def render_gestione_file(t):
     c_diag1, c_diag2 = st.columns([3.2, 1.8])
     with c_diag1:
         st.markdown(
-            f"<div style='background:#f0fdf4; border:1px solid #86efac; border-left:4px solid #16a34a; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-family:\"Inter\",sans-serif; font-size:12.5px; color:#14532d; display:flex; align-items:center; gap:8px;'>"
-            f"<i class='bi bi-cloud-check-fill' style='color:#16a34a; font-size:16px;'></i>"
+            f"<div style='background:rgba(16,185,129,0.14); border:1px solid #10b981; border-left:4px solid #10b981; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-family:\"Inter\",sans-serif; font-size:12.5px; color:#34d399; display:flex; align-items:center; gap:8px;'>"
+            f"<i class='bi bi-cloud-check-fill' style='color:#10b981; font-size:16px;'></i>"
             f"<span><b>Cloud Snapshot Attivo</b> | Ultima Data GPS Salvata: <b>{snap_stat.get('max_date', 'N/D')}</b> | Totale Righe: <b>{snap_stat.get('total_rows', 0)}</b></span>"
             f"</div>",
             unsafe_allow_html=True
@@ -371,12 +371,12 @@ def _render_data_governance_tab(t):
         "In compliance with data integrity and scientific validity principles, subjective athlete metrics (RPE and Wellness) cannot be physically deleted from the database (Zero DELETE SQL policy). Technical staff can apply Invalidation (Soft-Delete) which instantly excludes the record from analytical load calculations (ACWR, Readiness and Load Trends) while preserving historical auditability. Every manual adjustment by staff archives the athlete's original input and displays a dedicated Audit visual signal."
     )
     st.markdown(
-        f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:16px 20px; margin-bottom:18px;'>"
+        f"<div style='background:#081120; border:1px solid #1e293b; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.4); padding:16px 20px; margin-bottom:18px;'>"
         f"<div style='display:flex; align-items:center; gap:10px; margin-bottom:8px;'>"
-        f"<i class='bi bi-shield-check' style='color:#0ea5e9; font-size:22px;'></i>"
-        f"<span style='font-size:15px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;'>{tr('Data Governance & Audit Trail — Integrità del Dato (GDPR Art. 9)', 'Data Governance & Audit Trail — Data Integrity (GDPR Art. 9)')}</span>"
+        f"<i class='bi bi-shield-check' style='color:#38bdf8; font-size:22px;'></i>"
+        f"<span style='font-size:15px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.5px;'>{tr('Data Governance & Audit Trail — Integrità del Dato (GDPR Art. 9)', 'Data Governance & Audit Trail — Data Integrity (GDPR Art. 9)')}</span>"
         f"</div>"
-        f"<div style='font-size:12px; color:#475569; line-height:1.55;'>"
+        f"<div style='font-size:12px; color:#94a3b8; line-height:1.55;'>"
         f"{gov_intro_desc}"
         f"</div></div>",
         unsafe_allow_html=True
@@ -521,15 +521,15 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                 orig_desc = f"RPE {rpe_o}" + (f", {dur_o:.0f} min" if dur_o is not None else "")
                 audit_hover = f"Valore originale Atleta: {orig_desc}"
                 badge_audit = (
-                    f"<span title='{audit_hover}' style='background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fde68a; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<span title='{audit_hover}' style='background:rgba(245,158,11,0.18); color:#fbbf24; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #f59e0b; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
                     f"<i class='bi bi-pencil-square text-warning'></i> Modificato"
                     f"</span>"
                 )
                 audit_txt = f"Modificato (Orig: {orig_desc})"
             else:
                 badge_audit = (
-                    f"<span style='color:#64748b; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
-                    f"<i class='bi bi-person-check text-success'></i> Originale Atleta"
+                    f"<span style='color:#94a3b8; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-person-check' style='color:#34d399;'></i> Originale Atleta"
                     f"</span>"
                 )
                 audit_txt = "Originale Atleta"
@@ -545,15 +545,15 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                     orig_desc = str(wel_o)
                 audit_hover = f"Valore originale Atleta: {orig_desc}"
                 badge_audit = (
-                    f"<span title='{audit_hover}' style='background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fde68a; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<span title='{audit_hover}' style='background:rgba(245,158,11,0.18); color:#fbbf24; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #f59e0b; cursor:help; display:inline-flex; align-items:center; gap:4px;'>"
                     f"<i class='bi bi-pencil-square text-warning'></i> Modificato"
                     f"</span>"
                 )
                 audit_txt = f"Modificato (Orig: {orig_desc})"
             else:
                 badge_audit = (
-                    f"<span style='color:#64748b; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
-                    f"<i class='bi bi-person-check text-success'></i> Originale Atleta"
+                    f"<span style='color:#94a3b8; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;'>"
+                    f"<i class='bi bi-person-check' style='color:#34d399;'></i> Originale Atleta"
                     f"</span>"
                 )
                 audit_txt = "Originale Atleta"
@@ -561,20 +561,20 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
         # Badge validità
         if is_v:
             badge_stato = (
-                f"<span style='background:#dcfce7; color:#166534; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:4px;'>"
+                f"<span style='background:rgba(16,185,129,0.18); color:#34d399; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #10b981; display:inline-flex; align-items:center; gap:4px;'>"
                 f"<i class='bi bi-shield-check'></i> Valido"
                 f"</span>"
             )
             stato_txt = "Valido"
-            row_style = "background:#ffffff; color:#0f172a; border-bottom:1px solid #f1f5f9;"
+            row_style = "background:#081120; color:#f8fafc; border-bottom:1px solid #1e293b;"
         else:
             badge_stato = (
-                f"<span style='background:#fee2e2; color:#991b1b; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px;'>"
+                f"<span style='background:rgba(239,68,68,0.18); color:#f87171; padding:3px 7px; border-radius:4px; font-weight:800; font-size:10.5px; border:1px solid #ef4444; display:inline-flex; align-items:center; gap:4px;'>"
                 f"<i class='bi bi-eye-slash-fill'></i> Invalidato"
                 f"</span>"
             )
             stato_txt = "INVALIDATO"
-            row_style = "background:#f8fafc; color:#94a3b8; border-bottom:1px solid #e2e8f0; opacity:0.65; text-decoration:line-through;"
+            row_style = "background:#0d1e38; color:#64748b; border-bottom:1px solid #1e293b; opacity:0.65; text-decoration:line-through;"
 
         html_rows.append(
             f"<tr style='{row_style} font-size:12px; font-family:\"Inter\",sans-serif;'>"
@@ -611,9 +611,9 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
     th_not = tr("Note", "Notes")
 
     st.markdown(
-        f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); overflow:hidden; margin-bottom:16px;'>"
+        f"<div style='background:#081120; border:1px solid #1e293b; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.4); overflow:hidden; margin-bottom:16px;'>"
         f"<table style='width:100%; border-collapse:collapse;'>"
-        f"<thead><tr style='background:#0A192F; color:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-family:\"Inter\",sans-serif;'>"
+        f"<thead><tr style='background:#0d1e38; color:#38bdf8; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #1e293b; font-family:\"Inter\",sans-serif;'>"
         f"<th style='padding:10px 12px; text-align:left;'>{th_data}</th>"
         f"<th style='padding:10px 12px; text-align:left;'>{th_atl}</th>"
         f"<th style='padding:10px 12px; text-align:left;'>{th_met}</th>"
@@ -675,21 +675,21 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
         with col_sch1:
             # Badge di Stato
             if rec['is_valid']:
-                badge_v_big = "<span style='background:#dcfce7; color:#166534; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #86efac;'><i class='bi bi-shield-check'></i> Record Valido (Incluso nei Calcoli di Carico)</span>"
+                badge_v_big = "<span style='background:rgba(16,185,129,0.18); color:#34d399; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #10b981;'><i class='bi bi-shield-check'></i> Record Valido (Incluso nei Calcoli di Carico)</span>"
             else:
-                badge_v_big = "<span style='background:#fee2e2; color:#991b1b; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #fca5a5;'><i class='bi bi-eye-slash-fill'></i> Record INVALIDATO (Escluso da Medie e Grafici)</span>"
+                badge_v_big = "<span style='background:rgba(239,68,68,0.18); color:#f87171; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #ef4444;'><i class='bi bi-eye-slash-fill'></i> Record INVALIDATO (Escluso da Medie e Grafici)</span>"
 
             if rec['modificato_da_staff']:
                 orig_show = f"RPE {rec.get('rpe_originale')}" if is_rpe else f"{rec.get('wellness_originale_json')}"
-                badge_m_big = f"<span style='background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #fde68a;'><i class='bi bi-pencil-square text-warning'></i> Modificato dallo Staff</span> &bull; <b>Valore Originale Atleta: {orig_show}</b>"
+                badge_m_big = f"<span style='background:rgba(245,158,11,0.18); color:#fbbf24; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #f59e0b;'><i class='bi bi-pencil-square text-warning'></i> Modificato dallo Staff</span> &bull; <b style='color:#ffffff;'>Valore Originale Atleta: {orig_show}</b>"
             else:
-                badge_m_big = "<span style='background:#f0fdf4; color:#166534; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #bbf7d0;'><i class='bi bi-person-check'></i> Dato Originale Inserito dall'Atleta</span>"
+                badge_m_big = "<span style='background:rgba(16,185,129,0.18); color:#34d399; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #10b981;'><i class='bi bi-person-check'></i> Dato Originale Inserito dall'Atleta</span>"
 
             st.markdown(
-                f"<div style='background:#ffffff; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:16px 20px; margin-bottom:14px;'>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.4); padding:16px 20px; margin-bottom:14px;'>"
                 f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;'>"
-                f"<span style='font-size:14px; font-weight:800; color:#0f172a;'><i class='bi bi-person-badge' style='color:#0ea5e9; margin-right:6px;'></i>{rec['atleta_nome']} — {rec['data']}</span>"
-                f"<span style='font-size:11px; color:#64748b; font-family:monospace;'>ID: {rec['id']}</span>"
+                f"<span style='font-size:14px; font-weight:800; color:#f8fafc;'><i class='bi bi-person-badge' style='color:#38bdf8; margin-right:6px;'></i>{rec['atleta_nome']} — {rec['data']}</span>"
+                f"<span style='font-size:11px; color:#94a3b8; font-family:monospace;'>ID: {rec['id']}</span>"
                 f"</div>"
                 f"<div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;'>"
                 f"{badge_v_big} {badge_m_big}"
@@ -703,8 +703,8 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                 "No operation physically removes rows from Supabase database. Modifications generate a permanent Audit footprint. Invalidations update the logical is_valid flag."
             )
             st.markdown(
-                f"<div style='background:#f8fafc; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.06); padding:14px 16px; margin-bottom:14px; font-size:11.5px; color:#475569;'>"
-                f"<b>{tr('Integrità Scientifica & Privacy:', 'Scientific Integrity & Privacy:')}</b><br>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.4); padding:14px 16px; margin-bottom:14px; font-size:11.5px; color:#94a3b8;'>"
+                f"<b style='color:#38bdf8;'>{tr('Integrità Scientifica & Privacy:', 'Scientific Integrity & Privacy:')}</b><br>"
                 f"{privacy_note_desc}"
                 f"</div>",
                 unsafe_allow_html=True
@@ -815,8 +815,8 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
         with c_del:
             st.markdown(f"#### <i class='bi bi-shield-slash'></i> {tr('Azione di Validità (Soft-Delete)', 'Validity Action (Soft-Delete)')}", unsafe_allow_html=True)
             st.markdown(
-                f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.5; color:#334155;'>"
-                f"<b>{tr('Regola di Validità Analitica:', 'Analytical Validity Rule:')}</b><br>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.5; color:#94a3b8;'>"
+                f"<b style='color:#38bdf8;'>{tr('Regola di Validità Analitica:', 'Analytical Validity Rule:')}</b><br>"
                 f"{tr('Se una compilazione è viziata o inattendibile, non cancellarla fisicamente: invalida la registrazione. Il record non parteciperà più alle medie settimanali, ai calcoli ACWR e alla Readiness, ma rimarrà conservato per trasparenza medico-legale.', 'If an entry is flawed or unreliable, do not physically delete it: invalidate the registration. The record will no longer participate in weekly averages, ACWR calculations and Readiness, but will remain preserved for medico-legal transparency.')}"
                 f"</div>",
                 unsafe_allow_html=True

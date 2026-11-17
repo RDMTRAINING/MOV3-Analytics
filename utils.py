@@ -1303,14 +1303,14 @@ def render_acwr_executive_block(
 def acwr_zone_meta(pct_v):
     """Restituisce (bg_hex, fg_hex, bar_hex, zone_label) in base alla % Raggiunta."""
     if pct_v <= 0:
-        return "#f1f5f9", "#64748b", "#94a3b8", tr("NESSUN DATO", "NO DATA")
+        return "rgba(30, 41, 59, 0.7)", "#94a3b8", "#64748b", tr("NESSUN DATO", "NO DATA")
     if pct_v < 80:
-        return "#e0f2fe", "#0284c7", "#0ea5e9", tr("LOW ZONE (<80%)", "LOW ZONE (<80%)")
+        return "rgba(14, 165, 233, 0.20)", "#38bdf8", "#0ea5e9", tr("LOW ZONE (<80%)", "LOW ZONE (<80%)")
     if pct_v <= 125:
-        return "#dcfce7", "#166534", "#10b981", tr("OPTIMAL ZONE (80-125%)", "OPTIMAL ZONE (80-125%)")
+        return "rgba(16, 185, 129, 0.20)", "#34d399", "#10b981", tr("OPTIMAL ZONE (80-125%)", "OPTIMAL ZONE (80-125%)")
     if pct_v <= 150:
-        return "#fef3c7", "#b45309", "#f59e0b", tr("HIGH ZONE (125-150%)", "HIGH ZONE (125-150%)")
-    return "#fee2e2", "#991b1b", "#ef4444", tr("OVERLOAD ZONE (>150%)", "OVERLOAD ZONE (>150%)")
+        return "rgba(245, 158, 11, 0.20)", "#fbbf24", "#f59e0b", tr("HIGH ZONE (125-150%)", "HIGH ZONE (125-150%)")
+    return "rgba(239, 68, 68, 0.20)", "#f87171", "#ef4444", tr("OVERLOAD ZONE (>150%)", "OVERLOAD ZONE (>150%)")
 
 
 def render_pct_progress_bar(pct_v, bar_col=None):
@@ -1330,11 +1330,11 @@ def render_pct_badge_cell(pct_v, diff_v, has_ref=True, lbl_vs=""):
     """Formatta il badge principale % Raggiunta + lo scostamento firmato (+Delta%) sotto."""
     z_bg, z_fg, _, _ = acwr_zone_meta(pct_v if has_ref else 0.0)
     if not has_ref:
-        return "<span style='background:#f1f5f9; color:#94a3b8; padding:4px 10px; border-radius:8px; font-weight:800; font-size:14px;'>N/A</span>"
+        return "<span style='background:#1e293b; color:#94a3b8; padding:4px 10px; border-radius:8px; font-weight:800; font-size:14px; border:1px solid #334155;'>N/A</span>"
     d_str = f"{diff_v:+.0f}%"
     vs_part = f" {lbl_vs}" if lbl_vs else ""
     return (
-        f"<span style='background:{z_bg}; color:{z_fg}; padding:4px 11px; border-radius:8px; font-weight:900; font-size:16px; display:inline-block;'>{pct_v:.0f}%</span>"
+        f"<span style='background:{z_bg}; color:{z_fg}; border:1px solid {z_fg}40; padding:4px 11px; border-radius:8px; font-weight:900; font-size:16px; display:inline-block;'>{pct_v:.0f}%</span>"
         f"<div style='font-size:11px; font-weight:700; color:{z_fg}; margin-top:3px;'>({d_str}{vs_part})</div>"
     )
 
@@ -4654,16 +4654,16 @@ def _render_m0v3_modal_dialog(title, message, details=None):
     )
     if details:
         if isinstance(details, (list, tuple)):
-            items_html = "".join([f"<li style='margin-bottom:5px; color:#334155; font-size:0.84rem; line-height:1.4;'>{d}</li>" for d in details])
+            items_html = "".join([f"<li style='margin-bottom:5px; color:#cbd5e1; font-size:0.84rem; line-height:1.4;'>{d}</li>" for d in details])
         elif isinstance(details, dict):
-            items_html = "".join([f"<li style='margin-bottom:5px; color:#334155; font-size:0.84rem; line-height:1.4;'><b style='color:#0f172a;'>{k}:</b> {v}</li>" for k, v in details.items()])
+            items_html = "".join([f"<li style='margin-bottom:5px; color:#cbd5e1; font-size:0.84rem; line-height:1.4;'><b style='color:#ffffff;'>{k}:</b> {v}</li>" for k, v in details.items()])
         else:
-            items_html = f"<li style='color:#334155; font-size:0.84rem;'>{details}</li>"
+            items_html = f"<li style='color:#cbd5e1; font-size:0.84rem;'>{details}</li>"
             
         st.markdown(
             f"""
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Inter', sans-serif;">
-                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:6px;">Dettagli Operazione</div>
+            <div style="background:#081120; border:1px solid #1e293b; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Inter', sans-serif;">
+                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#38bdf8; margin-bottom:6px;">Dettagli Operazione</div>
                 <ul style="margin:0; padding-left:20px;">
                     {items_html}
                 </ul>

@@ -822,7 +822,7 @@ def render_test_fisici(t):
                             
                             if k in dir_switch_map:
                                 p_s, u_s = dir_switch_map[k]
-                                val_str += f"<br><span style='background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px; font-weight:800; font-size:10px;'><i class='bi bi-arrow-left-right'></i> {tr('INVERSIONE LATO', 'SIDE INVERSION')} ({p_s:+.1f}% → {u_s:+.1f}%)</span>"
+                                val_str += f"<br><span style='background:rgba(245,158,11,0.20); color:#fbbf24; border:1px solid #f59e0b; padding:2px 6px; border-radius:4px; font-weight:800; font-size:10px;'><i class='bi bi-arrow-left-right'></i> {tr('INVERSIONE LATO', 'SIDE INVERSION')} ({p_s:+.1f}% → {u_s:+.1f}%)</span>"
                         else:
                             val_curr = valori_ult.get(k)
                             val_str = f"{float(val_curr):.1f} <span style='font-size:12px;'>{unita}</span>" if val_curr is not None else "N/D"
@@ -883,26 +883,26 @@ def render_test_fisici(t):
                                     diff_col = "#10b981" if diff_pct >= 0 else "#ef4444"
                                     delta_str = f"<div style='font-size:10.5px; font-weight:700; color:{diff_col};'>{diff_pct:+.1f}%</div>"
                                 prev_val_num = float(curr_v)
-                                cell_content = f"<div style='font-weight:800; color:#0f172a;'>{float(curr_v):.1f} <span style='font-size:10.5px; color:#64748b;'>{u}</span></div>{delta_str}"
+                                cell_content = f"<div style='font-weight:800; color:#f8fafc;'>{float(curr_v):.1f} <span style='font-size:10.5px; color:#94a3b8;'>{u}</span></div>{delta_str}"
                             else:
-                                cell_content = "<span style='color:#94a3b8;'>-</span>"
+                                cell_content = "<span style='color:#64748b;'>-</span>"
 
                         tds_date += f"<td style='padding:10px 14px; text-align:center;'>{cell_content}</td>"
 
                     pb_td = f"{pb_v:.1f} {u}" if pb_v is not None else "-"
                     rows_param_html += (
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'>"
-                        f"<td style='padding:10px 14px;'><div style='font-weight:800; color:#0f172a;'>{m['label']}</div><div style='font-size:10.5px; color:#64748b;'>{lat} · {m.get('direction', 'HIGHER_IS_BETTER')}</div></td>"
-                        f"<td style='padding:10px 14px; text-align:center; font-weight:600; color:#475569;'>{u if u else '-'}</td>"
+                        f"<tr style='border-bottom:1px solid #1e293b;'>"
+                        f"<td style='padding:10px 14px;'><div style='font-weight:800; color:#f8fafc;'>{m['label']}</div><div style='font-size:10.5px; color:#94a3b8;'>{lat} · {m.get('direction', 'HIGHER_IS_BETTER')}</div></td>"
+                        f"<td style='padding:10px 14px; text-align:center; font-weight:600; color:#94a3b8;'>{u if u else '-'}</td>"
                         f"{tds_date}"
-                        f"<td style='padding:10px 14px; text-align:center; font-weight:900; color:#0284c7;'>{pb_td}</td>"
+                        f"<td style='padding:10px 14px; text-align:center; font-weight:900; color:#38bdf8;'>{pb_td}</td>"
                         f"</tr>"
                     )
 
                 html_all_params = (
-                    f"<div style='background:white; border-radius:12px; border:1px solid #e2e8f0; overflow-x:auto; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); font-family:\"Inter\",sans-serif;'>"
+                    f"<div style='background:#081120; border-radius:12px; border:1px solid #1e293b; overflow-x:auto; margin-bottom:16px; box-shadow:0 4px 16px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                     f"<table style='width:100%; border-collapse:collapse; font-size:12.5px;'>"
-                    f"<thead><tr style='background-color:#0f172a; color:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;'>"
+                    f"<thead><tr style='background-color:#0d1e38; color:#38bdf8; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #1e293b;'>"
                     f"<th style='padding:10px 14px; text-align:left;'>{tr('Parametro / Metrica', 'Parameter / Metric')}</th>"
                     f"<th style='padding:10px 14px; text-align:center;'>{tr('Unità', 'Unit')}</th>"
                     f"{th_date_html}"
@@ -914,7 +914,7 @@ def render_test_fisici(t):
                 # -----------------------------------------------------------------
                 # GRIGLIA GRAFICI SMALL MULTIPLES (Trend Temporale per Metrica)
                 # -----------------------------------------------------------------
-                st.markdown(f"<div style='display:flex; align-items:center; gap:8px; margin-top:20px; margin-bottom:10px;'><i class='bi bi-graph-up' style='color:#0ea5e9; font-size:17px;'></i><span style='font-size:15px; font-weight:800; color:#0f172a;'>{tr('Trend Longitudinale Metriche', 'Longitudinal Metric Trends')}</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='display:flex; align-items:center; gap:8px; margin-top:20px; margin-bottom:10px;'><i class='bi bi-graph-up' style='color:#0ea5e9; font-size:17px;'></i><span style='font-size:15px; font-weight:800; color:#ffffff;'>{tr('Trend Longitudinale Metriche', 'Longitudinal Metric Trends')}</span></div>", unsafe_allow_html=True)
                 
                 # Menù a tendina per selezionare il singolo parametro o tutti
                 opzioni_filtro_m = [tr("Tutti i parametri (Griglia Completa)", "All Parameters (Full Grid)")] + [m['label'] for m in metriche_attive]
@@ -995,7 +995,7 @@ def render_test_fisici(t):
                                 p_s, u_s = dir_switch_map[k]
                                 alert_lbl = tr("INVERSIONE LATO DOMINANTE (Compenso Dx <-> Sx:", "DOMINANT SIDE INVERSION (R <-> L Compensation:")
                                 st.markdown(
-                                    f"<div style='background:#fef3c7; color:#b45309; border:1px solid #f59e0b; padding:4px 8px; border-radius:6px; font-weight:800; font-size:10.5px; margin-bottom:6px;'>"
+                                    f"<div style='background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid #f59e0b; padding:4px 8px; border-radius:6px; font-weight:800; font-size:10.5px; margin-bottom:6px;'>"
                                     f"<i class='bi bi-arrow-left-right' style='margin-right:4px;'></i>{alert_lbl} {p_s:+.1f}% → {u_s:+.1f}%)</div>",
                                     unsafe_allow_html=True
                                 )
@@ -1664,10 +1664,10 @@ def render_test_fisici(t):
                         # Rendering Risultati
                         if not dati_confronto:
                             st.markdown(
-                                f"<div style='background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:24px; text-align:center; margin-top:16px;'>"
-                                f"<i class='bi bi-info-circle' style='font-size:24px; color:#0ea5e9;'></i>"
-                                f"<div style='font-size:15px; font-weight:700; color:#0f172a; margin-top:8px;'>Nessun dato registrato per il test '{prot_scelto['nome_protocollo']}'</div>"
-                                f"<div style='font-size:12.5px; color:#64748b; margin-top:4px;'>Gli atleti del tuo roster non hanno ancora misurazioni salvate per questo protocollo. Puoi registrarle nella scheda 'Inserimento & Storico Misure'.</div>"
+                                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; padding:24px; text-align:center; margin-top:16px;'>"
+                                f"<i class='bi bi-info-circle' style='font-size:24px; color:#38bdf8;'></i>"
+                                f"<div style='font-size:15px; font-weight:700; color:#f8fafc; margin-top:8px;'>Nessun dato registrato per il test '{prot_scelto['nome_protocollo']}'</div>"
+                                f"<div style='font-size:12.5px; color:#94a3b8; margin-top:4px;'>Gli atleti del tuo roster non hanno ancora misurazioni salvate per questo protocollo. Puoi registrarle nella scheda 'Inserimento & Storico Misure'.</div>"
                                 f"</div>",
                                 unsafe_allow_html=True
                             )
@@ -1774,11 +1774,11 @@ def render_test_fisici(t):
 
                             # Podio badge
                             if rank_idx == 1:
-                                rank_badge = "<span style='background:rgba(14,165,233,0.12); color:#0284c7; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-trophy-fill' style='margin-right:4px;'></i>1°</span>"
+                                rank_badge = "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid #0ea5e9; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-trophy-fill' style='margin-right:4px;'></i>1°</span>"
                             elif rank_idx == 2:
-                                rank_badge = "<span style='background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'>2°</span>"
+                                rank_badge = "<span style='background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'>2°</span>"
                             elif rank_idx == 3:
-                                rank_badge = "<span style='background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'>3°</span>"
+                                rank_badge = "<span style='background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-weight:800; font-size:11px;'>3°</span>"
                             else:
                                 rank_badge = f"<span style='color:#64748b; font-weight:700; font-size:11px;'>#{rank_idx}</span>"
 
@@ -1789,7 +1789,7 @@ def render_test_fisici(t):
                                 as_col = "#10b981" if as_pct <= 10 else ("#f59e0b" if as_pct <= 15 else "#ef4444")
                                 unilat_txt = (
                                     f"Dx: <b>{d['val_dx']:.1f}</b> | Sx: <b>{d['val_sx']:.1f}</b> "
-                                    f"<span style='background:rgba(255,255,255,0.8); color:{as_col}; font-weight:700; margin-left:4px;'>({as_pct:.1f}% {d.get('asym_dir', '-')})</span>"
+                                    f"<span style='background:transparent; color:{as_col}; font-weight:700; margin-left:4px;'>({as_pct:.1f}% {d.get('asym_dir', '-')})</span>"
                                 )
 
                             amb_s = d.get('ambiente', 'Outdoor') or 'Outdoor'
@@ -1797,21 +1797,21 @@ def render_test_fisici(t):
                             setup_lbl = f"{amb_s} ({strum_s})" if (strum_s and str(strum_s).strip().lower() not in ('none', '-', '', 'null')) else amb_s
 
                             rows_html += (
-                                f'<tr style="border-bottom:1px solid #f1f5f9; font-size:12.5px;">'
+                                f'<tr style="border-bottom:1px solid #1e293b; font-size:12.5px;">'
                                 f'<td style="padding:10px 12px; text-align:center;">{rank_badge}</td>'
-                                f'<td style="padding:10px 12px; font-weight:700; color:#0f172a;">{d["atleta"]}</td>'
-                                f'<td style="padding:10px 12px; text-align:right; font-weight:800; color:#0284c7; font-size:13.5px;">{d["valore"]:.1f}{unit_str}</td>'
+                                f'<td style="padding:10px 12px; font-weight:700; color:#f8fafc;">{d["atleta"]}</td>'
+                                f'<td style="padding:10px 12px; text-align:right; font-weight:800; color:#38bdf8; font-size:13.5px;">{d["valore"]:.1f}{unit_str}</td>'
                                 f'<td style="padding:10px 12px; text-align:center;"><span style="color:{col_d}; font-weight:700; font-size:12px;">{sign_d}{delta_pct:.1f}%</span></td>'
-                                f'<td style="padding:10px 12px; text-align:center; color:#334155;">{unilat_txt}</td>'
-                                f'<td style="padding:10px 12px; text-align:center; color:#64748b; font-size:11.5px;">{d["data"]}</td>'
-                                f'<td style="padding:10px 12px; text-align:center; color:#64748b; font-size:11.5px;">{setup_lbl}</td>'
+                                f'<td style="padding:10px 12px; text-align:center; color:#cbd5e1;">{unilat_txt}</td>'
+                                f'<td style="padding:10px 12px; text-align:center; color:#94a3b8; font-size:11.5px;">{d["data"]}</td>'
+                                f'<td style="padding:10px 12px; text-align:center; color:#94a3b8; font-size:11.5px;">{setup_lbl}</td>'
                                 f'</tr>'
                             )
 
                         table_html = (
-                            f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow-x:auto; margin-bottom:18px;'>"
+                            f"<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; overflow-x:auto; margin-bottom:18px; box-shadow:0 4px 16px rgba(0,0,0,0.4);'>"
                             f"<table style='width:100%; border-collapse:collapse; font-family:\"Inter\",sans-serif;'>"
-                            f"<thead><tr style='background:#0f172a; color:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;'>"
+                            f"<thead><tr style='background:#0d1e38; color:#38bdf8; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #1e293b;'>"
                             f"<th style='padding:10px 12px; text-align:center;'>Pos</th>"
                             f"<th style='padding:10px 12px; text-align:left;'>Atleta</th>"
                             f"<th style='padding:10px 12px; text-align:right;'>Valore ({scelta_met_disp})</th>"
@@ -1841,14 +1841,14 @@ def render_test_fisici(t):
                                             val_k = v_comp.get(f"{k_m}_mean")
 
                                         val_str = f"{float(val_k):.1f} {u_m}" if val_k is not None and not pd.isna(val_k) else "-"
-                                        tds += f"<td style='padding:8px 10px; text-align:center; font-size:12px;'>{val_str}</td>"
+                                        tds += f"<td style='padding:8px 10px; text-align:center; font-size:12px; color:#cbd5e1;'>{val_str}</td>"
 
-                                    rows_mat += f'<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 10px; font-weight:700; color:#0f172a; font-size:12px;">{d["atleta"]}</td>{tds}</tr>'
+                                    rows_mat += f'<tr style="border-bottom:1px solid #1e293b;"><td style="padding:8px 10px; font-weight:700; color:#f8fafc; font-size:12px;">{d["atleta"]}</td>{tds}</tr>'
 
                                 mat_html = (
-                                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; overflow-x:auto;'>"
+                                    f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; overflow-x:auto;'>"
                                     f"<table style='width:100%; border-collapse:collapse; font-family:\"Inter\",sans-serif;'>"
-                                    f"<thead><tr style='background:#1e293b; color:#f8fafc; font-size:10.5px; text-transform:uppercase;'>"
+                                    f"<thead><tr style='background:#0d1e38; color:#38bdf8; font-size:10.5px; text-transform:uppercase; border-bottom:2px solid #1e293b;'>"
                                     f"<th style='padding:8px 10px; text-align:left;'>Atleta</th>{header_th}"
                                     f"</tr></thead><tbody>{rows_mat}</tbody></table></div>"
                                 )
@@ -1857,10 +1857,10 @@ def render_test_fisici(t):
                         # Atleti Non Testati
                         if atleti_senza_dati:
                             st.markdown(
-                                f"<div style='background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:12px 16px; margin-top:14px;'>"
-                                f"<div style='font-size:12.5px; font-weight:700; color:#475569;'><i class='bi bi-person-x' style='margin-right:6px;'></i>{tr('Atleti del Roster in Attesa di Test', 'Roster Athletes Pending Test')} ({len(atleti_senza_dati)})</div>"
+                                f"<div style='background:#081120; border:1px dashed #334155; border-radius:10px; padding:12px 16px; margin-top:14px;'>"
+                                f"<div style='font-size:12.5px; font-weight:700; color:#94a3b8;'><i class='bi bi-person-x' style='margin-right:6px;'></i>{tr('Atleti del Roster in Attesa di Test', 'Roster Athletes Pending Test')} ({len(atleti_senza_dati)})</div>"
                                 f"<div style='font-size:11.5px; color:#64748b; margin-top:4px;'>"
-                                + ", ".join([f"<span style='background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:4px; font-weight:600;'>{a}</span>" for a in atleti_senza_dati])
+                                + ", ".join([f"<span style='background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:2px 6px; border-radius:4px; font-weight:600;'>{a}</span>" for a in atleti_senza_dati])
                                 + f"</div></div>",
                                 unsafe_allow_html=True
                             )

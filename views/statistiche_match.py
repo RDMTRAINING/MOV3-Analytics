@@ -456,16 +456,16 @@ def render_statistiche_match(t):
 
             # Banner Informativo Dataset Correlato Reale
             st.markdown(f"""
-            <div style='background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(30, 41, 59, 0.02) 100%); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;'>
+            <div style='background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(8, 17, 32, 0.95) 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);'>
                 <div>
-                    <span style='font-weight: 800; color: #0284c7; text-transform: uppercase; font-size: 11px; letter-spacing: 0.6px;'><i class='bi bi-cpu-fill'></i> TELEMETRIA FISICO-TECNICA REALE · SOLO MATCH SINGOLI</span>
-                    <div style='font-weight: 800; font-size: 15px; color: #0f172a; margin-top: 2px;'>
+                    <span style='font-weight: 800; color: #38bdf8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.6px;'><i class='bi bi-cpu-fill'></i> TELEMETRIA FISICO-TECNICA REALE · SOLO MATCH SINGOLI</span>
+                    <div style='font-weight: 800; font-size: 15px; color: #f8fafc; margin-top: 2px;'>
                         Analisi condotta su <b>{n_corr} match singoli ufficiali</b> ({tot_pts_gps:,} punti · {tot_dist_km:.1f} km reali · {tot_ore_gps:.1f} ore di gara)
                     </div>
                 </div>
                 <div>
-                    <span style='background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 700; color: #15803d; box-shadow: 0 1px 2px rgba(0,0,0,0.04);'>
-                        <i class='bi bi-check2-circle' style='color:#16a34a;'></i> 100% Dati Reali da Tracker GPS
+                    <span style='background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 700; color: #34d399;'>
+                        <i class='bi bi-check2-circle' style='color:#34d399;'></i> 100% Dati Reali da Tracker GPS
                     </span>
                 </div>
             </div>
@@ -475,7 +475,7 @@ def render_statistiche_match(t):
             # 1. COSTO FISICO DEL PUNTO (METRICHE PER-POINT & WORK RATE)
             # =================================================================
             st.markdown(f"""
-            <div style='font-size: 16px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;'>
+            <div style='font-size: 16px; font-weight: 900; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;'>
                 <i class='bi bi-speedometer2' style='color: #0ea5e9;'></i>
                 {tr("1. Costo Fisico del Punto nei Match Singoli", "1. Physical Cost of the Point in Singles Matches")}
             </div>
@@ -750,77 +750,77 @@ def render_statistiche_match(t):
                         return f"<span style='color: {c}; font-weight: 800;'>{val:+.1f}%</span>"
 
                     st.markdown(f"""
-                    <table style='width: 100%; border-collapse: collapse; font-family: "Inter", sans-serif; font-size: 12px; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;'>
+                    <table style='width: 100%; border-collapse: collapse; font-family: "Inter", sans-serif; font-size: 12px; background: #081120; border-radius: 10px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.22);'>
                         <thead>
-                            <tr style='background: #0f172a; color: white;'>
-                                <th style='padding: 9px 12px; text-align: left; font-weight: 800;'>METRICA FISICA REALE</th>
-                                <th style='padding: 9px 12px; text-align: right; color: #4ade80; font-weight: 900;'>VITTORIE ({len(m_win)})</th>
-                                <th style='padding: 9px 12px; text-align: right; color: #f87171; font-weight: 900;'>SCONFITTE ({len(m_loss)})</th>
-                                <th style='padding: 9px 12px; text-align: right; color: #38bdf8; font-weight: 800;'>DELTA %</th>
+                            <tr style='background: #0d1e38; color: white;'>
+                                <th style='padding: 10px 12px; text-align: left; font-weight: 800; color: #ffffff;'>METRICA FISICA REALE</th>
+                                <th style='padding: 10px 12px; text-align: right; color: #4ade80; font-weight: 900;'>VITTORIE ({len(m_win)})</th>
+                                <th style='padding: 10px 12px; text-align: right; color: #f87171; font-weight: 900;'>SCONFITTE ({len(m_loss)})</th>
+                                <th style='padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 800;'>DELTA %</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- WORK RATE HEADER -->
-                            <tr style='background: #f0f9ff; border-top: 1px solid #bae6fd; border-bottom: 1px solid #bae6fd;'>
-                                <td colspan='4' style='padding: 5px 12px; font-weight: 800; font-size: 11px; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;'>
+                            <tr style='background: rgba(14, 165, 233, 0.15); border-top: 1px solid rgba(56, 189, 248, 0.25); border-bottom: 1px solid rgba(56, 189, 248, 0.25);'>
+                                <td colspan='4' style='padding: 6px 12px; font-weight: 800; font-size: 11px; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;'>
                                     3 VALORI DI WORK RATE (INTENSITÀ REALE)
                                 </td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Training Load High al Minuto</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_tlh_min:.1f} AU/min</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_tlh_min:.1f} AU/min</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_tlh_min)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Training Load High al Minuto</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_tlh_min:.1f} AU/min</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_tlh_min:.1f} AU/min</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_tlh_min)}</td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Training Load High per Punto</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_tlh_pt:.2f} AU/pt</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_tlh_pt:.2f} AU/pt</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_tlh_pt)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Training Load High per Punto</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_tlh_pt:.2f} AU/pt</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_tlh_pt:.2f} AU/pt</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_tlh_pt)}</td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Acc + Dec IMU per Punto</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_accdec_pt:.2f} ev/pt</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_accdec_pt:.2f} ev/pt</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_accdec_pt)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Acc + Dec IMU per Punto</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_accdec_pt:.2f} ev/pt</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_accdec_pt:.2f} ev/pt</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_accdec_pt)}</td>
                             </tr>
                             <!-- VOLUME HEADER -->
-                            <tr style='background: #faf5ff; border-top: 1px solid #e9d5ff; border-bottom: 1px solid #e9d5ff;'>
-                                <td colspan='4' style='padding: 5px 12px; font-weight: 800; font-size: 11px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px;'>
+                            <tr style='background: rgba(139, 92, 246, 0.15); border-top: 1px solid rgba(139, 92, 246, 0.25); border-bottom: 1px solid rgba(139, 92, 246, 0.25);'>
+                                <td colspan='4' style='padding: 6px 12px; font-weight: 800; font-size: 11px; color: #c084fc; text-transform: uppercase; letter-spacing: 0.5px;'>
                                     4 VALORI DI VOLUME (CARICO TOTALE DI GARA)
                                 </td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Punti Totali nel Match</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_pts:.0f} pts</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_pts:.0f} pts</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_pts)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Punti Totali nel Match</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_pts:.0f} pts</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_pts:.0f} pts</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_pts)}</td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Training Load nel Match</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_tl:.0f} TL</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_tl:.0f} TL</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_tl)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Training Load nel Match</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_tl:.0f} TL</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_tl:.0f} TL</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_tl)}</td>
                             </tr>
-                            <tr style='border-bottom: 1px solid #f1f5f9;'>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Azioni Intense &gt;2\" nel Match</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_act_imu:.0f} az</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_act_imu:.0f} az</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_act_imu)}</td>
+                            <tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.08);'>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Azioni Intense &gt;2\" nel Match</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_act_imu:.0f} az</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_act_imu:.0f} az</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_act_imu)}</td>
                             </tr>
                             <tr>
-                                <td style='padding: 7px 12px; font-weight: 700; color: #0f172a;'>Training Load High nel Match</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #16a34a;'>{w_tl_high:.0f} TL</td>
-                                <td style='padding: 7px 12px; text-align: right; font-weight: 800; color: #dc2626;'>{l_tl_high:.0f} TL</td>
-                                <td style='padding: 7px 12px; text-align: right;'>{_delta_badge(delta_tl_high)}</td>
+                                <td style='padding: 8px 12px; font-weight: 700; color: #f8fafc;'>Training Load High nel Match</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #4ade80;'>{w_tl_high:.0f} TL</td>
+                                <td style='padding: 8px 12px; text-align: right; font-weight: 800; color: #f87171;'>{l_tl_high:.0f} TL</td>
+                                <td style='padding: 8px 12px; text-align: right;'>{_delta_badge(delta_tl_high)}</td>
                             </tr>
                         </tbody>
                     </table>
                     """, unsafe_allow_html=True)
 
                     st.markdown(f"""
-                    <div style='background: #f8fafc; border-left: 4px solid #10b981; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #334155; margin-top: 10px;'>
-                        <b>Evidenza Prestativa Reale:</b> Nelle partite vinte Flavio esprime un Training Load High al Minuto di <b>{w_tlh_min:.1f} AU/min</b> ({delta_tlh_min:+.1f}% vs sconfitte) e un Training Load High per Punto di <b>{w_tlh_pt:.2f} AU/pt</b> ({delta_tlh_pt:+.1f}%), con un Training Load totale nel match superiore del <b>{delta_tl:+.1f}%</b>.
+                    <div style='background: linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(5, 150, 105, 0.20) 100%); border: 1px solid rgba(16, 185, 129, 0.4); border-left: 5px solid #10b981; padding: 12px 16px; border-radius: 8px; font-size: 12.5px; color: #f8fafc; margin-top: 12px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.3);'>
+                        <b style='color: #34d399;'>Evidenza Prestativa Reale:</b> Nelle partite vinte Flavio esprime un Training Load High al Minuto di <b style='color: #ffffff;'>{w_tlh_min:.1f} AU/min</b> (<span style='color: #f87171; font-weight:800;'>{delta_tlh_min:+.1f}% vs sconfitte</span>) e un Training Load High per Punto di <b style='color: #ffffff;'>{w_tlh_pt:.2f} AU/pt</b> (<span style='color: #f87171; font-weight:800;'>{delta_tlh_pt:+.1f}%</span>), con un Training Load totale nel match superiore del <b style='color: #4ade80;'>{delta_tl:+.1f}%</b>.
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -897,28 +897,28 @@ def render_statistiche_match(t):
                 with target_col:
                     if s_row.empty:
                         st.markdown(f"""
-                        <div style='background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8;'>
-                            <b>{s_name}</b><br><span style='font-size: 11px;'>Nessun match monitorato</span>
+                        <div style='background: rgba(13, 23, 42, 0.6); border: 1px dashed rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8;'>
+                            <b style='color:#ffffff;'>{s_name}</b><br><span style='font-size: 11px;'>Nessun match monitorato</span>
                         </div>
                         """, unsafe_allow_html=True)
                     else:
                         sr = s_row.iloc[0]
                         bg_c, fg_c, bar_c = surf_colors.get(s_name, ('#f8fafc', '#334155', '#64748b'))
                         target_col.markdown(f"""
-                        <div style='background: white; border: 1px solid #e2e8f0; border-top: 4px solid {bar_c}; border-radius: 8px; padding: 14px;'>
+                        <div style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-top: 4px solid {bar_c}; border-radius: 10px; padding: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);'>
                             <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
                                 <span style='background: {bg_c}; color: {fg_c}; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px;'>{s_name.upper()}</span>
-                                <span style='font-size: 11.5px; font-weight: 700; color: #64748b;'>{int(sr['n_match'])} match</span>
+                                <span style='font-size: 11.5px; font-weight: 700; color: #94a3b8;'>{int(sr['n_match'])} match</span>
                             </div>
-                            <div style='font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 8px;'>
-                                {sr['tl_avg']:.0f} <span style='font-size: 14px; color: #64748b; font-weight: 700;'>TL / match</span>
+                            <div style='font-size: 24px; font-weight: 900; color: #ffffff; margin-bottom: 8px;'>
+                                {sr['tl_avg']:.0f} <span style='font-size: 14px; color: #94a3b8; font-weight: 700;'>TL / match</span>
                             </div>
-                            <div style='font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #f1f5f9; padding-top: 8px;'>
-                                <div style='display:flex; justify-content:space-between;'><span>Training Load High:</span><b>{sr['tl_high_avg']:.0f} TL ({sr['tl_high_pct']:.1f}%)</b></div>
-                                <div style='display:flex; justify-content:space-between;'><span>TL High / Minuto:</span><b>{sr['tl_high_min']:.1f} AU/min</b></div>
-                                <div style='display:flex; justify-content:space-between;'><span>TL High / Punto:</span><b>{sr['tl_high_pt']:.2f} AU/pt</b></div>
-                                <div style='display:flex; justify-content:space-between;'><span>Frenate High IMU:</span><b>{sr['dec_avg']:.0f} / match</b></div>
-                                <div style='display:flex; justify-content:space-between;'><span>Durata Media:</span><b>{sr['dur_avg']:.0f} min</b></div>
+                            <div style='font-size: 12px; color: #cbd5e1; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(56, 189, 248, 0.15); padding-top: 8px;'>
+                                <div style='display:flex; justify-content:space-between;'><span>Training Load High:</span><b style='color:#ffffff;'>{sr['tl_high_avg']:.0f} TL ({sr['tl_high_pct']:.1f}%)</b></div>
+                                <div style='display:flex; justify-content:space-between;'><span>TL High / Minuto:</span><b style='color:#ffffff;'>{sr['tl_high_min']:.1f} AU/min</b></div>
+                                <div style='display:flex; justify-content:space-between;'><span>TL High / Punto:</span><b style='color:#ffffff;'>{sr['tl_high_pt']:.2f} AU/pt</b></div>
+                                <div style='display:flex; justify-content:space-between;'><span>Frenate High IMU:</span><b style='color:#ffffff;'>{sr['dec_avg']:.0f} / match</b></div>
+                                <div style='display:flex; justify-content:space-between;'><span>Durata Media:</span><b style='color:#ffffff;'>{sr['dur_avg']:.0f} min</b></div>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -1058,29 +1058,29 @@ def render_statistiche_match(t):
                         st.plotly_chart(fig_rk, use_container_width=True)
 
                     st.markdown(f"""
-                    <div style='background: #f8fafc; border-left: 4px solid #8b5cf6; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #334155; margin-top: 8px;'>
-                        <b>Evidenza Ranking Tier:</b> All'aumentare della classifica dell'avversario (Top 10 e Top 20) il Training Load e il costo metabolico crescono sensibilmente rispetto alla fascia oltre la Top 100, evidenziando il massimo logoramento atletico necessario per competere ai vertici del circuito.
+                    <div style='background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(109, 40, 217, 0.20) 100%); border: 1px solid rgba(139, 92, 246, 0.35); border-left: 5px solid #8b5cf6; padding: 12px 16px; border-radius: 8px; font-size: 12.5px; color: #f8fafc; margin-top: 10px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.3);'>
+                        <b style='color: #c084fc;'>Evidenza Ranking Tier:</b> All'aumentare della classifica dell'avversario (Top 10 e Top 20) il Training Load e il costo metabolico crescono sensibilmente rispetto alla fascia oltre la Top 100, evidenziando il massimo logoramento atletico necessario per competere ai vertici del circuito.
                     </div>
                     """, unsafe_allow_html=True)
 
             with col_rk2:
                 with st.container(border=True):
                     st.markdown(f"""
-                    <div style='font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 8px; text-transform: uppercase;'>
+                    <div style='font-size: 13px; font-weight: 800; color: #ffffff; margin-bottom: 8px; text-transform: uppercase;'>
                         {tr("Top 5 Match Singoli a Massimo Logoramento Meccanico (TL Reale)", "Top 5 Maximum Mechanical Stress Singles Matches (Real TL)")}
                     </div>
                     """, unsafe_allow_html=True)
                     top_stress = df_corr.sort_values(by='tl', ascending=False).head(5)
                     for s_i, s_r in top_stress.iterrows():
-                        res_c = "#16a34a" if s_r['result'] == 'Vittoria' else "#dc2626"
+                        res_c = "#10b981" if s_r['result'] == 'Vittoria' else "#ef4444"
                         st.markdown(f"""
-                        <div style='background: white; border: 1px solid #e2e8f0; border-left: 4px solid {res_c}; border-radius: 6px; padding: 7px 12px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;'>
+                        <div style='background: linear-gradient(135deg, rgba(13, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.85) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-left: 4px solid {res_c}; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;'>
                             <div>
-                                <div style='font-weight: 800; font-size: 12.5px; color: #0f172a;'>{s_r['tournament']} ({s_r['surface']}) · vs {s_r['opponent']}</div>
-                                <div style='font-size: 11px; color: #64748b;'>{s_r['score']} · {s_r['total_points']} pts · {s_r['tl_high']:.0f} TL High</div>
+                                <div style='font-weight: 800; font-size: 12.5px; color: #ffffff;'>{s_r['tournament']} ({s_r['surface']}) · vs {s_r['opponent']}</div>
+                                <div style='font-size: 11px; color: #94a3b8;'>{s_r['score']} · {s_r['total_points']} pts · {s_r['tl_high']:.0f} TL High</div>
                             </div>
                             <div style='text-align: right;'>
-                                <div style='font-weight: 900; font-size: 14px; color: #0284c7;'>{s_r['tl']:.0f} TL</div>
+                                <div style='font-weight: 900; font-size: 14px; color: #38bdf8;'>{s_r['tl']:.0f} TL</div>
                                 <div style='font-size: 10px; font-weight: 800; color: {res_c};'>{s_r['result'].upper()}</div>
                             </div>
                         </div>
@@ -1206,26 +1206,26 @@ def render_statistiche_match(t):
 
             with c_srv2:
                 st.markdown(f"""
-                <div style='background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;'>
-                    <div style='font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 12px; text-transform: uppercase;'>
+                <div style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 10px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);'>
+                    <div style='font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 12px; text-transform: uppercase;'>
                         {tr("Risparmio Fisico nei Giorni di Servizio Dominante", "Physical Savings on High-Serve Days")}
                     </div>
                     <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;'>
-                        <div style='background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px;'>
-                            <div style='font-size: 11px; font-weight: 800; color: #16a34a;'>PARTITE CON ≥ 6 ACE ({len(hi_ace)})</div>
-                            <div style='font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 4px;'>{tlh_hi:.2f} <span style='font-size: 12px; color: #64748b;'>AU/pt</span></div>
-                            <div style='font-size: 11px; color: #16a34a; font-weight: 700; margin-top: 2px;'>Win Rate: {wr_hi:.1f}% · % TL High: {pct_hi:.1f}%</div>
+                        <div style='background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 12px;'>
+                            <div style='font-size: 11px; font-weight: 800; color: #34d399;'>PARTITE CON ≥ 6 ACE ({len(hi_ace)})</div>
+                            <div style='font-size: 20px; font-weight: 900; color: #ffffff; margin-top: 4px;'>{tlh_hi:.2f} <span style='font-size: 12px; color: #94a3b8;'>AU/pt</span></div>
+                            <div style='font-size: 11px; color: #4ade80; font-weight: 700; margin-top: 2px;'>Win Rate: {wr_hi:.1f}% · % TL High: {pct_hi:.1f}%</div>
                         </div>
-                        <div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;'>
-                            <div style='font-size: 11px; font-weight: 800; color: #64748b;'>PARTITE CON &lt; 6 ACE ({len(lo_ace)})</div>
-                            <div style='font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 4px;'>{tlh_lo:.2f} <span style='font-size: 12px; color: #64748b;'>AU/pt</span></div>
-                            <div style='font-size: 11px; color: #475569; font-weight: 700; margin-top: 2px;'>Win Rate: {wr_lo:.1f}% · % TL High: {pct_lo:.1f}%</div>
+                        <div style='background: rgba(8, 17, 32, 0.85); border: 1px solid rgba(56, 189, 248, 0.20); border-radius: 8px; padding: 12px;'>
+                            <div style='font-size: 11px; font-weight: 800; color: #94a3b8;'>PARTITE CON &lt; 6 ACE ({len(lo_ace)})</div>
+                            <div style='font-size: 20px; font-weight: 900; color: #ffffff; margin-top: 4px;'>{tlh_lo:.2f} <span style='font-size: 12px; color: #94a3b8;'>AU/pt</span></div>
+                            <div style='font-size: 11px; color: #cbd5e1; font-weight: 700; margin-top: 2px;'>Win Rate: {wr_lo:.1f}% · % TL High: {pct_lo:.1f}%</div>
                         </div>
                     </div>
-                    <div style='font-size: 12px; color: #065f46; background: #ecfdf5; border-left: 3px solid #10b981; padding: 10px 12px; border-radius: 4px; line-height: 1.5;'>
-                        <b>{tr("Impatto Fisiologico Reale:", "Real Physiological Impact:")}</b> {tr(
-                            f"Nei match con servizio dominante (≥ 6 ace), il Costo Fisico Vivo per punto (TL High / pt) si riduce da <b>{tlh_lo:.2f} AU/pt</b> a <b>{tlh_hi:.2f} AU/pt</b> (<b>{delta_tlh_pct:+.1f}%</b> di risparmio metabolico ad alta intensità), mentre il Win Rate sale dal <b>{wr_lo:.1f}%</b> al <b>{wr_hi:.1f}%</b>. I punti rapidi vinti direttamente con la battuta accorciano la durata dello scambio, riducendo drasticamente il numero di frenate e cambi di direzione ad alto impatto.",
-                            f"In matches with dominant serving (≥ 6 aces), live physical cost per point (TL High / pt) drops from <b>{tlh_lo:.2f} AU/pt</b> to <b>{tlh_hi:.2f} AU/pt</b> (<b>{delta_tlh_pct:+.1f}%</b> high-intensity metabolic savings), while the Win Rate increases from <b>{wr_lo:.1f}%</b> to <b>{wr_hi:.1f}%</b>. Quick points won on serve shorten rally duration, drastically lowering the number of high-impact decelerations and directional changes."
+                    <div style='font-size: 12.5px; color: #f8fafc; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-left: 4px solid #10b981; padding: 12px 14px; border-radius: 8px; line-height: 1.5;'>
+                        <b style='color: #34d399;'>{tr("Impatto Fisiologico Reale:", "Real Physiological Impact:")}</b> {tr(
+                            f"Nei match con servizio dominante (≥ 6 ace), il Costo Fisico Vivo per punto (TL High / pt) si riduce da <b style='color:#ffffff;'>{tlh_lo:.2f} AU/pt</b> a <b style='color:#ffffff;'>{tlh_hi:.2f} AU/pt</b> (<b style='color:#4ade80;'>{delta_tlh_pct:+.1f}%</b> di risparmio metabolico ad alta intensità), mentre il Win Rate sale dal <b style='color:#f87171;'>{wr_lo:.1f}%</b> al <b style='color:#4ade80;'>{wr_hi:.1f}%</b>. I punti rapidi vinti direttamente con la battuta accorciano la durata dello scambio, riducendo drasticamente il numero di frenate e cambi di direzione ad alto impatto.",
+                            f"In matches with dominant serving (≥ 6 aces), live physical cost per point (TL High / pt) drops from <b style='color:#ffffff;'>{tlh_lo:.2f} AU/pt</b> to <b style='color:#ffffff;'>{tlh_hi:.2f} AU/pt</b> (<b style='color:#4ade80;'>{delta_tlh_pct:+.1f}%</b> high-intensity metabolic savings), while the Win Rate increases from <b style='color:#f87171;'>{wr_lo:.1f}%</b> to <b style='color:#4ade80;'>{wr_hi:.1f}%</b>. Quick points won on serve shorten rally duration, drastically lowering the number of high-impact decelerations and directional changes."
                         )}
                     </div>
                 </div>
@@ -1307,8 +1307,8 @@ def render_statistiche_match(t):
                 st.plotly_chart(fig_sr, use_container_width=True)
 
                 st.markdown(f"""
-                <div style='background: #f8fafc; border-left: 4px solid #8b5cf6; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #334155; margin-top: 8px;'>
-                    <b>Takeaway Tattico & Fisico:</b> La risposta al servizio impone un sovraccarico eccentrico superiore del <b>+{delta_mech_sr:.0f}%</b> a causa delle decelerazioni brusche per contrastare la velocità di palla e della copertura multilaterale da fondocampo. Nelle partite lottate con lunghi game di risposta, la capacità di tolleranza all'affaticamento neuromuscolare è il fattore discriminante per convertire le palle break.
+                <div style='background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(109, 40, 217, 0.20) 100%); border: 1px solid rgba(139, 92, 246, 0.35); border-left: 5px solid #8b5cf6; padding: 12px 16px; border-radius: 8px; font-size: 12.5px; color: #f8fafc; margin-top: 10px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.3);'>
+                    <b style='color: #c084fc;'>Takeaway Tattico & Fisico:</b> La risposta al servizio impone un sovraccarico eccentrico superiore del <b style='color:#ffffff;'>+{delta_mech_sr:.0f}%</b> a causa delle decelerazioni brusche per contrastare la velocità di palla e della copertura multilaterale da fondocampo. Nelle partite lottate con lunghi game di risposta, la capacità di tolleranza all'affaticamento neuromuscolare è il fattore discriminante per convertire le palle break.
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -1369,21 +1369,21 @@ def render_statistiche_match(t):
             cob_rank = row["rank"]
 
             if res == "Vittoria":
-                badge_res = "<span style='background:#dcfce7; color:#15803d; font-weight:900; padding:3px 9px; border-radius:6px; font-size:11px;'>VITTORIA</span>"
+                badge_res = "<span style='background:rgba(22,163,74,0.22); color:#4ade80; border:1px solid rgba(74,222,128,0.4); font-weight:900; padding:3px 9px; border-radius:6px; font-size:11px;'>VITTORIA</span>"
                 border_col = "#22c55e"
             elif res == "Sconfitta":
-                badge_res = "<span style='background:#fee2e2; color:#b91c1c; font-weight:900; padding:3px 9px; border-radius:6px; font-size:11px;'>SCONFITTA</span>"
+                badge_res = "<span style='background:rgba(220,38,38,0.22); color:#f87171; border:1px solid rgba(248,113,113,0.4); font-weight:900; padding:3px 9px; border-radius:6px; font-size:11px;'>SCONFITTA</span>"
                 border_col = "#ef4444"
             else:
-                badge_res = "<span style='background:#f1f5f9; color:#64748b; font-weight:800; padding:3px 9px; border-radius:6px; font-size:11px;'>N/D</span>"
-                border_col = "#cbd5e1"
+                badge_res = "<span style='background:rgba(255,255,255,0.08); color:#94a3b8; border:1px solid rgba(255,255,255,0.15); font-weight:800; padding:3px 9px; border-radius:6px; font-size:11px;'>N/D</span>"
+                border_col = "#475569"
 
             if surf == "Clay":
-                surf_bg, surf_fg = "#ffedd5", "#c2410c"
+                surf_bg, surf_fg = "rgba(234, 88, 12, 0.22)", "#fb923c"
             elif surf == "Grass":
-                surf_bg, surf_fg = "#ecfdf5", "#047857"
+                surf_bg, surf_fg = "rgba(22, 163, 74, 0.22)", "#4ade80"
             else:
-                surf_bg, surf_fg = "#e0f2fe", "#0369a1"
+                surf_bg, surf_fg = "rgba(14, 165, 233, 0.22)", "#38bdf8"
 
             rank_opp_str = f"#{int(opp_rank)}" if pd.notna(opp_rank) and opp_rank else "N/R"
             rank_cob_str = f"#{int(cob_rank)}" if pd.notna(cob_rank) and cob_rank else ""
@@ -1393,32 +1393,32 @@ def render_statistiche_match(t):
             has_auto_gps = not is_linked and not sess_in_date.empty
 
             if is_linked:
-                gps_badge = "<span style='background:rgba(14,165,233,0.12); color:#0284c7; font-weight:800; font-size:10.5px; padding:2px 7px; border-radius:5px;'><i class='bi bi-broadcast-pin'></i> GPS MANUAL</span>"
+                gps_badge = "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-weight:800; font-size:10.5px; padding:2px 7px; border-radius:5px;'><i class='bi bi-broadcast-pin'></i> GPS MANUAL</span>"
             elif has_auto_gps:
-                gps_badge = "<span style='background:rgba(16,185,129,0.12); color:#059669; font-weight:800; font-size:10.5px; padding:2px 7px; border-radius:5px;'><i class='bi bi-check-circle-fill'></i> GPS REALE</span>"
+                gps_badge = "<span style='background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.35); font-weight:800; font-size:10.5px; padding:2px 7px; border-radius:5px;'><i class='bi bi-check-circle-fill'></i> GPS REALE</span>"
             else:
-                gps_badge = "<span style='background:#f8fafc; color:#94a3b8; font-weight:700; font-size:10.5px; padding:2px 7px; border-radius:5px;'>NO GPS</span>"
+                gps_badge = "<span style='background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-weight:700; font-size:10.5px; padding:2px 7px; border-radius:5px;'>NO GPS</span>"
 
             expander_title = f"{'[V]' if res == 'Vittoria' else '[S]'} {dt_str} · {tourn} ({surf}) — vs {opp} ({score})"
 
             with st.expander(expander_title, expanded=False):
                 st.markdown(
-                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-left:5px solid {border_col}; border-radius:10px; padding:14px 18px; margin-bottom:14px;'>"
-                    f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;'>"
+                    f"<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-left:5px solid {border_col}; border-radius:10px; padding:14px 18px; margin-bottom:14px;'> "
+                    f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid rgba(56,189,248,0.15); padding-bottom:10px;'>"
                     f"<div>"
                     f"<div style='display:flex; align-items:center; gap:8px; flex-wrap:wrap;'>"
                     f"{badge_res}"
                     f"<span style='background:{surf_bg}; color:{surf_fg}; font-weight:800; font-size:10.5px; padding:3px 8px; border-radius:5px;'>{surf}</span>"
-                    f"<span style='background:#f1f5f9; color:#475569; font-weight:800; font-size:10.5px; padding:3px 8px; border-radius:5px;'>{m_type} · {rd}</span>"
+                    f"<span style='background:rgba(255,255,255,0.08); color:#cbd5e1; font-weight:800; font-size:10.5px; padding:3px 8px; border-radius:5px;'>{m_type} · {rd}</span>"
                     f"{gps_badge}"
                     f"</div>"
-                    f"<div style='font-size:18px; font-weight:900; color:#0f172a; margin-top:6px;'>"
-                    f"Flavio Cobolli {rank_cob_str} <span style='color:#94a3b8; font-weight:500;'>vs</span> {opp} <span style='font-size:13px; color:#64748b; font-weight:700;'>({rank_opp_str})</span>"
+                    f"<div style='font-size:18px; font-weight:900; color:#ffffff; margin-top:6px;'>"
+                    f"Flavio Cobolli {rank_cob_str} <span style='color:#94a3b8; font-weight:500;'>vs</span> {opp} <span style='font-size:13px; color:#cbd5e1; font-weight:700;'>({rank_opp_str})</span>"
                     f"</div>"
                     f"</div>"
                     f"<div style='text-align:right;'>"
-                    f"<div style='font-size:22px; font-weight:900; color:#0f172a; letter-spacing:0.5px;'>{score}</div>"
-                    f"<div style='font-size:12px; color:#64748b; font-weight:700;'><i class='bi bi-clock' style='color:#0ea5e9;'></i> {dur_str} · <i class='bi bi-hash' style='color:#f59e0b;'></i> {tot_p} pts</div>"
+                    f"<div style='font-size:22px; font-weight:900; color:#ffffff; letter-spacing:0.5px;'>{score}</div>"
+                    f"<div style='font-size:12px; color:#94a3b8; font-weight:700;'><i class='bi bi-clock' style='color:#38bdf8;'></i> {dur_str} · <i class='bi bi-hash' style='color:#f59e0b;'></i> {tot_p} pts</div>"
                     f"</div>"
                     f"</div>"
                     f"</div>",
@@ -1429,29 +1429,29 @@ def render_statistiche_match(t):
 
                 with col_tennis:
                     st.markdown(
-                        f"<div style='font-size:12.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>"
-                        f"<i class='bi bi-card-checklist' style='color:#0284c7; margin-right:5px;'></i>"
+                        f"<div style='font-size:12.5px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>"
+                        f"<i class='bi bi-card-checklist' style='color:#38bdf8; margin-right:5px;'></i>"
                         f"{tr('Statistiche Tecniche di Partita', 'Technical Match Statistics')}</div>",
                         unsafe_allow_html=True
                     )
 
                     st.markdown(
                         f"<table style='width:100%; font-size:12.5px; border-collapse:collapse;'>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Durata Match', 'Match Duration')}</td><td style='padding:6px 0; font-weight:800; color:#0f172a; text-align:right;'>{dur_str}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Punti Totali Giocati', 'Total Points Played')}</td><td style='padding:6px 0; font-weight:800; color:#0f172a; text-align:right;'>{tot_p}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Ace Cobolli', 'Cobolli Aces')}</td><td style='padding:6px 0; font-weight:800; color:#16a34a; text-align:right;'>{aces}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Doppi Falli', 'Double Faults')}</td><td style='padding:6px 0; font-weight:800; color:#dc2626; text-align:right;'>{df_count}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Punti al Servizio', 'Service Points')}</td><td style='padding:6px 0; font-weight:800; color:#0f172a; text-align:right;'>{srv_pts}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Punti Vinti 1° Servizio', '1st Serve Points Won')}</td><td style='padding:6px 0; font-weight:800; color:#0f172a; text-align:right;'>{p1_pts}</td></tr>"
-                        f"<tr style='border-bottom:1px solid #f1f5f9;'><td style='padding:6px 0; color:#64748b;'>{tr('Punti Vinti 2° Servizio', '2nd Serve Points Won')}</td><td style='padding:6px 0; font-weight:800; color:#0f172a; text-align:right;'>{p2_pts}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Durata Match', 'Match Duration')}</td><td style='padding:6px 0; font-weight:800; color:#ffffff; text-align:right;'>{dur_str}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Punti Totali Giocati', 'Total Points Played')}</td><td style='padding:6px 0; font-weight:800; color:#ffffff; text-align:right;'>{tot_p}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Ace Cobolli', 'Cobolli Aces')}</td><td style='padding:6px 0; font-weight:800; color:#4ade80; text-align:right;'>{aces}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Doppi Falli', 'Double Faults')}</td><td style='padding:6px 0; font-weight:800; color:#f87171; text-align:right;'>{df_count}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Punti al Servizio', 'Service Points')}</td><td style='padding:6px 0; font-weight:800; color:#ffffff; text-align:right;'>{srv_pts}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Punti Vinti 1° Servizio', '1st Serve Points Won')}</td><td style='padding:6px 0; font-weight:800; color:#ffffff; text-align:right;'>{p1_pts}</td></tr>"
+                        f"<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'><td style='padding:6px 0; color:#94a3b8;'>{tr('Punti Vinti 2° Servizio', '2nd Serve Points Won')}</td><td style='padding:6px 0; font-weight:800; color:#ffffff; text-align:right;'>{p2_pts}</td></tr>"
                         f"</table>",
                         unsafe_allow_html=True
                     )
 
                 with col_gps:
                     st.markdown(
-                        f"<div style='font-size:12.5px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>"
-                        f"<i class='bi bi-broadcast' style='color:#0ea5e9; margin-right:5px;'></i>"
+                        f"<div style='font-size:12.5px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>"
+                        f"<i class='bi bi-broadcast' style='color:#38bdf8; margin-right:5px;'></i>"
                         f"{tr('Telemetria GPS / IMU Reale', 'Linked Real GPS / IMU Telemetry')}</div>",
                         unsafe_allow_html=True
                     )
@@ -1477,30 +1477,30 @@ def render_statistiche_match(t):
                         m_pt = (dist_val / tot_p) if tot_p > 0 else 0
 
                         st.markdown(
-                            f"<div style='background:#f8fafc; border:1.5px solid #0ea5e9; border-radius:8px; padding:12px 14px; margin-bottom:10px;'>"
+                            f"<div style='background:rgba(8, 17, 32, 0.85); border:1.5px solid rgba(56, 189, 248, 0.35); border-radius:10px; padding:12px 14px; margin-bottom:10px;'>"
                             f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>"
-                            f"<span style='font-size:11px; font-weight:800; color:#0284c7; text-transform:uppercase;'><i class='bi bi-check-circle-fill'></i> TELEMETRIA REALE COLLEGATA</span>"
-                            f"<span style='font-size:11px; font-weight:700; color:#64748b;'>{dt_str}</span>"
+                            f"<span style='font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase;'><i class='bi bi-check-circle-fill'></i> TELEMETRIA REALE COLLEGATA</span>"
+                            f"<span style='font-size:11px; font-weight:700; color:#94a3b8;'>{dt_str}</span>"
                             f"</div>"
-                            f"<div style='font-size:14px; font-weight:900; color:#0f172a; margin-bottom:10px;'>{sess_nm}</div>"
+                            f"<div style='font-size:14px; font-weight:900; color:#ffffff; margin-bottom:10px;'>{sess_nm}</div>"
                             f"<div style='display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;'>"
-                            f"<div style='background:white; border:1px solid #e2e8f0; border-radius:6px; padding:6px;'>"
-                            f"<div style='font-size:9.5px; font-weight:800; color:#64748b;'>TRAINING LOAD</div>"
-                            f"<div style='font-size:16px; font-weight:900; color:#0284c7;'>{tl_val:.0f}</div>"
+                            f"<div style='background:rgba(13,23,42,0.90); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:8px;'>"
+                            f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8;'>TRAINING LOAD</div>"
+                            f"<div style='font-size:16px; font-weight:900; color:#38bdf8;'>{tl_val:.0f}</div>"
                             f"</div>"
-                            f"<div style='background:white; border:1px solid #e2e8f0; border-radius:6px; padding:6px;'>"
-                            f"<div style='font-size:9.5px; font-weight:800; color:#64748b;'>METRI / PUNTO</div>"
-                            f"<div style='font-size:16px; font-weight:900; color:#10b981;'>{m_pt:.1f} m</div>"
+                            f"<div style='background:rgba(13,23,42,0.90); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:8px;'>"
+                            f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8;'>METRI / PUNTO</div>"
+                            f"<div style='font-size:16px; font-weight:900; color:#34d399;'>{m_pt:.1f} m</div>"
                             f"</div>"
-                            f"<div style='background:white; border:1px solid #e2e8f0; border-radius:6px; padding:6px;'>"
-                            f"<div style='font-size:9.5px; font-weight:800; color:#64748b;'>DISTANZA GPS</div>"
-                            f"<div style='font-size:16px; font-weight:900; color:#0f172a;'>{dist_val:.0f} m</div>"
+                            f"<div style='background:rgba(13,23,42,0.90); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:8px;'>"
+                            f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8;'>DISTANZA GPS</div>"
+                            f"<div style='font-size:16px; font-weight:900; color:#ffffff;'>{dist_val:.0f} m</div>"
                             f"</div>"
                             f"</div>"
-                            f"<div style='display:flex; justify-content:space-between; font-size:11.5px; color:#64748b; font-weight:700; margin-top:8px; padding-top:6px; border-top:1px dashed #e2e8f0;'>"
-                            f"<span>Minuti GPS: <b>{min_val:.0f}m</b></span>"
-                            f"<span>Acc High: <b>{acc_val:.0f}</b></span>"
-                            f"<span>Dec High: <b>{dec_val:.0f}</b></span>"
+                            f"<div style='display:flex; justify-content:space-between; font-size:11.5px; color:#cbd5e1; font-weight:700; margin-top:8px; padding-top:6px; border-top:1px dashed rgba(56,189,248,0.2);'>"
+                            f"<span>Minuti GPS: <b style='color:#ffffff;'>{min_val:.0f}m</b></span>"
+                            f"<span>Acc High: <b style='color:#ffffff;'>{acc_val:.0f}</b></span>"
+                            f"<span>Dec High: <b style='color:#ffffff;'>{dec_val:.0f}</b></span>"
                             f"</div>"
                             f"</div>",
                             unsafe_allow_html=True

@@ -436,22 +436,22 @@ def render_storico_match(t):
                     lbl_vs_per = tr("vs media", "vs avg")
 
                     html_table = (
-                        "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); overflow:hidden; margin-top:10px; margin-bottom:20px; font-family:\"Inter\",sans-serif;'>"
-                        "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                        "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 14px rgba(0,0,0,0.4); overflow:hidden; margin-top:10px; margin-bottom:20px; font-family:\"Inter\",sans-serif;'>"
+                        "<div style='background:linear-gradient(135deg, #070d18 0%, #0d1e38 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                         "<div style='display:flex; align-items:center; gap:10px;'>"
                         "<span style='width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block;'></span>"
-                        f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_rec_banner}</span>"
+                        f"<span style='color:#f8fafc; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_rec_banner}</span>"
                         "</div>"
                         f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_rec_sub}</span>"
                         "</div>"
                         "<table style='width:100%; border-collapse:collapse;'>"
-                        "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                        f"<th style='text-align:left; padding:12px 18px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:24%;'>{th_r_p}</th>"
-                        f"<th style='text-align:center; padding:12px 10px; color:#0f172a; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:12%;'>{th_r_max}</th>"
-                        f"<th style='text-align:center; padding:12px 10px; color:#64748b; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:12%;'>{th_r_avg}</th>"
-                        f"<th style='text-align:center; padding:12px 10px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:18%;'>{th_r_pct}</th>"
-                        f"<th style='text-align:left; padding:12px 14px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:16%;'>{th_r_bar}</th>"
-                        f"<th style='text-align:right; padding:12px 18px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:18%;'>{th_r_dt}</th>"
+                        "<thead><tr style='background:#0d1e38; border-bottom:2px solid rgba(56,189,248,0.25);'>"
+                        f"<th style='text-align:left; padding:12px 18px; color:#38bdf8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:24%;'>{th_r_p}</th>"
+                        f"<th style='text-align:center; padding:12px 10px; color:#f8fafc; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:12%;'>{th_r_max}</th>"
+                        f"<th style='text-align:center; padding:12px 10px; color:#94a3b8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:12%;'>{th_r_avg}</th>"
+                        f"<th style='text-align:center; padding:12px 10px; color:#38bdf8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:18%;'>{th_r_pct}</th>"
+                        f"<th style='text-align:left; padding:12px 14px; color:#38bdf8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:16%;'>{th_r_bar}</th>"
+                        f"<th style='text-align:right; padding:12px 18px; color:#38bdf8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:18%;'>{th_r_dt}</th>"
                         "</tr></thead><tbody>"
                     )
 
@@ -477,26 +477,26 @@ def render_storico_match(t):
                         diff_media = pct_media - 100.0
                         val_str = f"{val_max:.0f}" if dec == 0 else f"{val_max:.{dec}f}"
                         avg_str = f"{media_val:.0f}" if dec == 0 else f"{media_val:.{dec}f}"
-                        bg_color = "#ffffff" if row_idx_r % 2 == 0 else "#f8fafc"
+                        bg_color = "rgba(13,30,56,0.35)" if row_idx_r % 2 == 0 else "rgba(8,17,32,0.6)"
                         row_idx_r += 1
 
                         badge_html = render_pct_badge_cell(pct_media, diff_media, True, lbl_vs_per)
                         pbar_html = render_pct_progress_bar(pct_media)
 
                         riga_html = (
-                            f"<tr style='background:{bg_color}; border-bottom:1px solid #f1f5f9;'>"
+                            f"<tr style='background:{bg_color}; border-bottom:1px solid rgba(56,189,248,0.12);'>"
                             f"<td style='padding:12px 18px;'>"
-                            f"<div style='font-weight:700; color:#0f172a; font-size:13.5px;'>{etichetta}</div>"
-                            f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_col}; background:{cat_col}14; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_tag}</span>"
+                            f"<div style='font-weight:700; color:#f8fafc; font-size:13.5px;'>{etichetta}</div>"
+                            f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_col}; background:{cat_col}22; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_tag}</span>"
                             f"</td>"
-                            f"<td style='padding:12px 10px; text-align:center; font-size:19px; font-weight:900; color:#0f172a;'>{val_str}</td>"
-                            f"<td style='padding:12px 10px; text-align:center; font-size:15px; font-weight:700; color:#64748b;'>{avg_str}</td>"
+                            f"<td style='padding:12px 10px; text-align:center; font-size:19px; font-weight:900; color:#38bdf8;'>{val_str}</td>"
+                            f"<td style='padding:12px 10px; text-align:center; font-size:15px; font-weight:700; color:#94a3b8;'>{avg_str}</td>"
                             f"<td style='padding:12px 10px; text-align:center;'>{badge_html}</td>"
                             f"<td style='padding:12px 14px;'>{pbar_html}</td>"
                             f"<td style='padding:12px 18px; text-align:right;'>"
-                            f"<div style='display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; text-align:right;'>"
-                            f"<div style='font-size:11.5px; font-weight:800; color:#0f172a;'>{data_max}</div>"
-                            f"<div style='font-size:10px; font-weight:700; color:#475569; text-transform:uppercase;'>{sess_max}</div>"
+                            f"<div style='display:inline-block; background:#0d1e38; border:1px solid #1e293b; border-radius:6px; padding:4px 8px; text-align:right;'>"
+                            f"<div style='font-size:11.5px; font-weight:800; color:#f8fafc;'>{data_max}</div>"
+                            f"<div style='font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase;'>{sess_max}</div>"
                             f"</div>"
                             f"</td>"
                             "</tr>"

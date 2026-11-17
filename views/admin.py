@@ -398,9 +398,9 @@ def render_admin(t):
                         st.markdown(f"#### `{utente_selezionato}`")
                         if has_acc_sel:
                             dt_label = f" (il {dt_acc_sel})" if dt_acc_sel else ""
-                            st.markdown(f"<span style='background:#dcfce7; color:#166534; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>Termini IP & GDPR: Accettati{dt_label}</span>", unsafe_allow_html=True)
+                            st.markdown(f"<span style='background:rgba(16,185,129,0.18); color:#34d399; border:1px solid #10b981; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>Termini IP & GDPR: Accettati{dt_label}</span>", unsafe_allow_html=True)
                         else:
-                            st.markdown("<span style='background:#fee2e2; color:#991b1b; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>[!] Termini IP & GDPR: In attesa di primo accesso</span>", unsafe_allow_html=True)
+                            st.markdown("<span style='background:rgba(239,68,68,0.18); color:#f87171; border:1px solid #ef4444; font-size:13px; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-block;'>[!] Termini IP & GDPR: In attesa di primo accesso</span>", unsafe_allow_html=True)
 
                     with c_info2:
                         st.caption("Azione Rapida Admin:")
@@ -738,9 +738,9 @@ def render_admin(t):
                     row_prev = df_prev_1.iloc[0]
 
                     html_prev = (
-                        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:16px; font-family:\"Inter\", sans-serif;'>"
+                        "<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-bottom:16px; font-family:\"Inter\", sans-serif;'>"
                         "<table style='width:100%; border-collapse:collapse; font-size:13px;'>"
-                        "<tr style='background:#0f172a; color:white;'>"
+                        "<tr style='background:#0f172a; color:#38bdf8; border-bottom:2px solid rgba(56,189,248,0.2);'>"
                         "<th style='padding:10px 14px; text-align:left;'>Parametro M0V3</th>"
                         "<th style='padding:10px 14px; text-align:left;'>Regola / Sorgente</th>"
                         "<th style='padding:10px 14px; text-align:center;'>Valore Calcolato (Riga 1)</th>"
@@ -757,20 +757,20 @@ def render_admin(t):
 
                         is_num_zero = (c_std not in ("Date", "Session", "Players")) and (pd.isna(val_c) or float(val_c) == 0.0)
                         if st_code == "error" or st_code == "missing":
-                            b_bg, b_fg, b_lbl = "#fee2e2", "#991b1b", f"[X] {det_txt}"
+                            b_bg, b_fg, b_lbl = "rgba(239,68,68,0.20)", "#f87171", f"[X] {det_txt}"
                         elif st_code == "warning":
-                            b_bg, b_fg, b_lbl = "#fef3c7", "#b45309", f"[!] {det_txt}"
+                            b_bg, b_fg, b_lbl = "rgba(245,158,11,0.20)", "#fbbf24", f"[!] {det_txt}"
                         elif st_code == "unmapped" or is_num_zero:
-                            b_bg, b_fg, b_lbl = "#fef3c7", "#b45309", f"[!] Valore 0 ({det_txt})"
+                            b_bg, b_fg, b_lbl = "rgba(245,158,11,0.20)", "#fbbf24", f"[!] Valore 0 ({det_txt})"
                         else:
-                            b_bg, b_fg, b_lbl = "#dcfce7", "#166534", f"Valorizzato ({det_txt})"
+                            b_bg, b_fg, b_lbl = "rgba(16,185,129,0.20)", "#34d399", f"Valorizzato ({det_txt})"
 
                         html_prev += (
-                            "<tr style='border-bottom:1px solid #f1f5f9;'>"
-                            f"<td style='padding:8px 14px; font-weight:700; color:#0f172a;'>{c_std}</td>"
-                            f"<td style='padding:8px 14px; color:#475569; font-family:monospace; font-size:12px;'>{src_txt}</td>"
-                            f"<td style='padding:8px 14px; text-align:center; font-weight:800; color:#0f172a;'>{val_str}</td>"
-                            f"<td style='padding:8px 14px; text-align:center;'><span style='background:{b_bg}; color:{b_fg}; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700;'>{b_lbl}</span></td>"
+                            "<tr style='border-bottom:1px solid rgba(56,189,248,0.12);'>"
+                            f"<td style='padding:8px 14px; font-weight:700; color:#f8fafc;'>{c_std}</td>"
+                            f"<td style='padding:8px 14px; color:#94a3b8; font-family:monospace; font-size:12px;'>{src_txt}</td>"
+                            f"<td style='padding:8px 14px; text-align:center; font-weight:800; color:#38bdf8;'>{val_str}</td>"
+                            f"<td style='padding:8px 14px; text-align:center;'><span style='background:{b_bg}; color:{b_fg}; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; border:1px solid {b_fg}44;'>{b_lbl}</span></td>"
                             "</tr>"
                         )
                     html_prev += "</table></div>"
@@ -880,11 +880,11 @@ def render_admin(t):
                             st.session_state[area_key] = default_area_active
 
                         st.markdown(f"""
-                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:5px solid #0284c7; border-radius:10px; padding:10px 14px; margin-top:16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase;">
-                                <i class="bi bi-folder2-open" style="margin-right:6px; color:#0284c7;"></i>{area}
+                        <div style="background:#081120; border:1px solid #1e293b; border-left:5px solid #0284c7; border-radius:10px; padding:10px 14px; margin-top:16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:14px; font-weight:800; color:#f8fafc; text-transform:uppercase;">
+                                <i class="bi bi-folder2-open" style="margin-right:6px; color:#38bdf8;"></i>{area}
                             </span>
-                            <span style="font-size:11px; font-weight:700; color:#64748b;">
+                            <span style="font-size:11px; font-weight:700; color:#94a3b8;">
                                 {len(reports)} {tr('Sottopagine / Grafici', 'Sub-Pages / Graphs')}
                             </span>
                         </div>
@@ -942,10 +942,10 @@ def render_admin(t):
 
                         with cols_op[idx_p % 2]:
                             st.markdown(f"""
-                            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin-bottom:8px;">
+                            <div style="background:#081120; border:1px solid #1e293b; border-radius:8px; padding:8px 12px; margin-bottom:8px;">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <i class="bi bi-{pag['icona']}" style="color:#0ea5e9; font-size:16px;"></i>
-                                    <span style="font-size:13px; font-weight:700; color:#0f172a;">{pag['nome']}</span>
+                                    <i class="bi bi-{pag['icona']}" style="color:#38bdf8; font-size:16px;"></i>
+                                    <span style="font-size:13px; font-weight:700; color:#f8fafc;">{pag['nome']}</span>
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
@@ -1054,18 +1054,18 @@ def render_admin(t):
                     target_user_em = sel_tk_adm.get('user_email', '')
 
                     card_adm_html = (
-                        f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; box-shadow:0 2px 8px -2px rgba(15,23,42,0.06); margin-bottom:14px; font-family:\"Inter\",sans-serif;'>"
-                        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:10px;'>"
+                        f"<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; padding:16px 20px; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-bottom:14px; font-family:\"Inter\",sans-serif;'>"
+                        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #1e293b; padding-bottom:10px; margin-bottom:10px;'>"
                         f"<div>"
-                        f"<span style='font-size:16px; font-weight:900; color:#0f172a;'>{sel_tk_adm['subject']}</span>"
-                        f"<div style='font-size:11.5px; color:#64748b; margin-top:2px;'>ID: <b style='color:#0284c7;'>{sel_tk_adm['id']}</b> · Creato: {sel_tk_adm['created_at']}</div>"
+                        f"<span style='font-size:16px; font-weight:900; color:#f8fafc;'>{sel_tk_adm['subject']}</span>"
+                        f"<div style='font-size:11.5px; color:#94a3b8; margin-top:2px;'>ID: <b style='color:#38bdf8;'>{sel_tk_adm['id']}</b> · Creato: {sel_tk_adm['created_at']}</div>"
                         f"</div>"
                         f"<div style='display:flex; align-items:center; gap:8px;'>{b_pr} {b_st}</div>"
                         f"</div>"
-                        f"<div style='display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:#334155; margin-bottom:6px;'>"
-                        f"<span><b>Mittente:</b> <a href='mailto:{target_user_em}' style='color:#0284c7; font-weight:700;'>{target_user_em}</a></span>"
-                        f"<span><b>Ruolo:</b> {sel_tk_adm.get('user_role', 'Utente')}</span>"
-                        f"<span><b>Categoria:</b> {sel_tk_adm['category']}</span>"
+                        f"<div style='display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:#94a3b8; margin-bottom:6px;'>"
+                        f"<span><b style='color:#ffffff;'>Mittente:</b> <a href='mailto:{target_user_em}' style='color:#38bdf8; font-weight:700;'>{target_user_em}</a></span>"
+                        f"<span><b style='color:#ffffff;'>Ruolo:</b> {sel_tk_adm.get('user_role', 'Utente')}</span>"
+                        f"<span><b style='color:#ffffff;'>Categoria:</b> {sel_tk_adm['category']}</span>"
                         f"</div>"
                         f"</div>"
                     )
@@ -1095,7 +1095,7 @@ def render_admin(t):
                         mailto_user_url = f"mailto:{sel_tk_adm['user_email']}?subject={subj_mail}&body={body_mail}"
                         st.markdown(
                             f"<div style='padding-top:28px;'>"
-                            f"<a href='{mailto_user_url}' target='_blank' style='background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;'><i class='bi bi-envelope-at'></i> Scrivi email a {sel_tk_adm['user_email']}</a>"
+                            f"<a href='{mailto_user_url}' target='_blank' style='background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;'><i class='bi bi-envelope-at'></i> Scrivi email a {sel_tk_adm['user_email']}</a>"
                             f"</div>",
                             unsafe_allow_html=True
                         )
@@ -1119,7 +1119,7 @@ def render_admin(t):
 
                     # Cronologia Messaggi & Chat con l'Utente
                     st.markdown(
-                        f"<div style='font-size:13.5px; font-weight:800; color:#0f172a; margin-top:20px; margin-bottom:10px;'><i class='bi bi-chat-left-dots-fill' style='color:#0284c7; margin-right:6px;'></i>Comunicazione Diretta con l'Utente ({sel_tk_adm['user_email']})</div>",
+                        f"<div style='font-size:13.5px; font-weight:800; color:#f8fafc; margin-top:20px; margin-bottom:10px;'><i class='bi bi-chat-left-dots-fill' style='color:#38bdf8; margin-right:6px;'></i>Comunicazione Diretta con l'Utente ({sel_tk_adm['user_email']})</div>",
                         unsafe_allow_html=True
                     )
 
@@ -1129,7 +1129,7 @@ def render_admin(t):
                         is_adm_msg = (m.get("sender") == "admin")
                         if is_adm_msg:
                             chat_adm_html += (
-                                f"<div style='align-self:flex-end; max-width:82%; background:#1e293b; color:#ffffff; padding:12px 16px; border-radius:12px 12px 2px 12px; box-shadow:0 2px 6px rgba(0,0,0,0.06); font-family:\"Inter\",sans-serif;'>"
+                                f"<div style='align-self:flex-end; max-width:82%; background:#1e293b; color:#ffffff; padding:12px 16px; border-radius:12px 12px 2px 12px; box-shadow:0 2px 6px rgba(0,0,0,0.3); font-family:\"Inter\",sans-serif; border:1px solid #334155;'>"
                                 f"<div style='display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:4px;'>"
                                 f"<span style='font-size:11px; color:#94a3b8;'>{m.get('sender_email', 'Super-Admin')} · {m.get('timestamp', '')}</span>"
                                 f"<span style='background:#0284c7; color:#ffffff; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase;'>TU (ADMIN)</span>"
@@ -1139,10 +1139,10 @@ def render_admin(t):
                             )
                         else:
                             chat_adm_html += (
-                                f"<div style='align-self:flex-start; max-width:82%; background:#f0f9ff; color:#0f172a; border:1px solid #bae6fd; padding:12px 16px; border-radius:12px 12px 12px 2px; box-shadow:0 2px 6px rgba(2,132,199,0.05); font-family:\"Inter\",sans-serif;'>"
+                                f"<div style='align-self:flex-start; max-width:82%; background:rgba(14,165,233,0.15); color:#f8fafc; border:1px solid rgba(56,189,248,0.35); padding:12px 16px; border-radius:12px 12px 12px 2px; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-family:\"Inter\",sans-serif;'>"
                                 f"<div style='display:flex; align-items:center; gap:8px; margin-bottom:4px;'>"
-                                f"<span style='background:#e2e8f0; color:#334155; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;'>UTENTE</span>"
-                                f"<span style='font-size:11px; color:#64748b;'>{m.get('sender_email', sel_tk_adm['user_email'])} · {m.get('timestamp', '')}</span>"
+                                f"<span style='background:#081120; color:#38bdf8; border:1px solid #1e293b; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;'>UTENTE</span>"
+                                f"<span style='font-size:11px; color:#94a3b8;'>{m.get('sender_email', sel_tk_adm['user_email'])} · {m.get('timestamp', '')}</span>"
                                 f"</div>"
                                 f"<div style='font-size:13px; line-height:1.45; white-space:pre-wrap;'>{m.get('text', '')}</div>"
                                 f"</div>"

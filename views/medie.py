@@ -210,45 +210,45 @@ def render_medie(t):
 
             rows_b1_html = ""
             sess_palette = {
-                "match": ("#ef4444", "#fef2f2"),
-                "fisica": ("#f59e0b", "#fffbeb"),
-                "tecnica": ("#0ea5e9", "#f0f9ff"),
-                "recupero": ("#10b981", "#ecfdf5"),
+                "match": ("#ef4444", "rgba(239, 68, 68, 0.15)"),
+                "fisica": ("#f59e0b", "rgba(245, 158, 11, 0.15)"),
+                "tecnica": ("#0ea5e9", "rgba(14, 165, 233, 0.15)"),
+                "recupero": ("#10b981", "rgba(16, 185, 129, 0.15)"),
             }
             for idx_s, (sess_name, row_vals) in enumerate(df_grouped.iterrows()):
-                bg_r = "#ffffff" if idx_s % 2 == 0 else "#f8fafc"
+                bg_r = "#081120" if idx_s % 2 == 0 else "#0d1e38"
                 s_low = str(sess_name).lower()
-                s_col, s_bg = sess_palette.get(s_low, ("#475569", "#f1f5f9"))
+                s_col, s_bg = sess_palette.get(s_low, ("#94a3b8", "rgba(148, 163, 184, 0.15)"))
                 cnt_s = int(df_counts.get(sess_name, 0))
                 tds_vals = ""
                 for col_k, _, _, _ in col_meta_map:
                     v_num = float(row_vals.get(col_k, 0.0))
-                    tds_vals += f"<td style='padding:14px 8px; text-align:center; font-size:15.5px; font-weight:800; color:#0f172a;'>{v_num:.1f}</td>"
+                    tds_vals += f"<td style='padding:14px 8px; text-align:center; font-size:15.5px; font-weight:800; color:#f8fafc;'>{v_num:.1f}</td>"
                 rows_b1_html += (
-                    f"<tr style='background:{bg_r}; border-bottom:1px solid #f1f5f9;'>"
+                    f"<tr style='background:{bg_r}; border-bottom:1px solid #1e293b;'>"
                     f"<td style='padding:14px 16px;'>"
-                    f"<span style='display:inline-block; background:{s_bg}; color:{s_col}; border:1px solid {s_col}35; font-size:12px; font-weight:900; padding:4px 10px; border-radius:6px; text-transform:uppercase; letter-spacing:0.04em;'>{sess_name}</span>"
+                    f"<span style='display:inline-block; background:{s_bg}; color:{s_col}; border:1px solid {s_col}55; font-size:12px; font-weight:900; padding:4px 10px; border-radius:6px; text-transform:uppercase; letter-spacing:0.04em;'>{sess_name}</span>"
                     f"</td>"
                     f"<td style='padding:14px 8px; text-align:center;'>"
-                    f"<span style='background:#f1f5f9; color:#475569; font-size:11.5px; font-weight:800; padding:3px 8px; border-radius:999px;'>{cnt_s}</span>"
+                    f"<span style='background:#1e293b; color:#38bdf8; font-size:11.5px; font-weight:800; padding:3px 8px; border-radius:999px; border:1px solid #334155;'>{cnt_s}</span>"
                     f"</td>"
                     f"{tds_vals}"
                     f"</tr>"
                 )
 
             table_b1_html = (
-                "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); overflow-x:auto; margin-top:10px; margin-bottom:22px; font-family:\"Inter\",sans-serif;'>"
-                "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); overflow-x:auto; margin-top:10px; margin-bottom:22px; font-family:\"Inter\",sans-serif;'>"
+                "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                 "<div style='display:flex; align-items:center; gap:10px;'>"
                 "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
                 f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_b1_title}</span>"
                 "</div>"
-                f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_b1_sub}</span>"
+                f"<span style='color:#38bdf8; font-size:11px; font-weight:600;'>{lbl_b1_sub}</span>"
                 "</div>"
                 "<table style='width:100%; border-collapse:collapse;'>"
-                "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{th_sess_lbl}</th>"
-                f"<th style='text-align:center; padding:12px 8px; color:#64748b; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{th_cnt_lbl}</th>"
+                "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{th_sess_lbl}</th>"
+                f"<th style='text-align:center; padding:12px 8px; color:#94a3b8; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{th_cnt_lbl}</th>"
                 f"{th_cols_html}"
                 "</tr></thead>"
                 f"<tbody>{rows_b1_html}</tbody></table></div>"
@@ -419,17 +419,17 @@ def render_medie(t):
                             with card_cols[col_idx]:
                                 c_col = r['Session_Color']
                                 st.html(
-                                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-top:4px solid {c_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                                    f"<div style='background:#081120; border:1px solid #1e293b; border-top:4px solid {c_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                                     f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                    f"<span style='font-size:10px; font-weight:800; color:{c_col}; background:{c_col}14; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>{r['Tipologia Sessione']}</span>"
-                                    f"<span style='font-size:11px; font-weight:700; color:#64748b;'>{r['Date']}</span>"
+                                    f"<span style='font-size:10px; font-weight:800; color:{c_col}; background:{c_col}22; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>{r['Tipologia Sessione']}</span>"
+                                    f"<span style='font-size:11px; font-weight:700; color:#94a3b8;'>{r['Date']}</span>"
                                     f"</div>"
-                                    f"<div style='font-size:13px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{str(r.get('Session', r['Tipologia Sessione']))}</div>"
-                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;'>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA', 'DURATION')}</div><div style='font-size:14px; font-weight:900; color:#0f172a;'>{float(r['Minuti']):.0f} min</div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#0ea5e9;'>{float(r['Training Load']):,.0f}</div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH', 'TL HIGH')}</div><div style='font-size:14px; font-weight:900; color:#ef4444;'>{float(r['TL_High']):,.0f}</div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('WORK RATE', 'WORK RATE')}</div><div style='font-size:14px; font-weight:900; color:#8b5cf6;'>{float(r['Work Rate']):.1f} <span style='font-size:10px; font-weight:600;'>TL/m</span></div></div>"
+                                    f"<div style='font-size:13px; font-weight:800; color:#f8fafc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{str(r.get('Session', r['Tipologia Sessione']))}</div>"
+                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #1e293b; padding-top:8px;'>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA', 'DURATION')}</div><div style='font-size:14px; font-weight:900; color:#f8fafc;'>{float(r['Minuti']):.0f} min</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#38bdf8;'>{float(r['Training Load']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH', 'TL HIGH')}</div><div style='font-size:14px; font-weight:900; color:#f87171;'>{float(r['TL_High']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('WORK RATE', 'WORK RATE')}</div><div style='font-size:14px; font-weight:900; color:#a78bfa;'>{float(r['Work Rate']):.1f} <span style='font-size:10px; font-weight:600;'>TL/m</span></div></div>"
                                     f"</div>"
                                     f"</div>"
                                 )
@@ -652,41 +652,41 @@ def render_medie(t):
                             tds_sess = ""
                             for v in vals_row:
                                 is_max = (v == max_v and max_v != min_v)
-                                cell_bg = "background:rgba(14,165,233,0.08);" if is_max else ""
-                                cell_col = "#0ea5e9" if is_max else "#0f172a"
+                                cell_bg = "background:rgba(14,165,233,0.15);" if is_max else ""
+                                cell_col = "#38bdf8" if is_max else "#f8fafc"
                                 cell_fw = "900" if is_max else "700"
                                 tds_sess += f"<td style='padding:11px 8px; font-size:14px; font-weight:{cell_fw}; color:{cell_col}; text-align:center; {cell_bg}'>{fmt_str.format(v)}</td>"
 
-                            bg_tr = "#ffffff" if idx_p % 2 == 0 else "#f8fafc"
-                            delta_badge = f"<span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#94a3b8; font-size:10px;'>-</span>"
+                            bg_tr = "#081120" if idx_p % 2 == 0 else "#0d1e38"
+                            delta_badge = f"<span style='background:#1e293b; color:#38bdf8; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; border:1px solid #334155;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#64748b; font-size:10px;'>-</span>"
 
                             rows_html_sess += (
-                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #f1f5f9;'>"
+                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #1e293b;'>"
                                 f"<td style='text-align:left; padding:11px 16px;'>"
-                                f"<div style='font-weight:700; color:#0f172a; font-size:13px;'>{col_lbl}</div>"
-                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
+                                f"<div style='font-weight:700; color:#f8fafc; font-size:13px;'>{col_lbl}</div>"
+                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}22; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
                                 f"</td>"
                                 f"{tds_sess}"
-                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#64748b; text-align:center; background:#f8fafc;'>{fmt_str.format(mean_v)}</td>"
+                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#94a3b8; text-align:center; background:#0d1e38;'>{fmt_str.format(mean_v)}</td>"
                                 f"<td style='padding:11px 12px; text-align:center; white-space:nowrap;'>{delta_badge}</td>"
                                 f"</tr>"
                             )
 
                         html_table_sess = (
-                            "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
-                            "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
+                            "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                             "<div style='display:flex; align-items:center; gap:10px;'>"
                             "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
                             f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_table_header}</span>"
                             "</div>"
-                            f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_table_sub}</span>"
+                            f"<span style='color:#38bdf8; font-size:11px; font-weight:600;'>{lbl_table_sub}</span>"
                             "</div>"
                             "<table style='width:100%; border-collapse:collapse;'>"
-                            "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                            f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
+                            "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                            f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
                             f"{th_headers_sess}"
-                            f"<th style='text-align:center; padding:12px 8px; color:#64748b; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
-                            f"<th style='text-align:center; padding:12px 12px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
+                            f"<th style='text-align:center; padding:12px 8px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
+                            f"<th style='text-align:center; padding:12px 12px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
                             "</tr></thead>"
                             f"<tbody>{rows_html_sess}</tbody></table></div>"
                         )
@@ -768,17 +768,17 @@ def render_medie(t):
                                 w_col = r['Week_Color']
                                 pct_tlh = (float(r['TL_High']) / float(r['Training Load']) * 100.0) if float(r['Training Load']) > 0 else 0.0
                                 st.html(
-                                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-top:4px solid {w_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                                    f"<div style='background:#081120; border:1px solid #1e293b; border-top:4px solid {w_col}; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                                     f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                    f"<span style='font-size:10px; font-weight:800; color:{w_col}; background:{w_col}14; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>SETTIMANA</span>"
-                                    f"<span style='font-size:10.5px; font-weight:700; color:#64748b;'>{r['N_Sessioni']} sess. • {r['Giorni_Allenati']} gg</span>"
+                                    f"<span style='font-size:10px; font-weight:800; color:{w_col}; background:{w_col}22; padding:2px 8px; border-radius:6px; text-transform:uppercase;'>SETTIMANA</span>"
+                                    f"<span style='font-size:10.5px; font-weight:700; color:#94a3b8;'>{r['N_Sessioni']} sess. • {r['Giorni_Allenati']} gg</span>"
                                     f"</div>"
-                                    f"<div style='font-size:13px; font-weight:800; color:#0f172a;'>{r['Week_Label']}</div>"
-                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;'>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#0ea5e9;'>{float(r['Training Load']):,.0f}</div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH (% TL)', 'TL HIGH (% TL)')}</div><div style='font-size:14px; font-weight:900; color:#ef4444;'>{float(r['TL_High']):,.0f} <span style='font-size:10px; font-weight:600;'>({pct_tlh:.0f}%)</span></div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA TOT.', 'TOTAL TIME')}</div><div style='font-size:14px; font-weight:900; color:#0f172a;'>{float(r['Minuti'])/60:.1f} h</div></div>"
-                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('MONOTONIA', 'MONOTONY')}</div><div style='font-size:14px; font-weight:900; color:#8b5cf6;'>{float(r['Monotonia']):.2f}</div></div>"
+                                    f"<div style='font-size:13px; font-weight:800; color:#f8fafc;'>{r['Week_Label']}</div>"
+                                    f"<div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; border-top:1px solid #1e293b; padding-top:8px;'>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TRAINING LOAD', 'TRAINING LOAD')}</div><div style='font-size:14px; font-weight:900; color:#38bdf8;'>{float(r['Training Load']):,.0f}</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('TL HIGH (% TL)', 'TL HIGH (% TL)')}</div><div style='font-size:14px; font-weight:900; color:#f87171;'>{float(r['TL_High']):,.0f} <span style='font-size:10px; font-weight:600;'>({pct_tlh:.0f}%)</span></div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('DURATA TOT.', 'TOTAL TIME')}</div><div style='font-size:14px; font-weight:900; color:#f8fafc;'>{float(r['Minuti'])/60:.1f} h</div></div>"
+                                    f"<div><div style='font-size:9.5px; color:#94a3b8; font-weight:700; text-transform:uppercase;'>{tr('MONOTONIA', 'MONOTONY')}</div><div style='font-size:14px; font-weight:900; color:#a78bfa;'>{float(r['Monotonia']):.2f}</div></div>"
                                     f"</div>"
                                     f"</div>"
                                 )
@@ -939,41 +939,41 @@ def render_medie(t):
                             tds_w = ""
                             for v in vals_row:
                                 is_max = (v == max_v and max_v != min_v)
-                                cell_bg = "background:rgba(14,165,233,0.08);" if is_max else ""
-                                cell_col = "#0ea5e9" if is_max else "#0f172a"
+                                cell_bg = "background:rgba(14,165,233,0.15);" if is_max else ""
+                                cell_col = "#38bdf8" if is_max else "#f8fafc"
                                 cell_fw = "900" if is_max else "700"
                                 tds_w += f"<td style='padding:11px 8px; font-size:14px; font-weight:{cell_fw}; color:{cell_col}; text-align:center; {cell_bg}'>{fmt_str.format(v)}</td>"
 
-                            bg_tr = "#ffffff" if idx_p % 2 == 0 else "#f8fafc"
-                            delta_badge = f"<span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#94a3b8; font-size:10px;'>-</span>"
+                            bg_tr = "#081120" if idx_p % 2 == 0 else "#0d1e38"
+                            delta_badge = f"<span style='background:#1e293b; color:#38bdf8; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; border:1px solid #334155;'>Δ +{delta_pct:.0f}%</span>" if min_v > 0 else "<span style='color:#64748b; font-size:10px;'>-</span>"
 
                             rows_html_w += (
-                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #f1f5f9;'>"
+                                f"<tr style='background:{bg_tr}; border-bottom:1px solid #1e293b;'>"
                                 f"<td style='text-align:left; padding:11px 16px;'>"
-                                f"<div style='font-weight:700; color:#0f172a; font-size:13px;'>{col_lbl}</div>"
-                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
+                                f"<div style='font-weight:700; color:#f8fafc; font-size:13px;'>{col_lbl}</div>"
+                                f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}22; padding:1px 6px; border-radius:4px; letter-spacing:0.04em;'>{cat_t}</span>"
                                 f"</td>"
                                 f"{tds_w}"
-                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#64748b; text-align:center; background:#f8fafc;'>{fmt_str.format(mean_v)}</td>"
+                                f"<td style='padding:11px 8px; font-size:13.5px; font-weight:800; color:#94a3b8; text-align:center; background:#0d1e38;'>{fmt_str.format(mean_v)}</td>"
                                 f"<td style='padding:11px 12px; text-align:center; white-space:nowrap;'>{delta_badge}</td>"
                                 f"</tr>"
                             )
 
                         html_table_w = (
-                            "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
-                            "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-top:16px; margin-bottom:20px; overflow-x:auto; font-family:\"Inter\",sans-serif;'>"
+                            "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                             "<div style='display:flex; align-items:center; gap:10px;'>"
                             "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
                             f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_table_w_header}</span>"
                             "</div>"
-                            f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_table_w_sub}</span>"
+                            f"<span style='color:#38bdf8; font-size:11px; font-weight:600;'>{lbl_table_w_sub}</span>"
                             "</div>"
                             "<table style='width:100%; border-collapse:collapse;'>"
-                            "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                            f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
+                            "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                            f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Parametro Analizzato', 'Analyzed Parameter')}</th>"
                             f"{th_headers_w}"
-                            f"<th style='text-align:center; padding:12px 8px; color:#64748b; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
-                            f"<th style='text-align:center; padding:12px 12px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
+                            f"<th style='text-align:center; padding:12px 8px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em;'>{tr('Media', 'Mean')}</th>"
+                            f"<th style='text-align:center; padding:12px 12px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em;'>{tr('Scostamento Max-Min', 'Max-Min Spread')}</th>"
                             "</tr></thead>"
                             f"<tbody>{rows_html_w}</tbody></table></div>"
                         )
@@ -981,7 +981,7 @@ def render_medie(t):
 
     elif active_medie_tab == T_COMP_M:
         lbl_t2_h = tr("Testa a Testa Medie — Confronto Storico tra Atleti", "Head to Head Averages — Historical Athlete Comparison")
-        st.markdown(f"<h3 style='color:#0f172a; margin-top:10px;'>{lbl_t2_h}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:#ffffff; margin-top:10px;'>{lbl_t2_h}</h3>", unsafe_allow_html=True)
         glob_ath = st.session_state.get('selected_athlete')
         if glob_ath in atleti_consentiti:
             ath_a = glob_ath
@@ -1000,9 +1000,9 @@ def render_medie(t):
         with col_a:
             lbl_ath1_tit = tr("Atleta 1 (Soggetto Analizzato)", "Athlete 1 (Analyzed Subject)")
             st.markdown(
-                f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px 14px; margin-bottom:8px;'>"
-                f"<div style='font-size:10.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_ath1_tit}</div>"
-                f"<div style='font-size:15px; font-weight:900; color:#0f172a; margin-top:2px;'><i class='bi bi-person-fill' style='color:#0284c7; margin-right:6px;'></i>{ath_a}</div>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; padding:8px 14px; margin-bottom:8px;'>"
+                f"<div style='font-size:10.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_ath1_tit}</div>"
+                f"<div style='font-size:15px; font-weight:900; color:#f8fafc; margin-top:2px;'><i class='bi bi-person-fill' style='color:#0ea5e9; margin-right:6px;'></i>{ath_a}</div>"
                 f"</div>",
                 unsafe_allow_html=True
             )
@@ -1071,18 +1071,18 @@ def render_medie(t):
                 diff_v = pct_v - 100.0
                 pct_map_h2h[col_k] = pct_v if has_ref else 100.0
 
-                bg_color = "#ffffff" if idx_h % 2 == 0 else "#f8fafc"
+                bg_color = "#081120" if idx_h % 2 == 0 else "#0d1e38"
                 badge_cell = render_pct_badge_cell(pct_v, diff_v, has_ref, lbl_vs_b)
                 pbar_cell = render_pct_progress_bar(pct_v if has_ref else 0.0)
 
                 html_rows += (
-                    f"<tr style='background:{bg_color}; border-bottom:1px solid #f1f5f9;'>"
+                    f"<tr style='background:{bg_color}; border-bottom:1px solid #1e293b;'>"
                     f"<td style='text-align:left; padding:13px 18px;'>"
-                    f"<div style='font-weight:700; color:#0f172a; font-size:13.5px;'>{col_lbl}</div>"
-                    f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_t}</span>"
+                    f"<div style='font-weight:700; color:#f8fafc; font-size:13.5px;'>{col_lbl}</div>"
+                    f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}22; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_t}</span>"
                     f"</td>"
-                    f"<td style='padding:13px 10px; font-size:18.5px; font-weight:900; color:#0ea5e9; text-align:center;'>{va:.1f}</td>"
-                    f"<td style='padding:13px 10px; font-size:16.5px; font-weight:700; color:#8b5cf6; text-align:center;'>{vb:.1f}</td>"
+                    f"<td style='padding:13px 10px; font-size:18.5px; font-weight:900; color:#38bdf8; text-align:center;'>{va:.1f}</td>"
+                    f"<td style='padding:13px 10px; font-size:16.5px; font-weight:700; color:#a78bfa; text-align:center;'>{vb:.1f}</td>"
                     f"<td style='padding:13px 10px; text-align:center;'>{badge_cell}</td>"
                     f"<td style='padding:13px 18px;'>{pbar_cell}</td>"
                     f"</tr>"
@@ -1095,21 +1095,21 @@ def render_medie(t):
             th_h_bar = tr("Confronto Visivo (100%&nbsp;=&nbsp;Atleta&nbsp;2)", "Visual Comparison (100%&nbsp;=&nbsp;Athlete&nbsp;2)")
 
             html_table = (
-                "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:14px; margin-bottom:20px; overflow:hidden; font-family:\"Inter\",sans-serif;'>"
-                "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-top:14px; margin-bottom:20px; overflow:hidden; font-family:\"Inter\",sans-serif;'>"
+                "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                 "<div style='display:flex; align-items:center; gap:10px;'>"
                 "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
                 f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_h2h_banner}</span>"
                 "</div>"
-                f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_h2h_sub}</span>"
+                f"<span style='color:#38bdf8; font-size:11px; font-weight:600;'>{lbl_h2h_sub}</span>"
                 "</div>"
                 "<table style='width:100%; border-collapse:collapse;'>"
-                "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:22%;'>{th_h_p}</th>"
-                f"<th style='text-align:center; padding:12px 8px; color:#0284c7; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:12%;'>{ath_a}</th>"
-                f"<th style='text-align:center; padding:12px 8px; color:#7c3aed; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:13%;'>{ath_b} (100%)</th>"
-                f"<th style='text-align:center; padding:12px 10px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:26%; white-space:nowrap;'>{th_h_pct}</th>"
-                f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:27%; white-space:nowrap;'>{th_h_bar}</th>"
+                "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:22%;'>{th_h_p}</th>"
+                f"<th style='text-align:center; padding:12px 8px; color:#38bdf8; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:12%;'>{ath_a}</th>"
+                f"<th style='text-align:center; padding:12px 8px; color:#a78bfa; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:13%;'>{ath_b} (100%)</th>"
+                f"<th style='text-align:center; padding:12px 10px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:26%; white-space:nowrap;'>{th_h_pct}</th>"
+                f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:27%; white-space:nowrap;'>{th_h_bar}</th>"
                 "</tr></thead>"
                 f"<tbody>{html_rows}</tbody></table></div>"
             )
@@ -1220,16 +1220,16 @@ def render_medie(t):
                     z_lbl_i, z_col_i, z_bg_i, z_brd_i = acwr_zone_meta(idx_val)
                     pbar_idx = render_pct_progress_bar(idx_val, bar_col=idx_acc)
                     st.markdown(
-                        f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-left:5px solid {idx_acc}; border-radius:12px; padding:15px 18px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                        f"<div style='background:#081120; border:1px solid #1e293b; border-left:5px solid {idx_acc}; border-radius:12px; padding:15px 18px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                         f"<div style='display:flex; justify-content:space-between; align-items:flex-start;'>"
                         f"<div>"
-                        f"<div style='font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em;'>{idx_nm}</div>"
-                        f"<div style='font-size:10.5px; color:#94a3b8; margin-top:2px;'>{idx_sub_txt}</div>"
+                        f"<div style='font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em;'>{idx_nm}</div>"
+                        f"<div style='font-size:10.5px; color:#64748b; margin-top:2px;'>{idx_sub_txt}</div>"
                         f"</div>"
                         f"<span style='background:{z_bg_i}; color:{z_col_i}; border:1px solid {z_brd_i}; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:999px; letter-spacing:0.05em;'>{z_lbl_i}</span>"
                         f"</div>"
                         f"<div style='display:flex; align-items:baseline; gap:10px; margin-top:8px;'>"
-                        f"<span style='font-size:32px; font-weight:900; color:#0f172a; line-height:1;'>{idx_val:.0f}%</span>"
+                        f"<span style='font-size:32px; font-weight:900; color:#ffffff; line-height:1;'>{idx_val:.0f}%</span>"
                         f"<span style='font-size:13px; font-weight:800; color:{z_col_i};'>({s_idx} {lbl_vs_b})</span>"
                         f"</div>"
                         f"<div style='margin-top:8px;'>{pbar_idx}</div>"
@@ -1242,7 +1242,7 @@ def render_medie(t):
     # ---------------------------------------------------------
     elif active_medie_tab == T_COMP_W:
         lbl_t3_h = tr("Testa a Testa Settimana — Confronto Carichi tra Atleti", "Weekly Head to Head — Workload Comparison between Athletes")
-        st.markdown(f"<h3 style='color:#0f172a; margin-top:10px;'>{lbl_t3_h}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:#ffffff; margin-top:10px;'>{lbl_t3_h}</h3>", unsafe_allow_html=True)
         glob_ath = st.session_state.get('selected_athlete')
         if glob_ath in atleti_consentiti:
             ath_wa = glob_ath
@@ -1261,9 +1261,9 @@ def render_medie(t):
         with col_wa:
             lbl_ath1_w_tit = tr("Atleta 1 (Soggetto Analizzato)", "Athlete 1 (Analyzed Subject)")
             st.markdown(
-                f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px 14px; margin-bottom:8px;'>"
-                f"<div style='font-size:10.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_ath1_w_tit}</div>"
-                f"<div style='font-size:15px; font-weight:900; color:#0f172a; margin-top:2px;'><i class='bi bi-person-fill' style='color:#0284c7; margin-right:6px;'></i>{ath_wa}</div>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; padding:8px 14px; margin-bottom:8px;'>"
+                f"<div style='font-size:10.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_ath1_w_tit}</div>"
+                f"<div style='font-size:15px; font-weight:900; color:#f8fafc; margin-top:2px;'><i class='bi bi-person-fill' style='color:#0ea5e9; margin-right:6px;'></i>{ath_wa}</div>"
                 f"</div>",
                 unsafe_allow_html=True
             )
@@ -1365,18 +1365,18 @@ def render_medie(t):
                 diff_v = pct_v - 100.0
                 pct_map_h2h_w[col_k] = pct_v if has_ref else 100.0
 
-                bg_color = "#ffffff" if idx_h % 2 == 0 else "#f8fafc"
+                bg_color = "#081120" if idx_h % 2 == 0 else "#0d1e38"
                 badge_cell = render_pct_badge_cell(pct_v, diff_v, has_ref, lbl_vs_wb)
                 pbar_cell = render_pct_progress_bar(pct_v if has_ref else 0.0)
 
                 html_w_rows += (
-                    f"<tr style='background:{bg_color}; border-bottom:1px solid #f1f5f9;'>"
+                    f"<tr style='background:{bg_color}; border-bottom:1px solid #1e293b;'>"
                     f"<td style='text-align:left; padding:13px 18px;'>"
-                    f"<div style='font-weight:700; color:#0f172a; font-size:13.5px;'>{col_lbl}</div>"
-                    f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}14; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_t}</span>"
+                    f"<div style='font-weight:700; color:#f8fafc; font-size:13.5px;'>{col_lbl}</div>"
+                    f"<span style='display:inline-block; margin-top:2px; font-size:9px; font-weight:800; color:{cat_c}; background:{cat_c}22; padding:1px 6px; border-radius:4px; letter-spacing:0.05em;'>{cat_t}</span>"
                     f"</td>"
-                    f"<td style='padding:13px 10px; font-size:18.5px; font-weight:900; color:#0ea5e9; text-align:center;'>{va:,.0f}</td>"
-                    f"<td style='padding:13px 10px; font-size:16.5px; font-weight:700; color:#8b5cf6; text-align:center;'>{vb:,.0f}</td>"
+                    f"<td style='padding:13px 10px; font-size:18.5px; font-weight:900; color:#38bdf8; text-align:center;'>{va:,.0f}</td>"
+                    f"<td style='padding:13px 10px; font-size:16.5px; font-weight:700; color:#a78bfa; text-align:center;'>{vb:,.0f}</td>"
                     f"<td style='padding:13px 10px; text-align:center;'>{badge_cell}</td>"
                     f"<td style='padding:13px 18px;'>{pbar_cell}</td>"
                     f"</tr>"
@@ -1389,21 +1389,21 @@ def render_medie(t):
             th_h_bar = tr("Confronto Visivo (100%&nbsp;=&nbsp;Atleta&nbsp;2)", "Visual Comparison (100%&nbsp;=&nbsp;Athlete&nbsp;2)")
 
             html_w_table = (
-                "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); margin-top:14px; margin-bottom:20px; overflow:hidden; font-family:\"Inter\",sans-serif;'>"
-                "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-top:14px; margin-bottom:20px; overflow:hidden; font-family:\"Inter\",sans-serif;'>"
+                "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #1e293b;'>"
                 "<div style='display:flex; align-items:center; gap:10px;'>"
                 "<span style='width:8px; height:8px; border-radius:50%; background:#38bdf8; display:inline-block;'></span>"
                 f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{lbl_h2h_w_banner}</span>"
                 "</div>"
-                f"<span style='color:#94a3b8; font-size:11px; font-weight:600;'>{lbl_h2h_w_sub}</span>"
+                f"<span style='color:#38bdf8; font-size:11px; font-weight:600;'>{lbl_h2h_w_sub}</span>"
                 "</div>"
                 "<table style='width:100%; border-collapse:collapse;'>"
-                "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:22%;'>{th_h_p}</th>"
-                f"<th style='text-align:center; padding:12px 8px; color:#0284c7; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:12%;'>{ath_wa}</th>"
-                f"<th style='text-align:center; padding:12px 8px; color:#7c3aed; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:13%;'>{ath_wb} (100%)</th>"
-                f"<th style='text-align:center; padding:12px 10px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:26%; white-space:nowrap;'>{th_h_pct}</th>"
-                f"<th style='text-align:left; padding:12px 16px; color:#475569; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:27%; white-space:nowrap;'>{th_h_bar}</th>"
+                "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:22%;'>{th_h_p}</th>"
+                f"<th style='text-align:center; padding:12px 8px; color:#38bdf8; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:12%;'>{ath_wa}</th>"
+                f"<th style='text-align:center; padding:12px 8px; color:#a78bfa; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:0.03em; width:13%;'>{ath_wb} (100%)</th>"
+                f"<th style='text-align:center; padding:12px 10px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:26%; white-space:nowrap;'>{th_h_pct}</th>"
+                f"<th style='text-align:left; padding:12px 16px; color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:800; letter-spacing:0.02em; width:27%; white-space:nowrap;'>{th_h_bar}</th>"
                 "</tr></thead>"
                 f"<tbody>{html_w_rows}</tbody></table></div>"
             )
@@ -1512,16 +1512,16 @@ def render_medie(t):
                     z_lbl_i, z_col_i, z_bg_i, z_brd_i = acwr_zone_meta(idx_val)
                     pbar_idx = render_pct_progress_bar(idx_val, bar_col=idx_acc)
                     st.html(
-                        f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-left:5px solid {idx_acc}; border-radius:12px; padding:15px 18px; margin-bottom:12px; box-shadow:0 2px 6px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                        f"<div style='background:#081120; border:1px solid #1e293b; border-left:5px solid {idx_acc}; border-radius:12px; padding:15px 18px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                         f"<div style='display:flex; justify-content:space-between; align-items:flex-start;'>"
                         f"<div>"
-                        f"<div style='font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em;'>{idx_nm}</div>"
+                        f"<div style='font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.06em;'>{idx_nm}</div>"
                         f"<div style='font-size:10.5px; color:#94a3b8; margin-top:2px;'>{idx_sub_txt}</div>"
                         f"</div>"
                         f"<span style='background:{z_bg_i}; color:{z_col_i}; border:1px solid {z_brd_i}; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:999px; letter-spacing:0.05em;'>{z_lbl_i}</span>"
                         f"</div>"
                         f"<div style='display:flex; align-items:baseline; gap:10px; margin-top:8px;'>"
-                        f"<span style='font-size:32px; font-weight:900; color:#0f172a; line-height:1;'>{idx_val:.0f}%</span>"
+                        f"<span style='font-size:32px; font-weight:900; color:#f8fafc; line-height:1;'>{idx_val:.0f}%</span>"
                         f"<span style='font-size:13px; font-weight:800; color:{z_col_i};'>({s_idx} {lbl_vs_wb})</span>"
                         f"</div>"
                         f"<div style='margin-top:8px;'>{pbar_idx}</div>"
@@ -1531,8 +1531,8 @@ def render_medie(t):
     elif active_medie_tab == T_RANK:
         st.html(
             "<div style='margin-top:10px; margin-bottom:18px;'>"
-            f"<h3 style='color:#0f172a; margin:0 0 4px 0; font-size:22px; font-weight:800;'><i class='bi bi-trophy-fill' style='color:#0284c7; margin-right:8px;'></i>{tr('Ranking Roster Atleti — Accelerometria & Carichi', 'Athlete Roster Ranking — Accelerometry & Workloads')}</h3>"
-            f"<p style='color:#64748b; font-size:13px; margin:0;'>{tr('Graduatoria indipendente per Volume e Intensità dell’intero roster assegnato, su scala settimanale e stagionale con podio sintetico M0V3.', 'Independent ranking for Volume and Intensity across the entire assigned roster, weekly and seasonal with M0V3 synthetic podium.')}</p>"
+            f"<h3 style='color:#f8fafc; margin:0 0 4px 0; font-size:22px; font-weight:800;'><i class='bi bi-trophy-fill' style='color:#38bdf8; margin-right:8px;'></i>{tr('Ranking Roster Atleti — Accelerometria & Carichi', 'Athlete Roster Ranking — Accelerometry & Workloads')}</h3>"
+            f"<p style='color:#94a3b8; font-size:13px; margin:0;'>{tr('Graduatoria indipendente per Volume e Intensità dell’intero roster assegnato, su scala settimanale e stagionale con podio sintetico M0V3.', 'Independent ranking for Volume and Intensity across the entire assigned roster, weekly and seasonal with M0V3 synthetic podium.')}</p>"
             "</div>"
         )
 
@@ -1734,79 +1734,79 @@ def render_medie(t):
                     bg_row = "#fcfdfd" if i % 2 == 0 else "#ffffff"
 
                     if rank_num == 1:
-                        badge_rank = "<span style='background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:900; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>1 <i class='bi bi-award-fill' style='color:#b45309;'></i></span>"
+                        badge_rank = "<span style='background:rgba(245,158,11,0.20); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-weight:900; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>1 <i class='bi bi-award-fill' style='color:#fbbf24;'></i></span>"
                     elif rank_num == 2:
-                        badge_rank = "<span style='background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; font-weight:800; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>2 <i class='bi bi-award-fill' style='color:#64748b;'></i></span>"
+                        badge_rank = "<span style='background:rgba(148,163,184,0.20); color:#e2e8f0; border:1px solid rgba(148,163,184,0.4); font-weight:800; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>2 <i class='bi bi-award-fill' style='color:#cbd5e1;'></i></span>"
                     elif rank_num == 3:
-                        badge_rank = "<span style='background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; font-weight:800; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>3 <i class='bi bi-award-fill' style='color:#c2410c;'></i></span>"
+                        badge_rank = "<span style='background:rgba(249,115,22,0.20); color:#fb923c; border:1px solid rgba(249,115,22,0.4); font-weight:800; font-size:11.5px; padding:3px 9px; border-radius:6px; display:inline-block;'>3 <i class='bi bi-award-fill' style='color:#fb923c;'></i></span>"
                     else:
-                        badge_rank = f"<span style='color:#64748b; font-weight:700; font-size:11.5px;'>{rank_num}</span>"
+                        badge_rank = f"<span style='color:#94a3b8; font-weight:700; font-size:11.5px;'>{rank_num}</span>"
 
                     item_tl = list_tl[i] if i < len(list_tl) else {'athlete': '-', 'tl': 0}
                     if item_tl['tl'] > 0:
-                        name_tl = f"<span style='color:#0f172a; font-weight:700;'>{item_tl['athlete']}</span>"
-                        val_tl = f"<span style='color:#0284c7; font-weight:800;'>{int(round(item_tl['tl'])):,}</span>".replace(",", ".")
+                        name_tl = f"<span style='color:#f8fafc; font-weight:700;'>{item_tl['athlete']}</span>"
+                        val_tl = f"<span style='color:#38bdf8; font-weight:800;'>{int(round(item_tl['tl'])):,}</span>".replace(",", ".")
                     else:
                         name_tl = f"<span style='color:#94a3b8;'>{item_tl['athlete']}</span>"
                         val_tl = "<span style='color:#94a3b8; font-weight:600;'>-</span>"
 
                     item_tlh = list_tlh[i] if i < len(list_tlh) else {'athlete': '-', 'tlh': 0}
                     if item_tlh['tlh'] > 0:
-                        name_tlh = f"<span style='color:#0f172a; font-weight:700;'>{item_tlh['athlete']}</span>"
-                        val_tlh = f"<span style='color:#dc2626; font-weight:800;'>{int(round(item_tlh['tlh'])):,}</span>".replace(",", ".")
+                        name_tlh = f"<span style='color:#f8fafc; font-weight:700;'>{item_tlh['athlete']}</span>"
+                        val_tlh = f"<span style='color:#f87171; font-weight:800;'>{int(round(item_tlh['tlh'])):,}</span>".replace(",", ".")
                     else:
                         name_tlh = f"<span style='color:#94a3b8;'>{item_tlh['athlete']}</span>"
                         val_tlh = "<span style='color:#94a3b8; font-weight:600;'>-</span>"
 
                     item_mech = list_mech[i] if i < len(list_mech) else {'athlete': '-', 'mech': 0}
                     if item_mech['mech'] > 0:
-                        name_mech = f"<span style='color:#0f172a; font-weight:700;'>{item_mech['athlete']}</span>"
-                        val_mech = f"<span style='color:#7c3aed; font-weight:800;'>{int(round(item_mech['mech'])):,}</span>".replace(",", ".")
+                        name_mech = f"<span style='color:#f8fafc; font-weight:700;'>{item_mech['athlete']}</span>"
+                        val_mech = f"<span style='color:#c084fc; font-weight:800;'>{int(round(item_mech['mech'])):,}</span>".replace(",", ".")
                     else:
                         name_mech = f"<span style='color:#94a3b8;'>{item_mech['athlete']}</span>"
                         val_mech = "<span style='color:#94a3b8; font-weight:600;'>-</span>"
 
                     rows_html.append(
-                        f"<tr style='background:{bg_row}; border-bottom:1px solid #e2e8f0; font-family:\"Inter\",sans-serif;'>"
-                        f"<td style='padding:8px 6px; text-align:center; border-right:1px solid #e2e8f0;'>{badge_rank}</td>"
-                        f"<td style='padding:8px 12px; border-right:1px solid #e2e8f0; font-size:12.5px;'>{name_tl}</td>"
-                        f"<td style='padding:8px 12px; text-align:right; border-right:2px solid #cbd5e1; font-size:13px;'>{val_tl}</td>"
-                        f"<td style='padding:8px 12px; border-right:1px solid #e2e8f0; font-size:12.5px;'>{name_tlh}</td>"
-                        f"<td style='padding:8px 12px; text-align:right; border-right:1px solid #e2e8f0; font-size:13px;'>{val_tlh}</td>"
-                        f"<td style='padding:8px 12px; border-right:1px solid #e2e8f0; font-size:12.5px;'>{name_mech}</td>"
+                        f"<tr style='background:{bg_row}; border-bottom:1px solid rgba(56,189,248,0.12); font-family:\"Inter\",sans-serif;'>"
+                        f"<td style='padding:8px 6px; text-align:center; border-right:1px solid rgba(56,189,248,0.12);'>{badge_rank}</td>"
+                        f"<td style='padding:8px 12px; border-right:1px solid rgba(56,189,248,0.12); font-size:12.5px;'>{name_tl}</td>"
+                        f"<td style='padding:8px 12px; text-align:right; border-right:2px solid rgba(56,189,248,0.25); font-size:13px;'>{val_tl}</td>"
+                        f"<td style='padding:8px 12px; border-right:1px solid rgba(56,189,248,0.12); font-size:12.5px;'>{name_tlh}</td>"
+                        f"<td style='padding:8px 12px; text-align:right; border-right:1px solid rgba(56,189,248,0.12); font-size:13px;'>{val_tlh}</td>"
+                        f"<td style='padding:8px 12px; border-right:1px solid rgba(56,189,248,0.12); font-size:12.5px;'>{name_mech}</td>"
                         f"<td style='padding:8px 12px; text-align:right; font-size:13px;'>{val_mech}</td>"
                         f"</tr>"
                     )
 
                 table_html = (
-                    f"<div style='border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 3px 10px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                    f"<div style='border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                     f"<div style='background:#0f172a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;'>"
                     f"<div style='display:flex; align-items:center; gap:10px;'>"
                     f"<span style='color:#38bdf8; font-size:13px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;'>{header_title}</span>"
                     f"</div>"
                     f"<span style='background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);'>{header_badge}</span>"
                     f"</div>"
-                    f"<div style='overflow-x:auto; background:#ffffff;'>"
+                    f"<div style='overflow-x:auto; background:#081120;'>"
                     f"<table style='width:100%; border-collapse:collapse;'>"
                     f"<thead>"
                     f"<tr>"
                     f"<th rowspan='2' style='width:7%; background:#0f172a; color:#f8fafc; font-size:11px; font-weight:800; text-align:center; padding:10px 4px; border:1px solid #1e293b; text-transform:uppercase; letter-spacing:0.05em;'>RANKING</th>"
-                    f"<th colspan='2' style='width:31%; background:#fef3c7; color:#92400e; font-size:11px; font-weight:900; text-align:center; padding:9px 8px; border:1px solid #fde68a; text-transform:uppercase; letter-spacing:0.06em;'>VOLUME</th>"
-                    f"<th colspan='4' style='width:62%; background:#fee2e2; color:#991b1b; font-size:11px; font-weight:900; text-align:center; padding:9px 8px; border:1px solid #fecaca; text-transform:uppercase; letter-spacing:0.06em;'>INTENSITÀ</th>"
+                    f"<th colspan='2' style='width:31%; background:rgba(245,158,11,0.15); color:#fbbf24; font-size:11px; font-weight:900; text-align:center; padding:9px 8px; border:1px solid rgba(245,158,11,0.3); text-transform:uppercase; letter-spacing:0.06em;'>VOLUME</th>"
+                    f"<th colspan='4' style='width:62%; background:rgba(239,68,68,0.15); color:#f87171; font-size:11px; font-weight:900; text-align:center; padding:9px 8px; border:1px solid rgba(239,68,68,0.3); text-transform:uppercase; letter-spacing:0.06em;'>INTENSITÀ</th>"
                     f"</tr>"
                     f"<tr>"
-                    f"<th colspan='2' style='background:#fffbeb; color:#b45309; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid #fde68a; letter-spacing:0.04em;'>TRAINING LOAD</th>"
-                    f"<th colspan='2' style='background:#fef2f2; color:#b91c1c; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid #fecaca; letter-spacing:0.04em;'>TRAINING LOAD HIGH</th>"
-                    f"<th colspan='2' style='background:#fef2f2; color:#b91c1c; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid #fecaca; letter-spacing:0.04em;'>ACCELERAZIONI + DECELERAZIONI</th>"
+                    f"<th colspan='2' style='background:rgba(245,158,11,0.10); color:#fbbf24; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid rgba(245,158,11,0.25); letter-spacing:0.04em;'>TRAINING LOAD</th>"
+                    f"<th colspan='2' style='background:rgba(239,68,68,0.10); color:#f87171; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid rgba(239,68,68,0.25); letter-spacing:0.04em;'>TRAINING LOAD HIGH</th>"
+                    f"<th colspan='2' style='background:rgba(168,85,247,0.10); color:#c084fc; font-size:11px; font-weight:800; text-align:center; padding:7px 8px; border:1px solid rgba(168,85,247,0.25); letter-spacing:0.04em;'>ACCELERAZIONI + DECELERAZIONI</th>"
                     f"</tr>"
-                    f"<tr style='background:#f8fafc;'>"
-                    f"<th style='padding:6px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#475569; text-align:center;'>POS</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:left;'>NOME</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:right; border-right:2px solid #cbd5e1;'>VALORE</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:left;'>NOME</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:right;'>VALORE</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:left;'>NOME</th>"
-                    f"<th style='padding:6px 12px; border:1px solid #e2e8f0; font-size:10px; font-weight:800; color:#64748b; text-align:right;'>VALORE</th>"
+                    f"<tr style='background:#0d1e38;'>"
+                    f"<th style='padding:6px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#38bdf8; text-align:center;'>POS</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#cbd5e1; text-align:left;'>NOME</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#38bdf8; text-align:right; border-right:2px solid rgba(56,189,248,0.25);'>VALORE</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#cbd5e1; text-align:left;'>NOME</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#f87171; text-align:right;'>VALORE</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#cbd5e1; text-align:left;'>NOME</th>"
+                    f"<th style='padding:6px 12px; border:1px solid rgba(56,189,248,0.15); font-size:10px; font-weight:800; color:#c084fc; text-align:right;'>VALORE</th>"
                     f"</tr>"
                     f"</thead>"
                     f"<tbody>"
@@ -1822,21 +1822,21 @@ def render_medie(t):
                 podium_rows = []
                 for pos in [1, 2, 3]:
                     idx_p = pos - 1
-                    bg_pod = "#ffffff" if pos % 2 != 0 else "#fcfdfd"
+                    bg_pod = "rgba(13,30,56,0.35)" if pos % 2 != 0 else "rgba(8,17,32,0.6)"
 
                     if pos == 1:
-                        badge_pos = "<div style='font-size:22px; font-weight:900; color:#b45309; background:#fef3c7; border:2px solid #fbbf24; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 2px 6px rgba(245,158,11,0.25);'>1</div>"
+                        badge_pos = "<div style='font-size:22px; font-weight:900; color:#fbbf24; background:rgba(245,158,11,0.20); border:2px solid #f59e0b; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 0 12px rgba(245,158,11,0.3);'>1</div>"
                     elif pos == 2:
-                        badge_pos = "<div style='font-size:20px; font-weight:900; color:#475569; background:#f1f5f9; border:2px solid #cbd5e1; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; margin:0 auto;'>2</div>"
+                        badge_pos = "<div style='font-size:20px; font-weight:900; color:#e2e8f0; background:rgba(148,163,184,0.20); border:2px solid #94a3b8; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 0 12px rgba(148,163,184,0.3);'>2</div>"
                     else:
-                        badge_pos = "<div style='font-size:19px; font-weight:900; color:#c2410c; background:#ffedd5; border:2px solid #fed7aa; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; margin:0 auto;'>3</div>"
+                        badge_pos = "<div style='font-size:19px; font-weight:900; color:#fb923c; background:rgba(249,115,22,0.20); border:2px solid #f97316; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 0 12px rgba(249,115,22,0.3);'>3</div>"
 
                     item_wv = d_w['podio_vol'][idx_p] if idx_p < len(d_w['podio_vol']) else None
                     if item_wv and item_wv['score_vol'] > 0:
                         wv_cell = (
-                            f"<div style='font-weight:800; font-size:14px; color:#0f172a;'>{item_wv['athlete']}</div>"
-                            f"<div style='font-size:11px; color:#0284c7; font-weight:700; margin-top:2px;'>Score: {item_wv['score_vol']:.1f} pt "
-                            f"<span style='color:#64748b; font-weight:500;'>({int(round(item_wv['tl'])):,} AU • {int(item_wv['dur'])}m • {int(item_wv['az2'])} az)</span></div>"
+                            f"<div style='font-weight:800; font-size:14px; color:#f8fafc;'>{item_wv['athlete']}</div>"
+                            f"<div style='font-size:11px; color:#38bdf8; font-weight:700; margin-top:2px;'>Score: {item_wv['score_vol']:.1f} pt "
+                            f"<span style='color:#94a3b8; font-weight:500;'>({int(round(item_wv['tl'])):,} AU • {int(item_wv['dur'])}m • {int(item_wv['az2'])} az)</span></div>"
                         ).replace(",", ".")
                     else:
                         wv_cell = "<div style='font-weight:600; font-size:13px; color:#94a3b8;'>-</div>"
@@ -1844,9 +1844,9 @@ def render_medie(t):
                     item_sv = d_s['podio_vol'][idx_p] if idx_p < len(d_s['podio_vol']) else None
                     if item_sv and item_sv['score_vol'] > 0:
                         sv_cell = (
-                            f"<div style='font-weight:800; font-size:14px; color:#0f172a;'>{item_sv['athlete']}</div>"
-                            f"<div style='font-size:11px; color:#0284c7; font-weight:700; margin-top:2px;'>Score: {item_sv['score_vol']:.1f} pt "
-                            f"<span style='color:#64748b; font-weight:500;'>({int(round(item_sv['tl'])):,} AU • {int(item_sv['dur'])}m • {int(item_sv['az2'])} az)</span></div>"
+                            f"<div style='font-weight:800; font-size:14px; color:#f8fafc;'>{item_sv['athlete']}</div>"
+                            f"<div style='font-size:11px; color:#38bdf8; font-weight:700; margin-top:2px;'>Score: {item_sv['score_vol']:.1f} pt "
+                            f"<span style='color:#94a3b8; font-weight:500;'>({int(round(item_sv['tl'])):,} AU • {int(item_sv['dur'])}m • {int(item_sv['az2'])} az)</span></div>"
                         ).replace(",", ".")
                     else:
                         sv_cell = "<div style='font-weight:600; font-size:13px; color:#94a3b8;'>-</div>"
@@ -1854,9 +1854,9 @@ def render_medie(t):
                     item_wi = d_w['podio_int'][idx_p] if idx_p < len(d_w['podio_int']) else None
                     if item_wi and item_wi['score_int'] > 0:
                         wi_cell = (
-                            f"<div style='font-weight:800; font-size:14px; color:#0f172a;'>{item_wi['athlete']}</div>"
-                            f"<div style='font-size:11px; color:#dc2626; font-weight:700; margin-top:2px;'>Score: {item_wi['score_int']:.1f} pt "
-                            f"<span style='color:#64748b; font-weight:500;'>({int(round(item_wi['tlh'])):,} AU • {int(item_wi['mech'])} acc/dec)</span></div>"
+                            f"<div style='font-weight:800; font-size:14px; color:#f8fafc;'>{item_wi['athlete']}</div>"
+                            f"<div style='font-size:11px; color:#f87171; font-weight:700; margin-top:2px;'>Score: {item_wi['score_int']:.1f} pt "
+                            f"<span style='color:#94a3b8; font-weight:500;'>({int(round(item_wi['tlh'])):,} AU • {int(item_wi['mech'])} acc/dec)</span></div>"
                         ).replace(",", ".")
                     else:
                         wi_cell = "<div style='font-weight:600; font-size:13px; color:#94a3b8;'>-</div>"
@@ -1864,25 +1864,25 @@ def render_medie(t):
                     item_si = d_s['podio_int'][idx_p] if idx_p < len(d_s['podio_int']) else None
                     if item_si and item_si['score_int'] > 0:
                         si_cell = (
-                            f"<div style='font-weight:800; font-size:14px; color:#0f172a;'>{item_si['athlete']}</div>"
-                            f"<div style='font-size:11px; color:#dc2626; font-weight:700; margin-top:2px;'>Score: {item_si['score_int']:.1f} pt "
-                            f"<span style='color:#64748b; font-weight:500;'>({int(round(item_si['tlh'])):,} AU • {int(item_si['mech'])} acc/dec)</span></div>"
+                            f"<div style='font-weight:800; font-size:14px; color:#f8fafc;'>{item_si['athlete']}</div>"
+                            f"<div style='font-size:11px; color:#f87171; font-weight:700; margin-top:2px;'>Score: {item_si['score_int']:.1f} pt "
+                            f"<span style='color:#94a3b8; font-weight:500;'>({int(round(item_si['tlh'])):,} AU • {int(item_si['mech'])} acc/dec)</span></div>"
                         ).replace(",", ".")
                     else:
                         si_cell = "<div style='font-weight:600; font-size:13px; color:#94a3b8;'>-</div>"
 
                     podium_rows.append(
-                        f"<tr style='background:{bg_pod}; border-bottom:1px solid #e2e8f0; font-family:\"Inter\",sans-serif;'>"
-                        f"<td style='padding:14px 16px; border-right:1px solid #e2e8f0;'>{wv_cell}</td>"
-                        f"<td style='padding:14px 16px; border-right:2px solid #cbd5e1;'>{sv_cell}</td>"
-                        f"<td style='padding:10px 4px; text-align:center; border-right:2px solid #cbd5e1; background:#f8fafc;'>{badge_pos}</td>"
-                        f"<td style='padding:14px 16px; border-right:1px solid #e2e8f0;'>{wi_cell}</td>"
+                        f"<tr style='background:{bg_pod}; border-bottom:1px solid rgba(56,189,248,0.12); font-family:\"Inter\",sans-serif;'>"
+                        f"<td style='padding:14px 16px; border-right:1px solid rgba(56,189,248,0.12);'>{wv_cell}</td>"
+                        f"<td style='padding:14px 16px; border-right:2px solid rgba(56,189,248,0.25);'>{sv_cell}</td>"
+                        f"<td style='padding:10px 4px; text-align:center; border-right:2px solid rgba(56,189,248,0.25); background:#0d1e38;'>{badge_pos}</td>"
+                        f"<td style='padding:14px 16px; border-right:1px solid rgba(56,189,248,0.12);'>{wi_cell}</td>"
                         f"<td style='padding:14px 16px;'>{si_cell}</td>"
                         f"</tr>"
                     )
 
                 podium_html = (
-                    f"<div style='border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-top:10px; margin-bottom:24px; box-shadow:0 4px 14px rgba(15,23,42,0.06); font-family:\"Inter\",sans-serif;'>"
+                    f"<div style='border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-top:10px; margin-bottom:24px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                     f"<div style='background:#0f172a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;'>"
                     f"<div style='display:flex; align-items:center; gap:8px;'>"
                     f"<i class='bi bi-trophy-fill' style='color:#38bdf8; font-size:18px;'></i>"
@@ -1890,23 +1890,23 @@ def render_medie(t):
                     f"</div>"
                     f"<span style='background:rgba(255,255,255,0.08); color:#38bdf8; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(56,189,248,0.25);'>{sub_badge}</span>"
                     f"</div>"
-                    f"<div style='background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:9px 18px; font-size:11px; color:#475569; display:flex; flex-wrap:wrap; gap:18px; align-items:center;'>"
-                    f"<span><i class='bi bi-info-circle-fill' style='color:#0284c7; margin-right:5px;'></i><b style='color:#0369a1;'>CALCOLO VOLUME:</b> 40% Training Load + 35% Minuti + 25% Azioni >2\" (Normalizzato su max roster)</span>"
-                    f"<span><i class='bi bi-fire' style='color:#dc2626; margin-right:5px;'></i><b style='color:#b91c1c;'>CALCOLO INTENSITÀ:</b> 50% TL High + 50% (Accelerazioni + Decelerazioni) (Normalizzato su max roster)</span>"
+                    f"<div style='background:#0d1e38; border-bottom:1px solid #1e293b; padding:9px 18px; font-size:11px; color:#94a3b8; display:flex; flex-wrap:wrap; gap:18px; align-items:center;'>"
+                    f"<span><i class='bi bi-info-circle-fill' style='color:#38bdf8; margin-right:5px;'></i><b style='color:#38bdf8;'>CALCOLO VOLUME:</b> 40% Training Load + 35% Minuti + 25% Azioni >2\" (Normalizzato su max roster)</span>"
+                    f"<span><i class='bi bi-fire' style='color:#f87171; margin-right:5px;'></i><b style='color:#f87171;'>CALCOLO INTENSITÀ:</b> 50% TL High + 50% (Accelerazioni + Decelerazioni) (Normalizzato su max roster)</span>"
                     f"</div>"
-                    f"<div style='overflow-x:auto; background:#ffffff;'>"
+                    f"<div style='overflow-x:auto; background:#081120;'>"
                     f"<table style='width:100%; border-collapse:collapse;'>"
                     f"<thead>"
                     f"<tr>"
-                    f"<th colspan='2' style='width:45%; background:#eff6ff; color:#0369a1; font-size:12px; font-weight:900; text-align:center; padding:10px; border:1px solid #bfdbfe; letter-spacing:0.06em; text-transform:uppercase;'>VOLUME</th>"
+                    f"<th colspan='2' style='width:45%; background:rgba(14,165,233,0.15); color:#38bdf8; font-size:12px; font-weight:900; text-align:center; padding:10px; border:1px solid rgba(14,165,233,0.3); letter-spacing:0.06em; text-transform:uppercase;'>VOLUME</th>"
                     f"<th rowspan='2' style='width:10%; background:#0f172a; color:#f8fafc; font-size:11px; font-weight:800; text-align:center; padding:8px 4px; border:1px solid #1e293b; letter-spacing:0.05em;'>PODIO</th>"
-                    f"<th colspan='2' style='width:45%; background:#fef2f2; color:#b91c1c; font-size:12px; font-weight:900; text-align:center; padding:10px; border:1px solid #fecaca; letter-spacing:0.06em; text-transform:uppercase;'>INTENSITÀ</th>"
+                    f"<th colspan='2' style='width:45%; background:rgba(239,68,68,0.15); color:#f87171; font-size:12px; font-weight:900; text-align:center; padding:10px; border:1px solid rgba(239,68,68,0.3); letter-spacing:0.06em; text-transform:uppercase;'>INTENSITÀ</th>"
                     f"</tr>"
                     f"<tr>"
-                    f"<th style='background:#f0fdf4; color:#15803d; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid #e2e8f0; letter-spacing:0.04em;'>{col_label}</th>"
-                    f"<th style='background:#f0fdf4; color:#15803d; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid #e2e8f0; border-right:2px solid #cbd5e1; letter-spacing:0.04em;'>SEASON BEST</th>"
-                    f"<th style='background:#fff1f2; color:#be123c; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid #e2e8f0; letter-spacing:0.04em;'>{col_label}</th>"
-                    f"<th style='background:#fff1f2; color:#be123c; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid #e2e8f0; letter-spacing:0.04em;'>SEASON BEST</th>"
+                    f"<th style='background:rgba(16,185,129,0.12); color:#34d399; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid rgba(16,185,129,0.25); letter-spacing:0.04em;'>{col_label}</th>"
+                    f"<th style='background:rgba(16,185,129,0.12); color:#34d399; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid rgba(16,185,129,0.25); border-right:2px solid rgba(56,189,248,0.25); letter-spacing:0.04em;'>SEASON BEST</th>"
+                    f"<th style='background:rgba(239,68,68,0.12); color:#f87171; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid rgba(239,68,68,0.25); letter-spacing:0.04em;'>{col_label}</th>"
+                    f"<th style='background:rgba(239,68,68,0.12); color:#f87171; font-size:11px; font-weight:800; text-align:left; padding:8px 16px; border:1px solid rgba(239,68,68,0.25); letter-spacing:0.04em;'>SEASON BEST</th>"
                     f"</tr>"
                     f"</thead>"
                     f"<tbody>"
@@ -2150,58 +2150,58 @@ def render_medie(t):
 
                 th_tipi = []
                 for tp in tipologie:
-                    c_col = tipo_colors.get(tp, "#475569")
+                    c_col = tipo_colors.get(tp, "#38bdf8")
                     th_tipi.append(
-                        f"<th style='padding:10px 8px; text-align:center; border:1px solid #e2e8f0; font-size:11.5px; font-weight:800; color:{c_col}; text-transform:uppercase; letter-spacing:0.05em; min-width:85px;'>"
+                        f"<th style='padding:10px 8px; text-align:center; border:1px solid rgba(56,189,248,0.15); font-size:11.5px; font-weight:800; color:{c_col}; text-transform:uppercase; letter-spacing:0.05em; min-width:85px;'>"
                         f"<span style='display:inline-block; width:8px; height:8px; border-radius:50%; background:{c_col}; margin-right:6px;'></span>{tp}"
                         f"</th>"
                     )
 
                 rows_html = []
                 for i, r in enumerate(records):
-                    bg_row = "#fcfdfd" if i % 2 == 0 else "#ffffff"
-                    ath_style = "font-weight:800; color:#0f172a;" if r['has_data'] else "font-weight:600; color:#94a3b8;"
-                    tot_badge = f"<span style='color:#64748b; font-size:11px; font-weight:600; margin-left:6px;'>({int(round(r['tot_min']))} min)</span>" if r['has_data'] else ""
+                    bg_row = "rgba(13,30,56,0.35)" if i % 2 == 0 else "rgba(8,17,32,0.6)"
+                    ath_style = "font-weight:800; color:#f8fafc;" if r['has_data'] else "font-weight:600; color:#64748b;"
+                    tot_badge = f"<span style='color:#94a3b8; font-size:11px; font-weight:600; margin-left:6px;'>({int(round(r['tot_min']))} min)</span>" if r['has_data'] else ""
 
                     td_tipi = []
                     for tp in tipologie:
                         if not r['has_data']:
                             td_tipi.append(
-                                "<td style='padding:9px 10px; text-align:center; border:1px solid #e2e8f0; font-size:12px; color:#cbd5e1; font-weight:600;'>-</td>"
+                                "<td style='padding:9px 10px; text-align:center; border:1px solid rgba(56,189,248,0.12); font-size:12px; color:#64748b; font-weight:600;'>-</td>"
                             )
                         else:
                             pct = r['p_map'][tp]
                             if pct > 0:
                                 td_tipi.append(
-                                    f"<td style='padding:9px 10px; text-align:center; border:1px solid #e2e8f0; font-size:13px; font-weight:800; color:#0f172a; background:rgba(2,132,199,0.03);'>"
+                                    f"<td style='padding:9px 10px; text-align:center; border:1px solid rgba(56,189,248,0.12); font-size:13px; font-weight:800; color:#38bdf8; background:rgba(14,165,233,0.08);'>"
                                     f"{round(pct)}%"
                                     f"</td>"
                                 )
                             else:
                                 td_tipi.append(
-                                    "<td style='padding:9px 10px; text-align:center; border:1px solid #e2e8f0; font-size:12px; font-weight:600; color:#94a3b8;'>0%</td>"
+                                    "<td style='padding:9px 10px; text-align:center; border:1px solid rgba(56,189,248,0.12); font-size:12px; font-weight:600; color:#64748b;'>0%</td>"
                                 )
 
                     rows_html.append(
                         f"<tr style='background:{bg_row}; font-family:\"Inter\",sans-serif;'>"
-                        f"<td style='padding:9px 14px; border:1px solid #e2e8f0; font-size:13px; {ath_style}'>{r['athlete']}{tot_badge}</td>"
+                        f"<td style='padding:9px 14px; border:1px solid rgba(56,189,248,0.12); font-size:13px; {ath_style}'>{r['athlete']}{tot_badge}</td>"
                         f"{''.join(td_tipi)}"
                         f"</tr>"
                     )
 
                 table_html = (
-                    f"<div style='border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 3px 10px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                    f"<div style='border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                     f"<div style='background:#0f172a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;'>"
                     f"<div style='display:flex; align-items:center; gap:10px;'>"
                     f"<span style='color:{super_txt}; font-size:13px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;'>{title_text}</span>"
                     f"</div>"
                     f"<span style='background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);'>{badge_text}</span>"
                     f"</div>"
-                    f"<div style='overflow-x:auto; background:#ffffff;'>"
+                    f"<div style='overflow-x:auto; background:#081120;'>"
                     f"<table style='width:100%; border-collapse:collapse;'>"
                     f"<thead>"
-                    f"<tr style='background:#f8fafc;'>"
-                    f"<th style='padding:10px 14px; text-align:left; border:1px solid #e2e8f0; font-size:11.5px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:25%;'>ATLETA</th>"
+                    f"<tr style='background:#0d1e38;'>"
+                    f"<th style='padding:10px 14px; text-align:left; border:1px solid rgba(56,189,248,0.15); font-size:11.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.05em; width:25%;'>ATLETA</th>"
                     f"{''.join(th_tipi)}"
                     f"</tr>"
                     f"</thead>"
@@ -2224,10 +2224,10 @@ def render_medie(t):
             c_g_t, c_g_m = st.columns([2, 1.2])
             with c_g_t:
                 st.html(
-                    f"<div style='font-size:13px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; margin-top:8px; margin-bottom:4px;'>"
-                    f"<i class='bi bi-bar-chart-steps' style='color:#0284c7; margin-right:8px;'></i>{tr('COMPOSIZIONE PERCENTUALE DEL LAVORO (100% STACKED)', 'PERCENTAGE WORKLOAD COMPOSITION (100% STACKED)')}"
+                    f"<div style='font-size:13px; font-weight:900; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em; margin-top:8px; margin-bottom:4px;'>"
+                    f"<i class='bi bi-bar-chart-steps' style='color:#38bdf8; margin-right:8px;'></i>{tr('COMPOSIZIONE PERCENTUALE DEL LAVORO (100% STACKED)', 'PERCENTAGE WORKLOAD COMPOSITION (100% STACKED)')}"
                     f"</div>"
-                    f"<div style='font-size:11.5px; color:#64748b; margin-bottom:12px;'>{tr('Ripartizione visiva per ciascun atleta delle quote di tempo dedicate alle tipologie condivise.', 'Visual breakdown per athlete of time share allocated to shared session types.')}</div>"
+                    f"<div style='font-size:11.5px; color:#94a3b8; margin-bottom:12px;'>{tr('Ripartizione visiva per ciascun atleta delle quote di tempo dedicate alle tipologie condivise.', 'Visual breakdown per athlete of time share allocated to shared session types.')}</div>"
                 )
             with c_g_m:
                 mode_chart_dist = render_tab_navigation(
@@ -2637,14 +2637,14 @@ def render_medie(t):
             )
 
             st.html(
-                f"<div style='border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-top:14px; margin-bottom:24px; box-shadow:0 3px 10px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                f"<div style='border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-top:14px; margin-bottom:24px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                 f"<div style='background:#0f172a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;'>"
                 f"<div style='display:flex; align-items:center; gap:10px;'>"
                 f"<span style='color:#38bdf8; font-size:13px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;'>CURVE LONGITUDINALI 8 SETTIMANE — {metric_name}</span>"
                 f"</div>"
                 f"<span style='background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);'>{clean_w_st}</span>"
                 f"</div>"
-                f"<div style='background:#ffffff; padding:12px 16px 6px 16px;'>"
+                f"<div style='background:#081120; padding:12px 16px 6px 16px;'>"
             )
             st.plotly_chart(fig_stress, use_container_width=True, key="fig_stress_roster_8w")
             st.html("</div></div>")
@@ -2653,18 +2653,18 @@ def render_medie(t):
             th_weeks = []
             for w in weeks_8:
                 is_last_w = (w['pos'] == 8)
-                bg_th = "#0f172a" if is_last_w else "#f8fafc"
-                txt_th = "#38bdf8" if is_last_w else "#475569"
+                bg_th = "#0f172a" if is_last_w else "#0d1e38"
+                txt_th = "#38bdf8" if is_last_w else "#94a3b8"
                 tag_curr = f"<br><span style='font-size:9px; color:#38bdf8; font-weight:800;'>[W8 REF]</span>" if is_last_w else ""
                 th_weeks.append(
-                    f"<th style='padding:9px 6px; text-align:center; border:1px solid #e2e8f0; font-size:11px; font-weight:800; background:{bg_th}; color:{txt_th}; min-width:70px;'>"
+                    f"<th style='padding:9px 6px; text-align:center; border:1px solid rgba(56,189,248,0.15); font-size:11px; font-weight:800; background:{bg_th}; color:{txt_th}; min-width:70px;'>"
                     f"{w['short']}{tag_curr}"
                     f"</th>"
                 )
 
             table_rows_st = []
             for i, ath in enumerate(roster_stress_totale):
-                bg_r = "#fcfdfd" if i % 2 == 0 else "#ffffff"
+                bg_r = "rgba(13,30,56,0.35)" if i % 2 == 0 else "rgba(8,17,32,0.6)"
                 records = ath_stress_data[ath]
                 y_vals = [r[metric_key] for r in records]
                 c_ath = roster_colors[i % len(roster_colors)]
@@ -2691,43 +2691,43 @@ def render_medie(t):
                 td_weeks = []
                 for idx_w, r in enumerate(records):
                     is_last_col = (r['pos'] == 8)
-                    bg_td = "rgba(2,132,199,0.03)" if is_last_col else "inherit"
+                    bg_td = "rgba(14,165,233,0.08)" if is_last_col else "inherit"
                     b_badge = get_metric_badge(metric_key, r[metric_key], r['has_load'], ath_bl_curr)
                     td_weeks.append(
-                        f"<td style='padding:8px 6px; text-align:center; border:1px solid #e2e8f0; background:{bg_td};'>{b_badge}</td>"
+                        f"<td style='padding:8px 6px; text-align:center; border:1px solid rgba(56,189,248,0.12); background:{bg_td};'>{b_badge}</td>"
                     )
 
                 avg_badge = get_metric_badge(metric_key, avg_ath, len(active_vals) > 0, ath_bl_curr)
 
                 table_rows_st.append(
                     f"<tr style='background:{bg_r}; font-family:\"Inter\",sans-serif;'>"
-                    f"<td style='padding:9px 12px; border:1px solid #e2e8f0; font-size:12.5px; font-weight:800; color:#0f172a;'>"
+                    f"<td style='padding:9px 12px; border:1px solid rgba(56,189,248,0.12); font-size:12.5px; font-weight:800; color:#f8fafc;'>"
                     f"<span style='display:inline-block; width:8px; height:8px; border-radius:50%; background:{c_ath}; margin-right:8px;'></span>{ath}"
                     f"</td>"
                     f"{''.join(td_weeks)}"
-                    f"<td style='padding:8px 8px; text-align:center; border:1px solid #e2e8f0; border-left:2px solid #cbd5e1;'>{avg_badge}</td>"
-                    f"<td style='padding:6px 10px; text-align:center; border:1px solid #e2e8f0; white-space:nowrap;'>"
+                    f"<td style='padding:8px 8px; text-align:center; border:1px solid rgba(56,189,248,0.12); border-left:2px solid rgba(56,189,248,0.25);'>{avg_badge}</td>"
+                    f"<td style='padding:6px 10px; text-align:center; border:1px solid rgba(56,189,248,0.12); white-space:nowrap;'>"
                     f"<div style='display:inline-flex; align-items:center; gap:6px;'>{sparkline_html} {trend_ico}</div>"
                     f"</td>"
                     f"</tr>"
                 )
 
             matrix_table_html = (
-                f"<div style='border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 3px 10px rgba(15,23,42,0.04); font-family:\"Inter\",sans-serif;'>"
+                f"<div style='border:1px solid #1e293b; border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 4px 14px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif;'>"
                 f"<div style='background:#0f172a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;'>"
                 f"<div style='display:flex; align-items:center; gap:10px;'>"
                 f"<span style='color:#38bdf8; font-size:13px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;'>MATRICE COMPARATIVA ROSTER (ULTIME 8 SETTIMANE)</span>"
                 f"</div>"
                 f"<span style='background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);'>{len(roster_stress_totale)} {tr('Atleti Monitorati', 'Monitored Athletes')}</span>"
                 f"</div>"
-                f"<div style='overflow-x:auto; background:#ffffff;'>"
+                f"<div style='overflow-x:auto; background:#081120;'>"
                 f"<table style='width:100%; border-collapse:collapse;'>"
                 f"<thead>"
-                f"<tr style='background:#f8fafc;'>"
-                f"<th style='padding:10px 14px; text-align:left; border:1px solid #e2e8f0; font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:18%;'>ATLETA</th>"
+                f"<tr style='background:#0d1e38;'>"
+                f"<th style='padding:10px 14px; text-align:left; border:1px solid rgba(56,189,248,0.15); font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.05em; width:18%;'>ATLETA</th>"
                 f"{''.join(th_weeks)}"
-                f"<th style='padding:10px 8px; text-align:center; border:1px solid #e2e8f0; border-left:2px solid #cbd5e1; font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; width:9%;'>MEDIA 8W</th>"
-                f"<th style='padding:10px 8px; text-align:center; border:1px solid #e2e8f0; font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; width:13%;'>TREND 8W</th>"
+                f"<th style='padding:10px 8px; text-align:center; border:1px solid rgba(56,189,248,0.15); border-left:2px solid rgba(56,189,248,0.25); font-size:11px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em; width:9%;'>MEDIA 8W</th>"
+                f"<th style='padding:10px 8px; text-align:center; border:1px solid rgba(56,189,248,0.15); font-size:11px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em; width:13%;'>TREND 8W</th>"
                 f"</tr>"
                 f"</thead>"
                 f"<tbody>"
@@ -2735,13 +2735,13 @@ def render_medie(t):
                 f"</tbody>"
                 f"</table>"
                 f"</div>"
-                f"<div style='background:#f8fafc; border-top:1px solid #e2e8f0; padding:10px 18px; font-size:11px; color:#475569; display:flex; flex-wrap:wrap; gap:18px; align-items:center;'>"
-                f"<span><b style='color:#0f172a;'>LEGENDA ZONE:</b></span>"
-                f"<span><span style='background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-weight:800; padding:1px 6px; border-radius:4px;'>&lt;0.80</span> Scarico / Underload</span>"
-                f"<span><span style='background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-weight:800; padding:1px 6px; border-radius:4px;'>0.80 - 1.30</span> Sweet Spot (Ottimale)</span>"
-                f"<span><span style='background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:800; padding:1px 6px; border-radius:4px;'>1.31 - 1.50</span> Attenzione / Elevato</span>"
-                f"<span><span style='background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-weight:800; padding:1px 6px; border-radius:4px;'>&gt;1.50</span> Danger Zone / Allarme</span>"
-                f"<span style='margin-left:auto;'><i class='bi bi-info-circle' style='color:#0284c7; margin-right:4px;'></i>Monotonia Foster soglia &gt;2.0 | Base: <b>{col_carico_st}</b></span>"
+                f"<div style='background:#0d1e38; border-top:1px solid #1e293b; padding:10px 18px; font-size:11px; color:#94a3b8; display:flex; flex-wrap:wrap; gap:18px; align-items:center;'>"
+                f"<span><b style='color:#f8fafc;'>LEGENDA ZONE:</b></span>"
+                f"<span><span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(14,165,233,0.35); font-weight:800; padding:1px 6px; border-radius:4px;'>&lt;0.80</span> Scarico / Underload</span>"
+                f"<span><span style='background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); font-weight:800; padding:1px 6px; border-radius:4px;'>0.80 - 1.30</span> Sweet Spot (Ottimale)</span>"
+                f"<span><span style='background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); font-weight:800; padding:1px 6px; border-radius:4px;'>1.31 - 1.50</span> Attenzione / Elevato</span>"
+                f"<span><span style='background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); font-weight:800; padding:1px 6px; border-radius:4px;'>&gt;1.50</span> Danger Zone / Allarme</span>"
+                f"<span style='margin-left:auto;'><i class='bi bi-info-circle' style='color:#38bdf8; margin-right:4px;'></i>Monotonia Foster soglia &gt;2.0 | Base: <b>{col_carico_st}</b></span>"
                 f"</div>"
                 f"</div>"
             )

@@ -470,18 +470,18 @@ def render_analisi_sessione(t):
                     ]
                     lbl_imu_s_bn = tr("DATI VOLUMETRICI & MECCANICI IMU — CONFRONTO VS MEDIA TIPOLOGIA", "IMU VOLUMETRIC & MECHANICAL DATA — COMPARISON VS SESSION TYPE AVG")
                     html_imu = (
-                        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                        "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                         "<div style='background:#0f172a; border-bottom:2px solid #0ea5e9; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                         f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_imu_s_bn}</span>"
                         f"<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{tipologia_corrente}</span>"
                         "</div>"
                         "<table style='width:100%; border-collapse:collapse;'>"
-                        "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                        f"<th style='padding:12px 14px; text-align:left; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica IMU & Area', 'IMU Metric & Area')}</th>"
-                        f"<th style='padding:12px 14px; text-align:center; color:#0f172a; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Sessione', 'Session Score')}</th>"
-                        f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Tipologia', 'Session Type Avg')}</th>"
-                        f"<th style='padding:12px 14px; text-align:center; color:#0ea5e9; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
-                        f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
+                        "<tr style='background:rgba(15,23,42,0.85); border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                        f"<th style='padding:12px 14px; text-align:left; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica IMU & Area', 'IMU Metric & Area')}</th>"
+                        f"<th style='padding:12px 14px; text-align:center; color:#ffffff; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Sessione', 'Session Score')}</th>"
+                        f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Tipologia', 'Session Type Avg')}</th>"
+                        f"<th style='padding:12px 14px; text-align:center; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
+                        f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
                         "</tr>"
                     )
                     for lbl_i, tag_i, fg_i, bg_i, vc_i, vm_i, suf_i in imu_rows_s:
@@ -489,13 +489,13 @@ def render_analisi_sessione(t):
                         pv_i = (vc_i / vm_i * 100.0) if has_ri else 0.0
                         dv_i = pv_i - 100.0 if has_ri else 0.0
                         html_imu += (
-                            "<tr style='border-bottom:1px solid #f1f5f9;'>"
+                            "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'>"
                             "<td style='padding:13px 14px;'>"
-                            f"<div style='font-weight:700; color:#0f172a; font-size:14px;'>{lbl_i}</div>"
+                            f"<div style='font-weight:700; color:#ffffff; font-size:14px;'>{lbl_i}</div>"
                             f"<span style='display:inline-block; margin-top:3px; background:{bg_i}; color:{fg_i}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px;'>{tag_i}</span>"
                             "</td>"
-                            f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#0f172a;'>{vc_i:.0f}{suf_i}</td>"
-                            f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#64748b;'>{vm_i:.0f}{suf_i}</td>"
+                            f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#ffffff;'>{vc_i:.0f}{suf_i}</td>"
+                            f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#cbd5e1;'>{vm_i:.0f}{suf_i}</td>"
                             f"<td style='padding:13px 14px; text-align:center;'>{render_pct_badge_cell(pv_i, dv_i, has_ri, lbl_vs_t3)}</td>"
                             f"<td style='padding:13px 14px;'>{render_pct_progress_bar(pv_i)}</td>"
                             "</tr>"
@@ -547,18 +547,18 @@ def render_analisi_sessione(t):
                         ]
                         lbl_gps_s_bn = tr("DATI GPS & SATELLITARI OUTDOOR — CONFRONTO VS MEDIA TIPOLOGIA", "OUTDOOR GPS & SATELLITE DATA — COMPARISON VS SESSION TYPE AVG")
                         html_gps = (
-                            "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                            "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                             "<div style='background:#0f172a; border-bottom:2px solid #f59e0b; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                             f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_gps_s_bn}</span>"
                             "<span style='background:rgba(255,255,255,0.1); color:#fbbf24; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>OUTDOOR GPS</span>"
                             "</div>"
                             "<table style='width:100%; border-collapse:collapse;'>"
-                            "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                            f"<th style='padding:12px 14px; text-align:left; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica GPS & Area', 'GPS Metric & Area')}</th>"
-                            f"<th style='padding:12px 14px; text-align:center; color:#0f172a; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Sessione', 'Session Score')}</th>"
-                            f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Tipologia', 'Session Type Avg')}</th>"
-                            f"<th style='padding:12px 14px; text-align:center; color:#0ea5e9; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
-                            f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
+                            "<tr style='background:rgba(15,23,42,0.85); border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                            f"<th style='padding:12px 14px; text-align:left; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica GPS & Area', 'GPS Metric & Area')}</th>"
+                            f"<th style='padding:12px 14px; text-align:center; color:#ffffff; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Sessione', 'Session Score')}</th>"
+                            f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Tipologia', 'Session Type Avg')}</th>"
+                            f"<th style='padding:12px 14px; text-align:center; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
+                            f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
                             "</tr>"
                         )
                         for lbl_g, tag_g, fg_g, bg_g, vc_g, vm_g, suf_g in gps_rows_s:
@@ -566,13 +566,13 @@ def render_analisi_sessione(t):
                             pv_g = (vc_g / vm_g * 100.0) if has_rg else 0.0
                             dv_g = pv_g - 100.0 if has_rg else 0.0
                             html_gps += (
-                                "<tr style='border-bottom:1px solid #f1f5f9;'>"
+                                "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'>"
                                 "<td style='padding:13px 14px;'>"
-                                f"<div style='font-weight:700; color:#0f172a; font-size:14px;'>{lbl_g}</div>"
+                                f"<div style='font-weight:700; color:#ffffff; font-size:14px;'>{lbl_g}</div>"
                                 f"<span style='display:inline-block; margin-top:3px; background:{bg_g}; color:{fg_g}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px;'>{tag_g}</span>"
                                 "</td>"
-                                f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#0f172a;'>{vc_g:.0f}{suf_g}</td>"
-                                f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#64748b;'>{vm_g:.0f}{suf_g}</td>"
+                                f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#ffffff;'>{vc_g:.0f}{suf_g}</td>"
+                                f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#cbd5e1;'>{vm_g:.0f}{suf_g}</td>"
                                 f"<td style='padding:13px 14px; text-align:center;'>{render_pct_badge_cell(pv_g, dv_g, has_rg, lbl_vs_t3)}</td>"
                                 f"<td style='padding:13px 14px;'>{render_pct_progress_bar(pv_g)}</td>"
                                 "</tr>"
@@ -621,17 +621,17 @@ def render_analisi_sessione(t):
 
                     lbl_aero_bn = tr("AREA AEROBICA — DISTRIBUZIONE TEMPO IN FASCIA METABOLICA", "AEROBIC AREA — METABOLIC BAND TIME DISTRIBUTION")
                     html_aero = (
-                        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                        "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                         "<div style='background:#0f172a; border-bottom:2px solid #10b981; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                         f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_aero_bn}</span>"
                         "<span style='background:rgba(255,255,255,0.1); color:#34d399; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>AEROBIC METABOLISM</span>"
                         "</div>"
-                        "<table style='width: 100%; border-collapse: collapse; background-color:white;'>"
-                        "<tr style='background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;'>"
-                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight:700; color: #64748b; text-transform: uppercase; width:26%;'>{tr('Parametro Aerobico', 'Aerobic Parameter')}</th>"
-                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #0f172a; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:800; color: #0ea5e9; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #64748b; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th></tr>"
+                        "<table style='width: 100%; border-collapse: collapse; background-color:transparent;'>"
+                        "<tr style='background-color: rgba(15,23,42,0.85); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
+                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight:700; color: #94a3b8; text-transform: uppercase; width:26%;'>{tr('Parametro Aerobico', 'Aerobic Parameter')}</th>"
+                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #ffffff; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:800; color: #38bdf8; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #94a3b8; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th></tr>"
                     )
                     html_aero += riga_metab_exec("% Time TL High", "Time TL >1.5G / Total Time", f"{c_high:.0f}%", t_high, m_high, pt_high, pm_high)
                     html_aero += riga_metab_exec("% Time TL Medium", "Time TL 0.75G - 1.5G / Total Time", f"{c_med:.0f}%", t_med, m_med, pt_med, pm_med)
@@ -640,12 +640,12 @@ def render_analisi_sessione(t):
                     pct_aero_t = max(0.0, 100.0 + tot_t)
                     pct_aero_m = max(0.0, 100.0 + tot_m)
                     html_aero += (
-                        "<tr style='background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;'>"
-                        f"<td colspan='2' style='padding: 14px 12px; font-weight: 800; color: #10b981; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid #10b981;'>{tr('Sintesi Area Aerobica', 'Total Aerobic Area Comparison')}</td>"
+                        "<tr style='background-color: rgba(15,23,42,0.95); border-top: 1px solid rgba(56,189,248,0.2); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
+                        f"<td colspan='2' style='padding: 14px 12px; font-weight: 800; color: #34d399; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid #10b981;'>{tr('Sintesi Area Aerobica', 'Total Aerobic Area Comparison')}</td>"
                         f"<td style='padding: 14px 10px; text-align: center;'>{render_pct_badge_cell(pct_aero_t, tot_t, True, lbl_vs_t3)}</td>"
                         f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_aero_t, '#10b981')}</td>"
                         f"<td style='padding: 14px 10px; text-align: center;'>{render_pct_badge_cell(pct_aero_m, tot_m, True, lbl_vs_m3)}</td>"
-                        f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_aero_m, '#64748b')}</td>"
+                        f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_aero_m, '#94a3b8')}</td>"
                         "</tr></table></div>"
                     )
                     st.markdown(html_aero, unsafe_allow_html=True)
@@ -681,17 +681,17 @@ def render_analisi_sessione(t):
 
                     lbl_ana_bn = tr("AREA ANAEROBICA — DENSITÀ D'ALTA INTENSITÀ & RSA", "ANAEROBIC AREA — HIGH INTENSITY DENSITY & RSA")
                     html_ana = (
-                        "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                        "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                         "<div style='background:#0f172a; border-bottom:2px solid #ef4444; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                         f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_ana_bn}</span>"
                         "<span style='background:rgba(255,255,255,0.1); color:#f87171; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>ANAEROBIC POWER</span>"
                         "</div>"
-                        "<table style='width: 100%; border-collapse: collapse; background-color:white;'>"
-                        "<tr style='background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;'>"
-                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight:700; color: #64748b; text-transform: uppercase; width:26%;'>{tr('Parametro Anaerobico', 'Anaerobic Parameter')}</th>"
-                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #0f172a; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:800; color: #0ea5e9; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
-                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #64748b; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th></tr>"
+                        "<table style='width: 100%; border-collapse: collapse; background-color:transparent;'>"
+                        "<tr style='background-color: rgba(15,23,42,0.85); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
+                        f"<th style='text-align: left; padding: 12px 12px; font-size: 11px; font-weight:700; color: #94a3b8; text-transform: uppercase; width:26%;'>{tr('Parametro Anaerobico', 'Anaerobic Parameter')}</th>"
+                        f"<th style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #ffffff; text-transform: uppercase; width:12%;'>{tr('Valore Sessione', 'Session Score')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:800; color: #38bdf8; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Tipologia', '% Reached vs Session Type Avg')}</th>"
+                        f"<th colspan='2' style='text-align: center; padding: 12px 10px; font-size: 11px; font-weight:700; color: #94a3b8; text-transform: uppercase; width:31%;'>{tr('% Raggiunta vs Media Match', '% Reached vs Match Average')}</th></tr>"
                     )
                     html_ana += riga_ana_exec("TL High / min", "Metabolic Density", f"{c_tlh_pm:.1f}", t_tlh_pm, m_tlh_pm, pt_tlh_pm, pm_tlh_pm)
                     html_ana += riga_ana_exec("Mechanical Actions / min", "(High Acc + High Dec) / Total Time", f"{c_mech_pm:.1f}", t_mech_pm, m_mech_pm, pt_mech_pm, pm_mech_pm)
@@ -699,12 +699,12 @@ def render_analisi_sessione(t):
                     pct_ana_t = max(0.0, 100.0 + tot_ana_t)
                     pct_ana_m = max(0.0, 100.0 + tot_ana_m)
                     html_ana += (
-                        "<tr style='background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;'>"
-                        f"<td colspan='2' style='padding: 14px 12px; font-weight: 800; color: #ef4444; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid #ef4444;'>{tr('Sintesi Densità Anaerobica', 'Total Anaerobic Density Comparison')}</td>"
+                        "<tr style='background-color: rgba(15,23,42,0.95); border-top: 1px solid rgba(56,189,248,0.2); border-bottom: 2px solid rgba(56,189,248,0.2);'>"
+                        f"<td colspan='2' style='padding: 14px 12px; font-weight: 800; color: #f87171; text-transform: uppercase; font-size: 12px; letter-spacing: 0.6px; border-left: 4px solid #ef4444;'>{tr('Sintesi Densità Anaerobica', 'Total Anaerobic Density Comparison')}</td>"
                         f"<td style='padding: 14px 10px; text-align: center;'>{render_pct_badge_cell(pct_ana_t, tot_ana_t, True, lbl_vs_t3)}</td>"
                         f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_ana_t, '#ef4444')}</td>"
                         f"<td style='padding: 14px 10px; text-align: center;'>{render_pct_badge_cell(pct_ana_m, tot_ana_m, True, lbl_vs_m3)}</td>"
-                        f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_ana_m, '#64748b')}</td>"
+                        f"<td style='padding: 14px 10px;'>{render_pct_progress_bar(pct_ana_m, '#94a3b8')}</td>"
                         "</tr></table></div>"
                     )
                     st.markdown(html_ana, unsafe_allow_html=True)

@@ -456,13 +456,160 @@ def add_custom_css(image_file=None):
         color: #f8fafc !important;
     }}
 
+    /* =========================================================================
+       NOTIFICHE ED AVVISI NATIVI STREAMLIT (DARK COCKPIT HUD ALERTS)
+       ========================================================================= */
+    div[data-testid="stAlert"] {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 16px !important;
+    }}
+    div[data-testid="stAlert"] div[data-testid="stAlertContainer"],
+    div[data-testid="stAlert"] > div {{
+        border-radius: 10px !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        padding: 12px 18px !important;
+    }}
+
+    /* 1. WARNING ALERT (es. Sessione Simulata) */
+    div[data-testid="stAlert"]:has([data-testid*="Warning"]) div[data-testid="stAlertContainer"],
+    div[data-testid="stAlert"]:has([data-testid*="Warning"]) > div,
+    div[data-testid="stAlert"]:has([data-testid*="Warning"]),
+    div[data-testid="stAlertContainer"]:has([data-testid*="Warning"]) {{
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(180, 83, 9, 0.24) 100%) !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+        border-left: 5px solid #f59e0b !important;
+        box-shadow: 0 4px 18px rgba(245, 158, 11, 0.15) !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Warning"],
+    div[data-testid="stAlert"] [data-testid*="Warning"] p,
+    div[data-testid="stAlert"] [data-testid*="Warning"] span,
+    div[data-testid="stAlert"] [data-testid*="Warning"] div {{
+        color: #fef08a !important;
+        font-weight: 700 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Warning"] strong,
+    div[data-testid="stAlert"] [data-testid*="Warning"] b {{
+        color: #ffffff !important;
+        font-weight: 900 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Warning"] svg {{
+        fill: #f59e0b !important;
+        color: #f59e0b !important;
+    }}
+
+    /* 2. INFO ALERT */
+    div[data-testid="stAlert"]:has([data-testid*="Info"]) div[data-testid="stAlertContainer"],
+    div[data-testid="stAlert"]:has([data-testid*="Info"]) > div,
+    div[data-testid="stAlert"]:has([data-testid*="Info"]),
+    div[data-testid="stAlertContainer"]:has([data-testid*="Info"]) {{
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.16) 0%, rgba(2, 132, 199, 0.24) 100%) !important;
+        border: 1px solid rgba(56, 189, 248, 0.45) !important;
+        border-left: 5px solid #0ea5e9 !important;
+        box-shadow: 0 4px 18px rgba(14, 165, 233, 0.15) !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Info"],
+    div[data-testid="stAlert"] [data-testid*="Info"] p,
+    div[data-testid="stAlert"] [data-testid*="Info"] span,
+    div[data-testid="stAlert"] [data-testid*="Info"] div {{
+        color: #e0f2fe !important;
+        font-weight: 700 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Info"] strong,
+    div[data-testid="stAlert"] [data-testid*="Info"] b {{
+        color: #ffffff !important;
+        font-weight: 900 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Info"] svg {{
+        fill: #38bdf8 !important;
+        color: #38bdf8 !important;
+    }}
+
+    /* 3. ERROR ALERT */
+    div[data-testid="stAlert"]:has([data-testid*="Error"]) div[data-testid="stAlertContainer"],
+    div[data-testid="stAlert"]:has([data-testid*="Error"]) > div,
+    div[data-testid="stAlert"]:has([data-testid*="Error"]),
+    div[data-testid="stAlertContainer"]:has([data-testid*="Error"]) {{
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.24) 100%) !important;
+        border: 1px solid rgba(239, 68, 68, 0.45) !important;
+        border-left: 5px solid #ef4444 !important;
+        box-shadow: 0 4px 18px rgba(239, 68, 68, 0.15) !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Error"],
+    div[data-testid="stAlert"] [data-testid*="Error"] p,
+    div[data-testid="stAlert"] [data-testid*="Error"] span,
+    div[data-testid="stAlert"] [data-testid*="Error"] div {{
+        color: #fee2e2 !important;
+        font-weight: 700 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Error"] strong,
+    div[data-testid="stAlert"] [data-testid*="Error"] b {{
+        color: #ffffff !important;
+        font-weight: 900 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Error"] svg {{
+        fill: #f87171 !important;
+        color: #f87171 !important;
+    }}
+
+    /* 4. SUCCESS ALERT */
+    div[data-testid="stAlert"]:has([data-testid*="Success"]) div[data-testid="stAlertContainer"],
+    div[data-testid="stAlert"]:has([data-testid*="Success"]) > div,
+    div[data-testid="stAlert"]:has([data-testid*="Success"]),
+    div[data-testid="stAlertContainer"]:has([data-testid*="Success"]) {{
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(5, 150, 105, 0.24) 100%) !important;
+        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+        border-left: 5px solid #10b981 !important;
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.15) !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Success"],
+    div[data-testid="stAlert"] [data-testid*="Success"] p,
+    div[data-testid="stAlert"] [data-testid*="Success"] span,
+    div[data-testid="stAlert"] [data-testid*="Success"] div {{
+        color: #d1fae5 !important;
+        font-weight: 700 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Success"] strong,
+    div[data-testid="stAlert"] [data-testid*="Success"] b {{
+        color: #ffffff !important;
+        font-weight: 900 !important;
+    }}
+    div[data-testid="stAlert"] [data-testid*="Success"] svg {{
+        fill: #34d399 !important;
+        color: #34d399 !important;
+    }}
+
+    /* Fallback Alert generico */
+    div[data-testid="stAlert"] div[data-testid="stAlertContainer"] {{
+        background-color: rgba(13, 23, 42, 0.95) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        color: #f8fafc !important;
+    }}
+
     /* Card ed elementi custom con stili inline: conversione automatica in Dark Cockpit */
     [data-testid="stMain"] div[style*="background:white"],
     [data-testid="stMain"] div[style*="background: white"],
     [data-testid="stMain"] div[style*="background:#ffffff"],
     [data-testid="stMain"] div[style*="background: #ffffff"],
     [data-testid="stMain"] div[style*="background:#f8fafc"],
-    [data-testid="stMain"] div[style*="background: #f8fafc"] {{
+    [data-testid="stMain"] div[style*="background: #f8fafc"],
+    [data-testid="stMain"] div[style*="background:#fefbf6"],
+    [data-testid="stMain"] div[style*="background: #fefbf6"],
+    [data-testid="stMain"] div[style*="background:#fef3c7"],
+    [data-testid="stMain"] div[style*="background: #fef3c7"],
+    [data-testid="stMain"] div[style*="background:#f0f9ff"],
+    [data-testid="stMain"] div[style*="background: #f0f9ff"],
+    [data-testid="stMain"] div[style*="background: rgb(255, 255, 255)"],
+    [data-testid="stMain"] div[style*="background: rgb(248, 250, 252)"],
+    [data-testid="stMain"] div[style*="background: rgb(240, 249, 255)"],
+    [data-testid="stMain"] div[style*="background-color: white"],
+    [data-testid="stMain"] div[style*="background-color:#ffffff"],
+    [data-testid="stMain"] div[style*="background-color: #ffffff"],
+    [data-testid="stMain"] div[style*="background-color: #f8fafc"],
+    [data-testid="stMain"] div[style*="background-color:#f8fafc"] {{
         background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
@@ -479,7 +626,11 @@ def add_custom_css(image_file=None):
     [data-testid="stMain"] span[style*="background:#ffffff"],
     [data-testid="stMain"] span[style*="background: #ffffff"],
     [data-testid="stMain"] span[style*="background:#f8fafc"],
-    [data-testid="stMain"] span[style*="background: #f8fafc"] {{
+    [data-testid="stMain"] span[style*="background: #f8fafc"],
+    [data-testid="stMain"] span[style*="background: rgb(255, 255, 255)"],
+    [data-testid="stMain"] span[style*="background: rgb(248, 250, 252)"],
+    [data-testid="stMain"] span[style*="background-color: white"],
+    [data-testid="stMain"] span[style*="background-color: #ffffff"] {{
         background: rgba(8, 17, 32, 0.85) !important;
         border-color: rgba(56, 189, 248, 0.25) !important;
         color: #f8fafc !important;
@@ -487,7 +638,8 @@ def add_custom_css(image_file=None):
 
     /* Subcard interne (griglie e riquadri secondari) */
     [data-testid="stMain"] div[style*="background:#f1f5f9"],
-    [data-testid="stMain"] div[style*="background: #f1f5f9"] {{
+    [data-testid="stMain"] div[style*="background: #f1f5f9"],
+    [data-testid="stMain"] div[style*="background: rgb(241, 245, 249)"] {{
         background: rgba(8, 17, 32, 0.75) !important;
         border-color: rgba(56, 189, 248, 0.18) !important;
         color: #f8fafc !important;

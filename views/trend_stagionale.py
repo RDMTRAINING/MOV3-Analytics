@@ -2075,37 +2075,37 @@ def render_trend_stagionale(t):
                 m_label = tr(m_it, m_en)
 
                 # Cella Mese con separatore verticale marcato
-                m_bg = "#f8fafc" if m_num % 2 == 0 else "#ffffff"
+                m_bg = "rgba(13,30,56,0.35)" if m_num % 2 == 0 else "rgba(8,17,32,0.6)"
                 m_cell_html = (
                     f"<td style='padding:10px 8px; text-align:center; font-weight:900; font-size:14px; "
-                    f"color:{'#0f172a' if is_active else '#94a3b8'}; background:{m_bg}; "
-                    f"border-right:2.5px solid #cbd5e1; white-space:nowrap;'>{m_label}</td>"
+                    f"color:{'#38bdf8' if is_active else '#64748b'}; background:{m_bg}; "
+                    f"border-right:2px solid rgba(56,189,248,0.25); white-space:nowrap;'>{m_label}</td>"
                 )
 
                 # Celle Superfici (con separatore di fine area a destra)
                 cells_surf_html = ""
                 for idx_s, s in enumerate(surfaces_cols):
                     is_last_s = (idx_s == len(surfaces_cols) - 1)
-                    sep_s = "border-right:3px solid #0284c7;" if is_last_s else "border-right:1px solid #f1f5f9;"
+                    sep_s = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_s else "border-right:1px solid rgba(56,189,248,0.12);"
                     s_min_m = float(df_m[df_m['Tipologia Campo'].astype(str).str.strip().str.lower() == s.lower()]['Minuti'].sum())
                     pct_s = (s_min_m / tot_m_min * 100) if tot_m_min > 0 else 0.0
 
                     if pct_s > 0:
-                        b_col = "#cbd5e1"
+                        b_col = "rgba(245,158,11,0.4)"
                         fill_h = min(max(pct_s, 6.0), 100.0)
                         fill_div = f"<div style='width:100%; height:{fill_h:.0f}%; background:linear-gradient(180deg, #f59e0b 0%, #fbbf24 100%); opacity:0.85;'></div>"
-                        txt_col = "#0f172a"
-                        cell_bg = "#fefdfa"
+                        txt_col = "#f8fafc"
+                        cell_bg = "rgba(245,158,11,0.08)"
                     else:
-                        b_col = "#e2e8f0"
+                        b_col = "rgba(56,189,248,0.12)"
                         fill_div = ""
-                        txt_col = "#94a3b8"
-                        cell_bg = "#fcfdfd" if m_num % 2 == 0 else "#ffffff"
+                        txt_col = "#64748b"
+                        cell_bg = "rgba(13,30,56,0.2)" if m_num % 2 == 0 else "rgba(8,17,32,0.4)"
 
                     cells_surf_html += (
                         f"<td style='padding:6px 4px; text-align:center; background:{cell_bg}; {sep_s}'>"
-                        f"<div style='font-size:9.5px; font-weight:700; color:#92400e; margin-bottom:2px;'>{s}</div>"
-                        f"<div style='width:46px; height:36px; border:1px solid {b_col}; border-radius:4px; background:#f8fafc; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
+                        f"<div style='font-size:9.5px; font-weight:700; color:#fbbf24; margin-bottom:2px;'>{s}</div>"
+                        f"<div style='width:46px; height:36px; border:1px solid {b_col}; border-radius:4px; background:#081120; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
                         f"{fill_div}"
                         f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:{txt_col};'>{pct_s:.0f}%</span>"
                         f"</div>"
@@ -2116,26 +2116,26 @@ def render_trend_stagionale(t):
                 cells_tipo_html = ""
                 for idx_t, t in enumerate(tipologie_cols):
                     is_last_t = (idx_t == len(tipologie_cols) - 1)
-                    sep_t = "border-right:3px solid #0284c7;" if is_last_t else "border-right:1px solid #f1f5f9;"
+                    sep_t = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_t else "border-right:1px solid rgba(56,189,248,0.12);"
                     t_min_m = float(df_m[df_m['Tipologia Sessione'].astype(str).str.strip().str.lower() == t.lower()]['Minuti'].sum())
                     pct_t = (t_min_m / tot_m_min * 100) if tot_m_min > 0 else 0.0
 
                     if pct_t > 0:
-                        b_col = "#93c5fd"
+                        b_col = "rgba(14,165,233,0.4)"
                         fill_h = min(max(pct_t, 6.0), 100.0)
                         fill_div = f"<div style='width:100%; height:{fill_h:.0f}%; background:linear-gradient(180deg, #0284c7 0%, #38bdf8 100%); opacity:0.85;'></div>"
-                        txt_col = "#0f172a"
-                        cell_bg = "#f8fbff"
+                        txt_col = "#f8fafc"
+                        cell_bg = "rgba(14,165,233,0.08)"
                     else:
-                        b_col = "#e2e8f0"
+                        b_col = "rgba(56,189,248,0.12)"
                         fill_div = ""
-                        txt_col = "#94a3b8"
-                        cell_bg = "#fcfdfd" if m_num % 2 == 0 else "#ffffff"
+                        txt_col = "#64748b"
+                        cell_bg = "rgba(13,30,56,0.2)" if m_num % 2 == 0 else "rgba(8,17,32,0.4)"
 
                     cells_tipo_html += (
                         f"<td style='padding:6px 4px; text-align:center; background:{cell_bg}; {sep_t}'>"
-                        f"<div style='font-size:9.5px; font-weight:700; color:#0369a1; margin-bottom:2px;'>{t}</div>"
-                        f"<div style='width:46px; height:36px; border:1px solid {b_col}; border-radius:4px; background:#f8fafc; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
+                        f"<div style='font-size:9.5px; font-weight:700; color:#38bdf8; margin-bottom:2px;'>{t}</div>"
+                        f"<div style='width:46px; height:36px; border:1px solid {b_col}; border-radius:4px; background:#081120; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
                         f"{fill_div}"
                         f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:{txt_col};'>{pct_t:.0f}%</span>"
                         f"</div>"
@@ -2149,28 +2149,28 @@ def render_trend_stagionale(t):
                     rem_m = int(m_sp_m % 60)
                     sp_str = f"{h_m}h {rem_m:02d}m"
                     cell_sp_html = (
-                        f"<td style='padding:8px 8px; text-align:center; background:#faf8ff; border-right:2.5px solid #cbd5e1; white-space:nowrap;'>"
-                        f"<div style='font-size:14px; font-weight:900; color:#0f172a;'>{sp_str}</div>"
-                        f"<div style='font-size:10px; font-weight:700; color:#64748b;'>{int(round(m_sp_m))} min</div>"
+                        f"<td style='padding:8px 8px; text-align:center; background:rgba(168,85,247,0.08); border-right:2px solid rgba(56,189,248,0.25); white-space:nowrap;'>"
+                        f"<div style='font-size:14px; font-weight:900; color:#f8fafc;'>{sp_str}</div>"
+                        f"<div style='font-size:10px; font-weight:700; color:#c084fc;'>{int(round(m_sp_m))} min</div>"
                         f"</td>"
                     )
                 else:
                     cell_sp_html = (
-                        f"<td style='padding:8px 8px; text-align:center; background:#faf8ff; border-right:2.5px solid #cbd5e1; white-space:nowrap;'>"
-                        f"<div style='font-size:13.5px; font-weight:800; color:#cbd5e1;'>0</div>"
-                        f"<div style='font-size:9.5px; color:#e2e8f0;'>0 min</div>"
+                        f"<td style='padding:8px 8px; text-align:center; background:rgba(168,85,247,0.04); border-right:2px solid rgba(56,189,248,0.25); white-space:nowrap;'>"
+                        f"<div style='font-size:13.5px; font-weight:800; color:#64748b;'>0</div>"
+                        f"<div style='font-size:9.5px; color:#475569;'>0 min</div>"
                         f"</td>"
                     )
 
                 # Cella N Match
                 n_match_m = len(df_m[df_m['Tipologia Sessione'].astype(str).str.strip().str.lower().isin(['match', 'match doppio'])])
                 if n_match_m > 0:
-                    cell_match_html = f"<td style='padding:8px 8px; text-align:center; background:#fffafa; font-size:16px; font-weight:900; color:#ef4444;'>{n_match_m}</td>"
+                    cell_match_html = f"<td style='padding:8px 8px; text-align:center; background:rgba(239,68,68,0.12); font-size:16px; font-weight:900; color:#f87171;'>{n_match_m}</td>"
                 else:
-                    cell_match_html = f"<td style='padding:8px 8px; text-align:center; background:#fffafa; font-size:13.5px; font-weight:800; color:#cbd5e1;'>0</td>"
+                    cell_match_html = f"<td style='padding:8px 8px; text-align:center; background:rgba(239,68,68,0.04); font-size:13.5px; font-weight:800; color:#64748b;'>0</td>"
 
                 rows_dist_html += (
-                    f"<tr style='border-bottom:1px solid #f1f5f9;'>"
+                    f"<tr style='border-bottom:1px solid rgba(56,189,248,0.12);'>"
                     f"{m_cell_html}"
                     f"{cells_surf_html}"
                     f"{cells_tipo_html}"
@@ -2183,17 +2183,17 @@ def render_trend_stagionale(t):
             cells_tot_surf = ""
             for idx_s, s in enumerate(surfaces_cols):
                 is_last_s = (idx_s == len(surfaces_cols) - 1)
-                sep_s = "border-right:3px solid #0284c7;" if is_last_s else "border-right:1px solid #bae6fd;"
+                sep_s = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_s else "border-right:1px solid rgba(56,189,248,0.15);"
                 s_tot_m = surface_season_min.get(s, 0.0)
                 pct_s_tot = (s_tot_m / tot_season_min * 100) if tot_season_min > 0 else 0.0
                 fill_h = min(max(pct_s_tot, 6.0), 100.0) if pct_s_tot > 0 else 0.0
                 fill_div = f"<div style='width:100%; height:{fill_h:.0f}%; background:linear-gradient(180deg, #f59e0b 0%, #fbbf24 100%); opacity:0.95;'></div>" if pct_s_tot > 0 else ""
                 cells_tot_surf += (
-                    f"<td style='padding:8px 4px; text-align:center; background:#fef9ee; {sep_s}'>"
-                    f"<div style='font-size:9.5px; font-weight:800; color:#92400e; margin-bottom:2px;'>{s}</div>"
-                    f"<div style='width:46px; height:36px; border:1px solid #fde68a; border-radius:4px; background:#ffffff; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
+                    f"<td style='padding:8px 4px; text-align:center; background:rgba(245,158,11,0.12); {sep_s}'>"
+                    f"<div style='font-size:9.5px; font-weight:800; color:#fbbf24; margin-bottom:2px;'>{s}</div>"
+                    f"<div style='width:46px; height:36px; border:1px solid rgba(245,158,11,0.4); border-radius:4px; background:#081120; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
                     f"{fill_div}"
-                    f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#0f172a;'>{pct_s_tot:.0f}%</span>"
+                    f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#f8fafc;'>{pct_s_tot:.0f}%</span>"
                     f"</div>"
                     f"</td>"
                 )
@@ -2201,31 +2201,31 @@ def render_trend_stagionale(t):
             cells_tot_tipo = ""
             for idx_t, t in enumerate(tipologie_cols):
                 is_last_t = (idx_t == len(tipologie_cols) - 1)
-                sep_t = "border-right:3px solid #0284c7;" if is_last_t else "border-right:1px solid #bae6fd;"
+                sep_t = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_t else "border-right:1px solid rgba(56,189,248,0.15);"
                 t_tot_m = tipo_season_min.get(t, 0.0)
                 pct_t_tot = (t_tot_m / tot_season_min * 100) if tot_season_min > 0 else 0.0
                 fill_h = min(max(pct_t_tot, 6.0), 100.0) if pct_t_tot > 0 else 0.0
                 fill_div = f"<div style='width:100%; height:{fill_h:.0f}%; background:linear-gradient(180deg, #0284c7 0%, #38bdf8 100%); opacity:0.95;'></div>" if pct_t_tot > 0 else ""
                 cells_tot_tipo += (
-                    f"<td style='padding:8px 4px; text-align:center; background:#f0f9ff; {sep_t}'>"
-                    f"<div style='font-size:9.5px; font-weight:800; color:#0369a1; margin-bottom:2px;'>{t}</div>"
-                    f"<div style='width:46px; height:36px; border:1px solid #bae6fd; border-radius:4px; background:#ffffff; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
+                    f"<td style='padding:8px 4px; text-align:center; background:rgba(14,165,233,0.12); {sep_t}'>"
+                    f"<div style='font-size:9.5px; font-weight:800; color:#38bdf8; margin-bottom:2px;'>{t}</div>"
+                    f"<div style='width:46px; height:36px; border:1px solid rgba(14,165,233,0.4); border-radius:4px; background:#081120; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; margin:0 auto;'>"
                     f"{fill_div}"
-                    f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#0f172a;'>{pct_t_tot:.0f}%</span>"
+                    f"<span style='position:absolute; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#f8fafc;'>{pct_t_tot:.0f}%</span>"
                     f"</div>"
                     f"</td>"
                 )
 
             rows_dist_html += (
-                f"<tr style='border-top:2.5px solid #0284c7; font-family:\"Inter\",sans-serif;'>"
-                f"<td style='padding:12px 8px; text-align:center; font-weight:900; color:#0284c7; font-size:12px; text-transform:uppercase; border-right:2.5px solid #cbd5e1; background:#f0f9ff; white-space:nowrap;'>TOTALE<br>ANNO</td>"
+                f"<tr style='border-top:2px solid #0ea5e9; font-family:\"Inter\",sans-serif; background:#0d1e38;'>"
+                f"<td style='padding:12px 8px; text-align:center; font-weight:900; color:#38bdf8; font-size:12px; text-transform:uppercase; border-right:2px solid rgba(56,189,248,0.25); background:#070d18; white-space:nowrap;'>TOTALE<br>ANNO</td>"
                 f"{cells_tot_surf}"
                 f"{cells_tot_tipo}"
-                f"<td style='padding:10px 8px; text-align:center; border-right:2.5px solid #cbd5e1; background:#faf8ff; white-space:nowrap;'>"
-                f"<div style='font-size:15px; font-weight:900; color:#6b21a8;'>{str_sp_tot}</div>"
-                f"<div style='font-size:10px; font-weight:800; color:#7e22ce;'>{int(round(tot_season_sparring_min))} min</div>"
+                f"<td style='padding:10px 8px; text-align:center; border-right:2px solid rgba(56,189,248,0.25); background:rgba(168,85,247,0.15); white-space:nowrap;'>"
+                f"<div style='font-size:15px; font-weight:900; color:#f8fafc;'>{str_sp_tot}</div>"
+                f"<div style='font-size:10px; font-weight:800; color:#c084fc;'>{int(round(tot_season_sparring_min))} min</div>"
                 f"</td>"
-                f"<td style='padding:10px 8px; text-align:center; font-size:18px; font-weight:900; color:#ef4444; background:#fffafa;'>{tot_season_matches}</td>"
+                f"<td style='padding:10px 8px; text-align:center; font-size:18px; font-weight:900; color:#f87171; background:rgba(239,68,68,0.15);'>{tot_season_matches}</td>"
                 f"</tr>"
             )
 
@@ -2233,20 +2233,20 @@ def render_trend_stagionale(t):
             subheaders_surf_html = ""
             for idx_s, s in enumerate(surfaces_cols):
                 is_last_s = (idx_s == len(surfaces_cols) - 1)
-                b_s = "border-right:3px solid #0284c7;" if is_last_s else "border-right:1px solid #fde68a;"
-                subheaders_surf_html += f"<th style='text-align:center; padding:7px 4px; background:#fef3c7; color:#92400e; font-size:11px; font-weight:900; text-transform:uppercase; {b_s}'>{s}</th>"
+                b_s = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_s else "border-right:1px solid rgba(245,158,11,0.25);"
+                subheaders_surf_html += f"<th style='text-align:center; padding:7px 4px; background:rgba(245,158,11,0.15); color:#fbbf24; font-size:11px; font-weight:900; text-transform:uppercase; {b_s}'>{s}</th>"
 
             subheaders_tipo_html = ""
             for idx_t, t in enumerate(tipologie_cols):
                 is_last_t = (idx_t == len(tipologie_cols) - 1)
-                b_t = "border-right:3px solid #0284c7;" if is_last_t else "border-right:1px solid #bae6fd;"
-                subheaders_tipo_html += f"<th style='text-align:center; padding:7px 4px; background:#e0f2fe; color:#0369a1; font-size:11px; font-weight:900; text-transform:uppercase; {b_t}'>{t}</th>"
+                b_t = "border-right:2.5px solid rgba(56,189,248,0.35);" if is_last_t else "border-right:1px solid rgba(14,165,233,0.25);"
+                subheaders_tipo_html += f"<th style='text-align:center; padding:7px 4px; background:rgba(14,165,233,0.15); color:#38bdf8; font-size:11px; font-weight:900; text-transform:uppercase; {b_t}'>{t}</th>"
 
             # Header colgroup & layout width
             min_tbl_w = max(960, 70 + len(surfaces_cols)*54 + len(tipologie_cols)*54 + 115 + 85)
 
             table_dist_html = (
-                f"<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 14px -2px rgba(15,23,42,0.06); overflow:hidden; margin-bottom:24px; font-family:\"Inter\",sans-serif;'>"
+                f"<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border-radius:14px; border:1px solid rgba(56,189,248,0.22); box-shadow:0 8px 30px -4px rgba(0,0,0,0.5); overflow:hidden; margin-bottom:24px; font-family:\"Inter\",sans-serif;'>"
                 f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:13px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;'>"
                 f"<span style='color:#ffffff; font-size:13.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'><i class='bi bi-calendar3' style='color:#38bdf8; margin-right:8px;'></i>{tr('TIMELINE STAGIONE — DISTRIBUZIONE DEL LAVORO', 'SEASON TIMELINE — WORKLOAD DISTRIBUTION')}</span>"
                 f"<span style='color:#38bdf8; font-size:12px; font-weight:700;'>{giocatore_selezionato} · {stagione_sel}</span>"
@@ -2811,14 +2811,14 @@ def render_trend_stagionale(t):
             lbl_foster_all_desc = tr("Settimana troppo \"piatta\" e senza vero riposo; alto rischio di infortuni da sovrallenamento.", "Week too \"flat\" and without true rest; high risk of overtraining injuries.")
 
             box_foster_html = (
-                f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:16px 20px; margin-top:20px; font-family:\"Inter\",sans-serif;'>"
-                f"<div style='background:#0284c7; color:#ffffff; font-size:12.5px; font-weight:900; padding:4px 12px; border-radius:6px; display:inline-block; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;'>"
+                f"<div style='background:linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(2,132,199,0.20) 100%); border:1px solid rgba(56,189,248,0.35); border-left:5px solid #0ea5e9; border-radius:12px; padding:16px 20px; margin-top:20px; font-family:\"Inter\",sans-serif; box-shadow:0 4px 16px rgba(0,0,0,0.3);'>"
+                f"<div style='background:#0ea5e9; color:#ffffff; font-size:12.5px; font-weight:900; padding:4px 12px; border-radius:6px; display:inline-block; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;'>"
                 f"{lbl_foster_title}"
                 f"</div>"
-                f"<div style='font-size:13px; color:#1e293b; line-height:1.6;'>"
+                f"<div style='font-size:13px; color:#f8fafc; line-height:1.6;'>"
                 f"{lbl_foster_desc}<br>"
-                f"• <b style='color:#15803d;'>{lbl_foster_ott}</b> {lbl_foster_ott_desc}<br>"
-                f"• <b style='color:#b91c1c;'>{lbl_foster_all}</b> {lbl_foster_all_desc}"
+                f"• <b style='color:#34d399;'>{lbl_foster_ott}</b> {lbl_foster_ott_desc}<br>"
+                f"• <b style='color:#f87171;'>{lbl_foster_all}</b> {lbl_foster_all_desc}"
                 f"</div>"
                 f"</div>"
             )
@@ -3378,15 +3378,15 @@ def render_trend_stagionale(t):
             lbl_strain_rischio_desc = tr("Picchi anomali di Strain superiori al 50% rispetto alla media stagionale sono il principale predittore scientifico di lesioni muscolari, calo delle difese immunitarie e sovrallenamento.", "Abnormal Strain spikes exceeding 50% above the season average are the primary scientific predictor of muscle injuries, immune suppression, and overtraining.")
 
             box_strain_html = (
-                f"<div style='background:#fefbf6; border:1px solid #fde68a; border-radius:12px; padding:16px 20px; margin-top:20px; font-family:\"Inter\",sans-serif;'>"
+                f"<div style='background:linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(180,83,9,0.20) 100%); border:1px solid rgba(245,158,11,0.35); border-left:5px solid #f59e0b; border-radius:12px; padding:16px 20px; margin-top:20px; font-family:\"Inter\",sans-serif; box-shadow:0 4px 16px rgba(0,0,0,0.3);'>"
                 f"<div style='background:#f59e0b; color:#ffffff; font-size:12.5px; font-weight:900; padding:4px 12px; border-radius:6px; display:inline-block; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;'>"
                 f"{lbl_strain_title}"
                 f"</div>"
-                f"<div style='font-size:13px; color:#1e293b; line-height:1.6;'>"
+                f"<div style='font-size:13px; color:#f8fafc; line-height:1.6;'>"
                 f"{lbl_strain_desc}<br>"
-                f"• <b>{lbl_strain_formula}</b> <code style='background:#fffbeb; color:#b45309; padding:2px 6px; border-radius:4px; font-weight:700;'>{lbl_strain_formula_txt}</code><br>"
-                f"• <b style='color:#b45309;'>{lbl_strain_molt}</b> {lbl_strain_molt_desc}<br>"
-                f"• <b style='color:#b91c1c;'>{lbl_strain_rischio}</b> {lbl_strain_rischio_desc}"
+                f"• <b style='color:#ffffff;'>{lbl_strain_formula}</b> <code style='background:rgba(255,255,255,0.08); color:#fef08a; padding:2px 8px; border-radius:4px; font-weight:700;'>{lbl_strain_formula_txt}</code><br>"
+                f"• <b style='color:#fef08a;'>{lbl_strain_molt}</b> {lbl_strain_molt_desc}<br>"
+                f"• <b style='color:#f87171;'>{lbl_strain_rischio}</b> {lbl_strain_rischio_desc}"
                 f"</div>"
                 f"</div>"
             )

@@ -528,8 +528,8 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
     <style>
     .m0v3-day-card {
         position: relative;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
+        background: #081120;
+        border: 1px solid #1e293b;
         border-radius: 8px;
         padding: 6px 6px;
         min-height: 118px;
@@ -539,8 +539,8 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
     }
     .m0v3-day-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
-        border-color: #0ea5e9;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+        border-color: #38bdf8;
         z-index: 1000;
     }
     .m0v3-day-card .m0v3-tooltip {
@@ -570,8 +570,8 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
 
     # Legenda Status Operativo
     st.markdown(
-        f"<div style='display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:11.5px; color:#475569; font-weight:700; font-family:\"Inter\",sans-serif;'>"
-        f"<span style='color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>Legenda Status:</span>"
+        f"<div style='display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:#081120; border:1px solid #1e293b; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:11.5px; color:#94a3b8; font-weight:700; font-family:\"Inter\",sans-serif;'>"
+        f"<span style='color:#f8fafc; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>Legenda Status:</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:9px; height:9px; border-radius:50%; background:#10b981;'></span>{tr('Disponibile (Full Training)', 'Available')}</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:9px; height:9px; border-radius:50%; background:#f59e0b;'></span>{tr('Carico Adattato (RTP / Fastidio)', 'Modified')}</span>"
         f"<span style='display:inline-flex; align-items:center; gap:5px;'><span style='width:9px; height:9px; border-radius:50%; background:#e11d48;'></span>{tr('Stop Medico (Infortunio / Out)', 'Out')}</span>"
@@ -604,7 +604,7 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
             with cols_sett[g_sett]:
                 if idx_cella < primo_giorno_settimana or giorno_cont > num_giorni_mese:
                     # Cella vuota fuori mese
-                    st.markdown("<div style='background:rgba(241,245,249,0.5); border:1px dashed #e2e8f0; border-radius:8px; min-height:105px; margin-bottom:6px;'></div>", unsafe_allow_html=True)
+                    st.markdown("<div style='background:rgba(15,23,42,0.4); border:1px dashed #1e293b; border-radius:8px; min-height:105px; margin-bottom:6px;'></div>", unsafe_allow_html=True)
                 else:
                     d_obj = datetime.date(anno_corrente, mese_corrente, giorno_cont)
                     d_key = d_obj.strftime("%Y-%m-%d")
@@ -700,7 +700,7 @@ def render_master_timeline(t, atleta_sel=None, atleta_id_sel=None, key_prefix="c
                     st.markdown(
                         f"<div class='m0v3-day-card' style='border-top:4px solid {st_col}; {border_today}'>"
                         f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
-                        f"<span style='font-size:12px; font-weight:900; color:#0f172a;'>{giorno_cont}</span>"
+                        f"<span style='font-size:12px; font-weight:900; color:#f8fafc;'>{giorno_cont}</span>"
                         f"<span style='width:7px; height:7px; border-radius:50%; background:{st_col};'></span>"
                         f"</div>"
                         f"{html_badges}"
@@ -1155,22 +1155,22 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
 
     # Barra Legenda Integrata M0V3
     st.markdown(
-        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#f8fafc; border:1.2px solid rgba(10,25,47,0.22); border-radius:14px; box-shadow:0 4px 20px -2px rgba(10,25,47,0.10); padding:10px 16px; margin-bottom:12px; font-family:\"Inter\",sans-serif; font-size:11.5px;'>"
+        f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#081120; border:1px solid #1e293b; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); padding:10px 16px; margin-bottom:12px; font-family:\"Inter\",sans-serif; font-size:11.5px;'>"
         f"<div style='display:flex; align-items:center; gap:14px; flex-wrap:wrap;'>"
-        f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'><i class='bi bi-activity' style='color:#0ea5e9; margin-right:4px;'></i>{tr('Metriche:', 'Metrics:')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#0ea5e9;'></span>Training Load GPS</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#f97316;'></span>sRPE Tennis (AU)</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#ef4444;'></span>Gym 70% Primario (AU)</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:11px; height:11px; border-radius:3px; background:#fca5a5; border:1px dashed #ef4444;'></span>Gym 30% Compl. (AU)</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='width:14px; height:3px; border-radius:2px; background:#a855f7;'></span>Wellness Score</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#10b981; font-weight:900;'>&#9830;</span>{tr('Seduta Fisioterapica', 'Physio Session')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#334155;'><span style='color:#f97316; font-weight:900;'>&#9650;</span>{tr('Segnalazione Fastidio', 'Discomfort Alert')}</span>"
+        f"<span style='font-weight:800; color:#f8fafc; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'><i class='bi bi-activity' style='color:#0ea5e9; margin-right:4px;'></i>{tr('Metriche:', 'Metrics:')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='width:11px; height:11px; border-radius:3px; background:#0ea5e9;'></span>Training Load GPS</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='width:11px; height:11px; border-radius:3px; background:#f97316;'></span>sRPE Tennis (AU)</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='width:11px; height:11px; border-radius:3px; background:#ef4444;'></span>Gym 70% Primario (AU)</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='width:11px; height:11px; border-radius:3px; background:#fca5a5; border:1px dashed #ef4444;'></span>Gym 30% Compl. (AU)</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='width:14px; height:3px; border-radius:2px; background:#a855f7;'></span>Wellness Score</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='color:#10b981; font-weight:900;'>&#9830;</span>{tr('Seduta Fisioterapica', 'Physio Session')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#cbd5e1;'><span style='color:#f97316; font-weight:900;'>&#9650;</span>{tr('Segnalazione Fastidio', 'Discomfort Alert')}</span>"
         f"</div>"
         f"<div style='display:flex; align-items:center; gap:12px; flex-wrap:wrap;'>"
-        f"<span style='font-weight:800; color:#0f172a; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>{tr('Bande Cliniche:', 'Clinical Zones:')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(225,29,72,0.2); border:1px solid #e11d48;'></span>{tr('Infortunio (Rosso)', 'Injury (Red)')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b;'></span>{tr('Carico Adattato (Giallo)', 'Modified Load (Yellow)')}</span>"
-        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#475569;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(100,116,139,0.25); border:1px solid #64748b;'></span>{tr('Viaggio / Riposo (Grigio)', 'Travel / Rest (Gray)')}</span>"
+        f"<span style='font-weight:800; color:#f8fafc; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;'>{tr('Bande Cliniche:', 'Clinical Zones:')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#94a3b8;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(225,29,72,0.2); border:1px solid #e11d48;'></span>{tr('Infortunio (Rosso)', 'Injury (Red)')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#94a3b8;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b;'></span>{tr('Carico Adattato (Giallo)', 'Modified Load (Yellow)')}</span>"
+        f"<span style='display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#94a3b8;'><span style='width:11px; height:11px; border-radius:3px; background:rgba(100,116,139,0.25); border:1px solid #64748b;'></span>{tr('Viaggio / Riposo (Grigio)', 'Travel / Rest (Gray)')}</span>"
         f"</div>"
         f"</div>",
         unsafe_allow_html=True
@@ -1795,17 +1795,17 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
         with c_gr2:
             # Tabella riepilogativa
             st.markdown(
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; font-family:\"Inter\",sans-serif;'>"
-                f"<div style='font-size:12px; font-weight:800; color:#0f172a; margin-bottom:8px; text-transform:uppercase;'>Giorni di Indisponibilità per Distretto</div>",
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; padding:12px; font-family:\"Inter\",sans-serif;'>"
+                f"<div style='font-size:12px; font-weight:800; color:#f8fafc; margin-bottom:8px; text-transform:uppercase;'>Giorni di Indisponibilità per Distretto</div>",
                 unsafe_allow_html=True
             )
             for d in distretti_sorted:
                 tot_ev = conteggi_distretti[d]['infortuni'] + conteggi_distretti[d]['sovraccarichi'] + conteggi_distretti[d]['trattamenti']
                 g_stop = conteggi_distretti[d]['giorni_stop']
                 st.markdown(
-                    f"<div style='display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:12px;'>"
-                    f"<span style='font-weight:700; color:#0f172a;'>{d}</span>"
-                    f"<span style='color:#64748b;'>{tot_ev} ev. · <b style='color:#be123c;'>{g_stop} gg stop</b></span>"
+                    f"<div style='display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(56,189,248,0.12); font-size:12px;'>"
+                    f"<span style='font-weight:700; color:#f8fafc;'>{d}</span>"
+                    f"<span style='color:#94a3b8;'>{tot_ev} ev. · <b style='color:#f87171;'>{g_stop} gg stop</b></span>"
                     f"</div>",
                     unsafe_allow_html=True
                 )
@@ -1967,13 +1967,13 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 # Classificazione Status Prevenzione
                 if n_tratt >= 5 or n_ultimi_30 >= 3:
                     lbl_stat = tr("CRITICO / RICORRENTE", "CRITICAL / RECURRENT")
-                    status_badge = f"<span style='background:rgba(225,29,72,0.12); color:#be123c; border:1px solid rgba(225,29,72,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-exclamation-octagon-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
+                    status_badge = f"<span style='background:rgba(225,29,72,0.20); color:#f87171; border:1px solid rgba(225,29,72,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-exclamation-octagon-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
                 elif n_tratt >= 3:
                     lbl_stat = tr("MONITORARE", "MONITOR")
-                    status_badge = f"<span style='background:rgba(245,158,11,0.12); color:#b45309; border:1px solid rgba(245,158,11,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-exclamation-triangle-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
+                    status_badge = f"<span style='background:rgba(245,158,11,0.20); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-exclamation-triangle-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
                 else:
                     lbl_stat = tr("GESTIONE ROUTINE", "ROUTINE MANAGEMENT")
-                    status_badge = f"<span style='background:rgba(16,185,129,0.12); color:#047857; border:1px solid rgba(16,185,129,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-check-circle-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
+                    status_badge = f"<span style='background:rgba(16,185,129,0.20); color:#34d399; border:1px solid rgba(16,185,129,0.4); padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;'><i class='bi bi-check-circle-fill' style='margin-right:3px;'></i>{lbl_stat}</span>"
 
                 righe_ricorrenza.append({
                     "distretto_lato": f"<b>{d_nat}</b> ({l_nat})",
@@ -1991,13 +1991,13 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             html_ric_body = ""
             for row_r in righe_ricorrenza:
                 html_ric_body += (
-                    f"<tr style='border-bottom:1px solid #f1f5f9; font-size:12px;'>"
-                    f"<td style='padding:9px 12px; color:#0f172a;'>{row_r['distretto_lato']}</td>"
-                    f"<td style='padding:9px 12px; text-align:center; font-weight:800; color:#0284c7; font-size:13px;'>{row_r['n_tratt']}</td>"
-                    f"<td style='padding:9px 12px; text-align:center; font-weight:700; color:#64748b;'>{row_r['quota_pct']:.1f}%</td>"
-                    f"<td style='padding:9px 12px; text-align:center; color:#334155; font-size:11.5px;'>{row_r['arco_temporale']}</td>"
-                    f"<td style='padding:9px 12px; text-align:center; font-weight:700; color:#0f172a;'>{row_r['avg_interval']}</td>"
-                    f"<td style='padding:9px 12px; color:#475569; font-size:11.5px;'>{row_r['terapie']}</td>"
+                    f"<tr style='border-bottom:1px solid rgba(56,189,248,0.12); font-size:12px;'>"
+                    f"<td style='padding:9px 12px; color:#f8fafc;'>{row_r['distretto_lato']}</td>"
+                    f"<td style='padding:9px 12px; text-align:center; font-weight:800; color:#38bdf8; font-size:13px;'>{row_r['n_tratt']}</td>"
+                    f"<td style='padding:9px 12px; text-align:center; font-weight:700; color:#94a3b8;'>{row_r['quota_pct']:.1f}%</td>"
+                    f"<td style='padding:9px 12px; text-align:center; color:#cbd5e1; font-size:11.5px;'>{row_r['arco_temporale']}</td>"
+                    f"<td style='padding:9px 12px; text-align:center; font-weight:700; color:#f8fafc;'>{row_r['avg_interval']}</td>"
+                    f"<td style='padding:9px 12px; color:#94a3b8; font-size:11.5px;'>{row_r['terapie']}</td>"
                     f"<td style='padding:9px 12px; text-align:center;'>{row_r['status_badge']}</td>"
                     f"</tr>"
                 )
@@ -2011,7 +2011,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             th_status = tr("Status Prevenzione", "Prevention Status")
 
             st.markdown(
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; overflow-x:auto; margin-bottom:20px;'>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; overflow-x:auto; margin-bottom:20px;'>"
                 f"<table style='width:100%; border-collapse:collapse; font-family:\"Inter\",sans-serif;'>"
                 f"<thead><tr style='background:#0f172a; color:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;'>"
                 f"<th style='padding:9px 12px; text-align:left;'>{th_distr}</th>"
@@ -2075,15 +2075,15 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
                 operatore_s = r.get('autore_nome', 'Staff') or 'Staff'
 
                 html_det_body += (
-                    f"<tr style='border-bottom:1px solid #f1f5f9; font-size:12px;'>"
-                    f"<td style='padding:8px 10px; font-weight:700; color:#0f172a;'>{d_str}</td>"
-                    f"<td style='padding:8px 10px; font-weight:700;'>{distr_s}</td>"
-                    f"<td style='padding:8px 10px; color:#475569;'>{lato_s}</td>"
-                    f"<td style='padding:8px 10px; color:#0284c7; font-weight:700;'>{terapia_s}</td>"
-                    f"<td style='padding:8px 10px; text-align:center; font-weight:800; color:#be123c;'>{vas_v}</td>"
-                    f"<td style='padding:8px 10px; color:#334155; font-size:11.5px;'>{ind_s}</td>"
-                    f"<td style='padding:8px 10px; color:#64748b; font-size:11px;'>{note_s}</td>"
-                    f"<td style='padding:8px 10px; color:#475569; font-size:11px;'>{operatore_s}</td>"
+                    f"<tr style='border-bottom:1px solid rgba(56,189,248,0.12); font-size:12px;'>"
+                    f"<td style='padding:8px 10px; font-weight:700; color:#f8fafc;'>{d_str}</td>"
+                    f"<td style='padding:8px 10px; font-weight:700; color:#f8fafc;'>{distr_s}</td>"
+                    f"<td style='padding:8px 10px; color:#94a3b8;'>{lato_s}</td>"
+                    f"<td style='padding:8px 10px; color:#38bdf8; font-weight:700;'>{terapia_s}</td>"
+                    f"<td style='padding:8px 10px; text-align:center; font-weight:800; color:#f87171;'>{vas_v}</td>"
+                    f"<td style='padding:8px 10px; color:#cbd5e1; font-size:11.5px;'>{ind_s}</td>"
+                    f"<td style='padding:8px 10px; color:#94a3b8; font-size:11px;'>{note_s}</td>"
+                    f"<td style='padding:8px 10px; color:#94a3b8; font-size:11px;'>{operatore_s}</td>"
                     f"</tr>"
                 )
 
@@ -2097,7 +2097,7 @@ def render_correlazione_clinica(t, atleta_sel=None, atleta_id_sel=None, key_pref
             th_d_op = tr("Operatore", "Provider")
 
             st.markdown(
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; overflow-x:auto; margin-bottom:12px;'>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:10px; overflow-x:auto; margin-bottom:12px;'>"
                 f"<table style='width:100%; border-collapse:collapse; font-family:\"Inter\",sans-serif;'>"
                 f"<thead><tr style='background:#0f172a; color:#f8fafc; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px;'>"
                 f"<th style='padding:8px 10px; text-align:left;'>{th_d_data}</th>"

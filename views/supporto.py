@@ -135,23 +135,23 @@ def build_mailto_url(ticket_id, subject, user_email, description):
 
 def get_status_badge(status):
     if status == "Aperta":
-        return f"<span style='background:#e0f2fe; color:#0369a1; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #bae6fd;'>{tr('Aperta', 'Open')}</span>"
+        return f"<span style='background:rgba(14,165,233,0.18); color:#38bdf8; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #0ea5e9;'>{tr('Aperta', 'Open')}</span>"
     elif status == "In Lavorazione":
-        return f"<span style='background:#fef3c7; color:#b45309; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #fde68a;'>{tr('In Lavorazione', 'In Progress')}</span>"
+        return f"<span style='background:rgba(245,158,11,0.18); color:#fbbf24; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #f59e0b;'>{tr('In Lavorazione', 'In Progress')}</span>"
     elif status == "Risolta":
-        return f"<span style='background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #bbf7d0;'>{tr('Risolta', 'Resolved')}</span>"
+        return f"<span style='background:rgba(16,185,129,0.18); color:#34d399; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #10b981;'>{tr('Risolta', 'Resolved')}</span>"
     else:
-        return f"<span style='background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #e2e8f0;'>{tr('Chiusa', 'Closed')}</span>"
+        return f"<span style='background:#1e293b; color:#94a3b8; padding:3px 10px; border-radius:6px; font-size:11.5px; font-weight:800; border:1px solid #334155;'>{tr('Chiusa', 'Closed')}</span>"
 
 def get_priority_badge(prio):
     if prio == "Urgente":
-        return f"<span style='background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:800;'>{tr('URGENTE', 'URGENT')}</span>"
+        return f"<span style='background:rgba(239,68,68,0.22); color:#f87171; border:1px solid #ef4444; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:800;'>{tr('URGENTE', 'URGENT')}</span>"
     elif prio == "Alta":
-        return f"<span style='background:#ffedd5; color:#c2410c; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:800;'>{tr('ALTA', 'HIGH')}</span>"
+        return f"<span style='background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid #f59e0b; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:800;'>{tr('ALTA', 'HIGH')}</span>"
     elif prio == "Bassa":
-        return f"<span style='background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;'>{tr('BASSA', 'LOW')}</span>"
+        return f"<span style='background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;'>{tr('BASSA', 'LOW')}</span>"
     else:
-        return f"<span style='background:#f0fdf4; color:#166534; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;'>{tr('NORMALE', 'NORMAL')}</span>"
+        return f"<span style='background:rgba(16,185,129,0.18); color:#34d399; border:1px solid #10b981; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;'>{tr('NORMALE', 'NORMAL')}</span>"
 
 
 def render_supporto(t):
@@ -258,9 +258,9 @@ def render_supporto(t):
 
                     if ok_mail:
                         st.markdown(
-                            f"<div style='background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; align-items:center; gap:10px;'>"
-                            f"<i class='bi bi-check-circle-fill' style='color:#16a34a; font-size:18px;'></i>"
-                            f"<span style='color:#166534; font-size:13px; font-weight:700;'>"
+                            f"<div style='background:rgba(16,185,129,0.14); border:1px solid #10b981; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; align-items:center; gap:10px;'>"
+                            f"<i class='bi bi-check-circle-fill' style='color:#34d399; font-size:18px;'></i>"
+                            f"<span style='color:#34d399; font-size:13px; font-weight:700;'>"
                             f"{tr('Notifica email inoltrata istantaneamente all assistente MOV3 (' + SUPPORT_EMAIL + '). Riceverai riscontro a breve.', 'Email alert automatically dispatched to MOV3 Support (' + SUPPORT_EMAIL + '). You will receive a response shortly.')}"
                             f"</span>"
                             f"</div>",
@@ -269,8 +269,8 @@ def render_supporto(t):
                     else:
                         mailto_link = build_mailto_url(new_t['id'], new_t['subject'], curr_email, new_t['description'])
                         st.markdown(
-                            f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
-                            f"<span style='color:#0369a1; font-size:12.5px; font-weight:600;'><i class='bi bi-info-circle-fill' style='color:#0284c7; margin-right:6px;'></i>{tr('Il ticket è registrato. Puoi anche inviare una notifica email diretta con 1 click:', 'The ticket is registered. You can also send a direct email notification with 1 click:')}</span>"
+                            f"<div style='background:#081120; border:1px solid #1e293b; border-radius:8px; padding:12px 16px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;'>"
+                            f"<span style='color:#38bdf8; font-size:12.5px; font-weight:600;'><i class='bi bi-info-circle-fill' style='color:#0ea5e9; margin-right:6px;'></i>{tr('Il ticket è registrato. Puoi anche inviare una notifica email diretta con 1 click:', 'The ticket is registered. You can also send a direct email notification with 1 click:')}</span>"
                             f"<a href='{mailto_link}' target='_blank' style='background:#0284c7; color:#ffffff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;'><i class='bi bi-envelope-fill'></i> Notifica Email a {SUPPORT_EMAIL}</a>"
                             f"</div>",
                             unsafe_allow_html=True
@@ -317,17 +317,17 @@ def render_supporto(t):
                 badge_pr = get_priority_badge(sel_tk.get("priority", "Normale"))
                 
                 card_tk_html = (
-                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; box-shadow:0 2px 8px -2px rgba(15,23,42,0.06); margin-bottom:16px; font-family:\"Inter\",sans-serif;'>"
-                    f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:10px;'>"
+                    f"<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; padding:16px 20px; box-shadow:0 4px 16px rgba(0,0,0,0.4); margin-bottom:16px; font-family:\"Inter\",sans-serif;'>"
+                    f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #1e293b; padding-bottom:10px; margin-bottom:10px;'>"
                     f"<div>"
-                    f"<span style='font-size:16px; font-weight:900; color:#0f172a;'>{sel_tk['subject']}</span>"
-                    f"<div style='font-size:11.5px; color:#64748b; margin-top:2px;'>ID: <b style='color:#0284c7;'>{sel_tk['id']}</b> · Inviato il: {sel_tk['created_at']}</div>"
+                    f"<span style='font-size:16px; font-weight:900; color:#f8fafc;'>{sel_tk['subject']}</span>"
+                    f"<div style='font-size:11.5px; color:#94a3b8; margin-top:2px;'>ID: <b style='color:#38bdf8;'>{sel_tk['id']}</b> · Inviato il: {sel_tk['created_at']}</div>"
                     f"</div>"
                     f"<div style='display:flex; align-items:center; gap:8px;'>{badge_pr} {badge_st}</div>"
                     f"</div>"
-                    f"<div style='display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#475569; margin-bottom:10px;'>"
-                    f"<span><b>{tr('Categoria:', 'Category:')}</b> {sel_tk['category']}</span>"
-                    f"<span><b>{tr('Destinatario Mail:', 'Recipient Email:')}</b> <a href='mailto:{SUPPORT_EMAIL}' style='color:#0284c7; text-decoration:none;'>{SUPPORT_EMAIL}</a></span>"
+                    f"<div style='display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#94a3b8; margin-bottom:10px;'>"
+                    f"<span><b style='color:#ffffff;'>{tr('Categoria:', 'Category:')}</b> {sel_tk['category']}</span>"
+                    f"<span><b style='color:#ffffff;'>{tr('Destinatario Mail:', 'Recipient Email:')}</b> <a href='mailto:{SUPPORT_EMAIL}' style='color:#38bdf8; text-decoration:none;'>{SUPPORT_EMAIL}</a></span>"
                     f"</div>"
                     f"</div>"
                 )
@@ -358,7 +358,7 @@ def render_supporto(t):
                 # CHAT DIRETTA: MESSAGGI SCAMBIATI
                 # -------------------------------------------------------------
                 st.markdown(
-                    f"<div style='font-size:13.5px; font-weight:800; color:#0f172a; margin-top:16px; margin-bottom:10px;'><i class='bi bi-chat-left-text-fill' style='color:#0284c7; margin-right:6px;'></i>{tr('Conversazione Diretta con il Supporto Super-Admin', 'Direct Conversation with Super-Admin Support')}</div>",
+                    f"<div style='font-size:13.5px; font-weight:800; color:#f8fafc; margin-top:16px; margin-bottom:10px;'><i class='bi bi-chat-left-text-fill' style='color:#38bdf8; margin-right:6px;'></i>{tr('Conversazione Diretta con il Supporto Super-Admin', 'Direct Conversation with Super-Admin Support')}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -369,7 +369,7 @@ def render_supporto(t):
                     if is_admin:
                         # Messaggio Admin (allineato a sinistra, stile scuro/blu executive)
                         chat_html += (
-                            f"<div style='align-self:flex-start; max-width:82%; background:#1e293b; color:#ffffff; padding:12px 16px; border-radius:12px 12px 12px 2px; box-shadow:0 2px 6px rgba(0,0,0,0.06); font-family:\"Inter\",sans-serif;'>"
+                            f"<div style='align-self:flex-start; max-width:82%; background:#1e293b; color:#ffffff; padding:12px 16px; border-radius:12px 12px 12px 2px; box-shadow:0 2px 6px rgba(0,0,0,0.4); font-family:\"Inter\",sans-serif; border:1px solid #334155;'>"
                             f"<div style='display:flex; align-items:center; gap:8px; margin-bottom:4px;'>"
                             f"<span style='background:#0284c7; color:#ffffff; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase;'>SUPER-ADMIN</span>"
                             f"<span style='font-size:11px; color:#94a3b8;'>{msg.get('sender_email', 'Support')} · {msg.get('timestamp', '')}</span>"
@@ -378,12 +378,12 @@ def render_supporto(t):
                             f"</div>"
                         )
                     else:
-                        # Messaggio Utente (allineato a destra, stile azzurro chiaro)
+                        # Messaggio Utente (allineato a destra, stile azzurro Dark Cockpit)
                         chat_html += (
-                            f"<div style='align-self:flex-end; max-width:82%; background:#f0f9ff; color:#0f172a; border:1px solid #bae6fd; padding:12px 16px; border-radius:12px 12px 2px 12px; box-shadow:0 2px 6px rgba(2,132,199,0.05); font-family:\"Inter\",sans-serif;'>"
+                            f"<div style='align-self:flex-end; max-width:82%; background:rgba(14,165,233,0.15); color:#f8fafc; border:1px solid rgba(56,189,248,0.35); padding:12px 16px; border-radius:12px 12px 2px 12px; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-family:\"Inter\",sans-serif;'>"
                             f"<div style='display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:4px;'>"
-                            f"<span style='font-size:11px; color:#64748b;'>{msg.get('sender_email', curr_email)} · {msg.get('timestamp', '')}</span>"
-                            f"<span style='background:#e2e8f0; color:#334155; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;'>TU</span>"
+                            f"<span style='font-size:11px; color:#94a3b8;'>{msg.get('sender_email', curr_email)} · {msg.get('timestamp', '')}</span>"
+                            f"<span style='background:#081120; color:#38bdf8; border:1px solid #1e293b; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;'>TU</span>"
                             f"</div>"
                             f"<div style='font-size:13px; line-height:1.45; white-space:pre-wrap;'>{msg.get('text', '')}</div>"
                             f"</div>"

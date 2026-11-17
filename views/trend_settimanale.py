@@ -195,15 +195,15 @@ def render_trend_settimanale(t):
             _, z_col_d, _, _ = acwr_zone_meta(pct_tl_d)
             is_sel = (d_i == selected_day_idx)
             is_sun = (d_i == 6)
-            brd_style = "2px solid #0ea5e9" if is_sel else ("1.5px dashed #10b981" if is_sun else "1px solid #e2e8f0")
-            bg_card = "#f0f9ff" if is_sel else "#ffffff"
-            sun_tag = "<span style='font-size:8.5px; font-weight:800; color:#10b981; background:#ecfdf5; padding:1px 5px; border-radius:4px; margin-left:4px;'>= 7d ROLLING</span>" if is_sun else ""
+            brd_style = "2px solid #0ea5e9" if is_sel else ("1.5px dashed #10b981" if is_sun else "1px solid #1e293b")
+            bg_card = "rgba(14,165,233,0.15)" if is_sel else "#0d1e38"
+            sun_tag = "<span style='font-size:8.5px; font-weight:800; color:#34d399; background:rgba(16,185,129,0.18); border:1px solid #10b981; padding:1px 5px; border-radius:4px; margin-left:4px;'>= 7d ROLLING</span>" if is_sun else ""
             cards_html += (
-                f"<div style='flex:1; min-width:105px; background:{bg_card}; border:{brd_style}; border-radius:10px; padding:10px 10px; text-align:center; box-shadow:0 1px 3px rgba(15,23,42,0.04);'>"
-                f"<div style='font-size:10.5px; font-weight:800; color:#0f172a; text-transform:uppercase;'>{day_names_short[d_i]} {d_cur.strftime('%d/%m')}{sun_tag}</div>"
-                f"<div style='font-size:9.5px; color:#64748b; font-weight:600; margin-top:1px;'>{tr('Giorno', 'Day')} {d_i+1}/7</div>"
+                f"<div style='flex:1; min-width:105px; background:{bg_card}; border:{brd_style}; border-radius:10px; padding:10px 10px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.3);'>"
+                f"<div style='font-size:10.5px; font-weight:800; color:#f8fafc; text-transform:uppercase;'>{day_names_short[d_i]} {d_cur.strftime('%d/%m')}{sun_tag}</div>"
+                f"<div style='font-size:9.5px; color:#94a3b8; font-weight:600; margin-top:1px;'>{tr('Giorno', 'Day')} {d_i+1}/7</div>"
                 f"<div style='font-size:20px; font-weight:900; color:{z_col_d}; margin:5px 0 2px 0;'>{pct_tl_d:.0f}%</div>"
-                f"<div style='font-size:9.5px; font-weight:700; color:#475569;'>TL: {v_cum['Training Load']:.0f} | Vol: {pct_vol_d:.0f}%</div>"
+                f"<div style='font-size:9.5px; font-weight:700; color:#cbd5e1;'>TL: {v_cum['Training Load']:.0f} | Vol: {pct_vol_d:.0f}%</div>"
                 f"</div>"
             )
 
@@ -216,10 +216,10 @@ def render_trend_settimanale(t):
             "From Monday to Saturday shows cumulative week-to-date load; on Sunday (7/7 days) it coincides 100% with the 7 Days Rolling analysis."
         )
         st.markdown(
-            "<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:16px; font-family:\"Inter\",sans-serif;'>"
+            "<div style='background:rgba(8,17,32,0.85); border:1px solid #1e293b; border-radius:12px; padding:12px 16px; margin-bottom:16px; font-family:\"Inter\",sans-serif;'>"
             "<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;'>"
-            f"<span style='font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em;'>{lbl_strip_hdr}</span>"
-            f"<span style='font-size:11px; font-weight:600; color:#0284c7;'>{lbl_strip_note}</span>"
+            f"<span style='font-size:11px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em;'>{lbl_strip_hdr}</span>"
+            f"<span style='font-size:11px; font-weight:600; color:#38bdf8;'>{lbl_strip_note}</span>"
             "</div>"
             f"<div style='display:flex; gap:8px; flex-wrap:wrap;'>{cards_html}</div>"
             "</div>",
@@ -232,46 +232,46 @@ def render_trend_settimanale(t):
         th_tot = tr("TOTALE PERIODO", "PERIOD TOTAL")
         rows_d_html = ""
         for idx_r, r_d in df_plot_days.iterrows():
-            bg_d = "#ffffff" if idx_r % 2 == 0 else "#f8fafc"
+            bg_d = "#081120" if idx_r % 2 == 0 else "#0d1e38"
             is_active = float(r_d['Minuti']) > 0 or float(r_d['Training Load']) > 0
-            op_txt = "#0f172a" if is_active else "#94a3b8"
+            op_txt = "#f8fafc" if is_active else "#64748b"
             rows_d_html += (
-                f"<tr style='background:{bg_d}; border-bottom:1px solid #f1f5f9;'>"
-                f"<td style='padding:11px 16px; font-weight:800; color:#0f172a; font-size:13px;'>{r_d['DayName']} <span style='color:#64748b; font-weight:600;'>({r_d['ShortDate']})</span></td>"
+                f"<tr style='background:{bg_d}; border-bottom:1px solid #1e293b;'>"
+                f"<td style='padding:11px 16px; font-weight:800; color:#f8fafc; font-size:13px;'>{r_d['DayName']} <span style='color:#94a3b8; font-weight:600;'>({r_d['ShortDate']})</span></td>"
                 f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:{op_txt}; font-size:14.5px;'>{r_d['Minuti']:.0f} min</td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:900; color:#0ea5e9; font-size:15.5px;'>{r_d['Training Load']:.0f}</td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#ef4444; font-size:14.5px;'>{r_d['TL_High']:.0f}</td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#10b981; font-size:14.5px;'>{r_d['High Accel IMU']:.0f}</td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#f59e0b; font-size:14.5px;'>{r_d['High Decel IMU']:.0f}</td>"
-                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#8b5cf6; font-size:14.5px;'>{r_d['Azioni Int. IMU >2']:.0f}</td>"
+                f"<td style='padding:11px 10px; text-align:center; font-weight:900; color:#38bdf8; font-size:15.5px;'>{r_d['Training Load']:.0f}</td>"
+                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#f87171; font-size:14.5px;'>{r_d['TL_High']:.0f}</td>"
+                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#34d399; font-size:14.5px;'>{r_d['High Accel IMU']:.0f}</td>"
+                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#fbbf24; font-size:14.5px;'>{r_d['High Decel IMU']:.0f}</td>"
+                f"<td style='padding:11px 10px; text-align:center; font-weight:800; color:#a78bfa; font-size:14.5px;'>{r_d['Azioni Int. IMU >2']:.0f}</td>"
                 f"</tr>"
             )
         rows_d_html += (
-            "<tr style='background:#f0f9ff; border-top:2px solid #bae6fd;'>"
-            f"<td style='padding:12px 16px; font-weight:900; color:#0284c7; font-size:12.5px; text-transform:uppercase;'>{th_tot}</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#0f172a; font-size:16px;'>{df_plot_days['Minuti'].sum():.0f} min</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#0284c7; font-size:17px;'>{df_plot_days['Training Load'].sum():.0f}</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#dc2626; font-size:16px;'>{df_plot_days['TL_High'].sum():.0f}</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#059669; font-size:16px;'>{df_plot_days['High Accel IMU'].sum():.0f}</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#d97706; font-size:16px;'>{df_plot_days['High Decel IMU'].sum():.0f}</td>"
-            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#7c3aed; font-size:16px;'>{df_plot_days['Azioni Int. IMU >2'].sum():.0f}</td>"
+            "<tr style='background:rgba(14,165,233,0.12); border-top:2px solid #0284c7;'>"
+            f"<td style='padding:12px 16px; font-weight:900; color:#38bdf8; font-size:12.5px; text-transform:uppercase;'>{th_tot}</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#ffffff; font-size:16px;'>{df_plot_days['Minuti'].sum():.0f} min</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#38bdf8; font-size:17px;'>{df_plot_days['Training Load'].sum():.0f}</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#f87171; font-size:16px;'>{df_plot_days['TL_High'].sum():.0f}</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#34d399; font-size:16px;'>{df_plot_days['High Accel IMU'].sum():.0f}</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#fbbf24; font-size:16px;'>{df_plot_days['High Decel IMU'].sum():.0f}</td>"
+            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#a78bfa; font-size:16px;'>{df_plot_days['Azioni Int. IMU >2'].sum():.0f}</td>"
             "</tr>"
         )
         st.markdown(
-            "<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); overflow:hidden; margin-top:16px; margin-bottom:18px; font-family:\"Inter\",sans-serif;'>"
-            "<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;'>"
+            "<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); overflow:hidden; margin-top:16px; margin-bottom:18px; font-family:\"Inter\",sans-serif;'>"
+            "<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #1e293b;'>"
             f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'>{banner_title}</span>"
             f"<span style='color:#38bdf8; font-size:11px; font-weight:700;'>{banner_sub}</span>"
             "</div>"
             "<table style='width:100%; border-collapse:collapse;'>"
-            "<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-            f"<th style='text-align:left; padding:11px 16px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase;'>{th_d}</th>"
-            "<th style='text-align:center; padding:11px 10px; color:#475569; font-size:10.5px; font-weight:800; text-transform:uppercase;'>Time (min)</th>"
-            "<th style='text-align:center; padding:11px 10px; color:#0284c7; font-size:10.5px; font-weight:800; text-transform:uppercase;'>Training Load</th>"
-            "<th style='text-align:center; padding:11px 10px; color:#dc2626; font-size:10.5px; font-weight:800; text-transform:uppercase;'>TL High</th>"
-            "<th style='text-align:center; padding:11px 10px; color:#059669; font-size:10.5px; font-weight:800; text-transform:uppercase;'>High Acc</th>"
-            "<th style='text-align:center; padding:11px 10px; color:#d97706; font-size:10.5px; font-weight:800; text-transform:uppercase;'>High Dec</th>"
-            f"<th style='text-align:center; padding:11px 10px; color:#7c3aed; font-size:10.5px; font-weight:800; text-transform:uppercase;'>{th_az}</th>"
+            "<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+            f"<th style='text-align:left; padding:11px 16px; color:#94a3b8; font-size:10.5px; font-weight:800; text-transform:uppercase;'>{th_d}</th>"
+            "<th style='text-align:center; padding:11px 10px; color:#94a3b8; font-size:10.5px; font-weight:800; text-transform:uppercase;'>Time (min)</th>"
+            "<th style='text-align:center; padding:11px 10px; color:#38bdf8; font-size:10.5px; font-weight:800; text-transform:uppercase;'>Training Load</th>"
+            "<th style='text-align:center; padding:11px 10px; color:#f87171; font-size:10.5px; font-weight:800; text-transform:uppercase;'>TL High</th>"
+            "<th style='text-align:center; padding:11px 10px; color:#34d399; font-size:10.5px; font-weight:800; text-transform:uppercase;'>High Acc</th>"
+            "<th style='text-align:center; padding:11px 10px; color:#fbbf24; font-size:10.5px; font-weight:800; text-transform:uppercase;'>High Dec</th>"
+            f"<th style='text-align:center; padding:11px 10px; color:#a78bfa; font-size:10.5px; font-weight:800; text-transform:uppercase;'>{th_az}</th>"
             f"</tr></thead><tbody>{rows_d_html}</tbody></table></div>",
             unsafe_allow_html=True
         )
@@ -995,9 +995,9 @@ def render_trend_settimanale(t):
             with c_bm2:
                 st.markdown(
                     f"<div style='display:flex; justify-content:flex-end; gap:10px; align-items:center; padding-top:24px; font-family:\"Inter\",sans-serif;'>"
-                    f"<div style='background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:6px 14px; text-align:right;'>"
-                    f"<div style='font-size:10px; font-weight:800; color:#0369a1; text-transform:uppercase; letter-spacing:0.04em;'>{tr('Media Storica Match (Gold Standard)', 'Historical Match Avg (Gold Standard)')}</div>"
-                    f"<div style='font-size:16px; font-weight:900; color:#0284c7;'>{hist_match_tl_avg:,.0f} TL <span style='font-size:11px; font-weight:700; color:#64748b;'>({hist_match_count} match analizzati)</span></div>"
+                    f"<div style='background:rgba(14,165,233,0.12); border:1px solid #0284c7; border-radius:8px; padding:6px 14px; text-align:right;'>"
+                    f"<div style='font-size:10px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em;'>{tr('Media Storica Match (Gold Standard)', 'Historical Match Avg (Gold Standard)')}</div>"
+                    f"<div style='font-size:16px; font-weight:900; color:#ffffff;'>{hist_match_tl_avg:,.0f} TL <span style='font-size:11px; font-weight:700; color:#94a3b8;'>({hist_match_count} match analizzati)</span></div>"
                     f"</div>"
                     f"</div>",
                     unsafe_allow_html=True
@@ -1068,11 +1068,11 @@ def render_trend_settimanale(t):
             def _render_vertical_gauge(label, pct, fill_color):
                 pct_clamped = min(max(pct, 0.0), 100.0)
                 return (
-                    f"<div style='flex:1; min-width:64px; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px 5px; text-align:center; box-shadow:0 1px 2px rgba(15,23,42,0.02);'>"
-                    f"<div style='font-size:9.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.04em;'>{label}</div>"
-                    f"<div style='height:44px; width:100%; background:#f1f5f9; border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:flex-end; border:1px solid #e2e8f0;'>"
+                    f"<div style='flex:1; min-width:64px; background:#081120; border:1px solid #1e293b; border-radius:8px; padding:6px 5px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.3);'>"
+                    f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.04em;'>{label}</div>"
+                    f"<div style='height:44px; width:100%; background:#0d1e38; border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:flex-end; border:1px solid #1e293b;'>"
                     f"<div style='width:100%; height:{pct_clamped:.0f}%; background:{fill_color}; transition:height 0.3s;'></div>"
-                    f"<div style='position:absolute; width:100%; top:0; bottom:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#0f172a;'>{pct:.0f}%</div>"
+                    f"<div style='position:absolute; width:100%; top:0; bottom:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#ffffff;'>{pct:.0f}%</div>"
                     f"</div>"
                     f"</div>"
                 )
@@ -1097,34 +1097,34 @@ def render_trend_settimanale(t):
             str_sparring = f"{h_sparring}h {m_sparring:02d}m" if min_sparring_w > 0 else "0m"
 
             distr_block_html = (
-                f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin-bottom:20px; font-family:\"Inter\",-apple-system,BlinkMacSystemFont,sans-serif; box-shadow:0 1px 3px rgba(15,23,42,0.03);'>"
+                f"<div style='background:#081120; border:1px solid #1e293b; border-radius:12px; padding:14px 18px; margin-bottom:20px; font-family:\"Inter\",-apple-system,BlinkMacSystemFont,sans-serif; box-shadow:0 4px 16px rgba(0,0,0,0.4);'>"
                 f"<div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;'>"
-                f"<span style='font-size:12px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em;'><i class='bi bi-pie-chart' style='color:#0ea5e9; margin-right:6px;'></i>{tr('Distribuzione del Lavoro (Superfici & Tipologie)', 'Workload Distribution (Surfaces & Session Types)')} — {settimana_bm}</span>"
-                f"<span style='font-size:11px; font-weight:700; color:#0284c7;'>{tr('Superfici, tipologie e match disputati nella settimana', 'Surfaces, session types and matches played this week')}</span>"
+                f"<span style='font-size:12px; font-weight:900; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em;'><i class='bi bi-pie-chart' style='color:#38bdf8; margin-right:6px;'></i>{tr('Distribuzione del Lavoro (Superfici & Tipologie)', 'Workload Distribution (Surfaces & Session Types)')} — {settimana_bm}</span>"
+                f"<span style='font-size:11px; font-weight:700; color:#38bdf8;'>{tr('Superfici, tipologie e match disputati nella settimana', 'Surfaces, session types and matches played this week')}</span>"
                 f"</div>"
                 f"<div style='display:flex; gap:14px; align-items:center; flex-wrap:wrap;'>"
                 f"<div style='flex:1; display:flex; flex-direction:column; gap:4px; min-width:210px;'>"
-                f"<span style='font-size:10px; font-weight:800; color:#475569; text-transform:uppercase;'>SUPERFICI DI GIOCO</span>"
+                f"<span style='font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase;'>SUPERFICI DI GIOCO</span>"
                 f"{gauges_surf_html}"
                 f"</div>"
                 f"<div style='flex:1.4; display:flex; flex-direction:column; gap:4px; min-width:280px;'>"
-                f"<span style='font-size:10px; font-weight:800; color:#475569; text-transform:uppercase;'>TIPOLOGIA SESSIONI</span>"
+                f"<span style='font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase;'>TIPOLOGIA SESSIONI</span>"
                 f"{gauges_tipo_html}"
                 f"</div>"
                 f"<div style='display:flex; gap:8px; align-items:center; flex-wrap:wrap;'>"
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; text-align:center; min-width:85px; box-shadow:0 1px 2px rgba(15,23,42,0.02);'>"
-                f"<div style='font-size:9.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:2px;'>N° MATCH</div>"
-                f"<div style='font-size:22px; font-weight:900; color:#dc2626;'>{n_matches_w}</div>"
+                f"<div style='background:#0d1e38; border:1px solid #1e293b; border-radius:8px; padding:8px 12px; text-align:center; min-width:85px; box-shadow:0 2px 4px rgba(0,0,0,0.3);'>"
+                f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:2px;'>N° MATCH</div>"
+                f"<div style='font-size:22px; font-weight:900; color:#f87171;'>{n_matches_w}</div>"
                 f"</div>"
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; text-align:center; min-width:110px; box-shadow:0 1px 2px rgba(15,23,42,0.02);'>"
-                f"<div style='font-size:9.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:2px;'>T SPARRING/ALL.</div>"
-                f"<div style='font-size:16px; font-weight:900; color:#0f172a; margin-top:2px;'>{str_sparring}</div>"
-                f"<div style='font-size:9.5px; color:#64748b; font-weight:600;'>{int(round(min_sparring_w))} min</div>"
+                f"<div style='background:#0d1e38; border:1px solid #1e293b; border-radius:8px; padding:8px 12px; text-align:center; min-width:110px; box-shadow:0 2px 4px rgba(0,0,0,0.3);'>"
+                f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:2px;'>T SPARRING/ALL.</div>"
+                f"<div style='font-size:16px; font-weight:900; color:#ffffff; margin-top:2px;'>{str_sparring}</div>"
+                f"<div style='font-size:9.5px; color:#94a3b8; font-weight:600;'>{int(round(min_sparring_w))} min</div>"
                 f"</div>"
-                f"<div style='background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:8px 12px; text-align:center; min-width:125px; box-shadow:0 1px 2px rgba(15,23,42,0.02);'>"
-                f"<div style='font-size:9.5px; font-weight:800; color:#166534; text-transform:uppercase; margin-bottom:2px;'>MATCH EQUIVALENTI</div>"
-                f"<div style='font-size:20px; font-weight:900; color:#15803d;'>{match_equiv:.1f} Eq.</div>"
-                f"<div style='font-size:9.5px; color:#166534; font-weight:700;'>{tot_tl_w:,.0f} TL Totali</div>"
+                f"<div style='background:rgba(16,185,129,0.12); border:1px solid #10b981; border-radius:8px; padding:8px 12px; text-align:center; min-width:125px; box-shadow:0 2px 4px rgba(0,0,0,0.3);'>"
+                f"<div style='font-size:9.5px; font-weight:800; color:#34d399; text-transform:uppercase; margin-bottom:2px;'>MATCH EQUIVALENTI</div>"
+                f"<div style='font-size:20px; font-weight:900; color:#10b981;'>{match_equiv:.1f} Eq.</div>"
+                f"<div style='font-size:9.5px; color:#34d399; font-weight:700;'>{tot_tl_w:,.0f} TL Totali</div>"
                 f"</div>"
                 f"</div>"
                 f"</div>"
@@ -1150,24 +1150,24 @@ def render_trend_settimanale(t):
 
                 if df_day.empty:
                     # Giorno di Riposo
-                    bg_row = "#fcfdfd" if i % 2 == 0 else "#ffffff"
+                    bg_row = "#081120" if i % 2 == 0 else "#0d1e38"
                     rows_bm_html += (
-                        f"<tr style='background:{bg_row}; border-bottom:1px solid #f1f5f9;'>"
-                        f"<td style='padding:12px 14px; font-weight:800; color:#475569; font-size:13px; white-space:nowrap;'>{d_name} <span style='color:#94a3b8; font-weight:600;'>({d_short})</span></td>"
-                        f"<td style='padding:12px 12px;'><span style='background:#f1f5f9; color:#64748b; font-size:11px; font-weight:700; padding:4px 9px; border-radius:4px; display:inline-block; white-space:nowrap;'>Riposo / Scarico</span></td>"
-                        f"<td style='padding:12px 10px; text-align:center; color:#94a3b8; font-size:12px;'>-</td>"
-                        f"<td style='padding:12px 10px; text-align:center; color:#94a3b8; font-size:13px; white-space:nowrap;'>0 min</td>"
-                        f"<td style='padding:12px 10px; text-align:center; font-weight:800; color:#94a3b8; font-size:14px;'>0</td>"
-                        f"<td style='padding:12px 12px; text-align:center; color:#94a3b8; font-size:12px;'>-</td>"
-                        f"<td style='padding:12px 12px; text-align:center; color:#94a3b8; font-size:12px; white-space:nowrap;'>0% Match</td>"
-                        f"<td style='padding:12px 14px; text-align:center;'><span style='background:#f8fafc; color:#94a3b8; padding:4px 9px; border-radius:4px; font-size:11px; font-weight:700; border:1px solid #e2e8f0; display:inline-block; white-space:nowrap;'>Riposo Programmato</span></td>"
+                        f"<tr style='background:{bg_row}; border-bottom:1px solid #1e293b;'>"
+                        f"<td style='padding:12px 14px; font-weight:800; color:#94a3b8; font-size:13px; white-space:nowrap;'>{d_name} <span style='color:#64748b; font-weight:600;'>({d_short})</span></td>"
+                        f"<td style='padding:12px 12px;'><span style='background:#1e293b; color:#94a3b8; font-size:11px; font-weight:700; padding:4px 9px; border-radius:4px; display:inline-block; white-space:nowrap;'>Riposo / Scarico</span></td>"
+                        f"<td style='padding:12px 10px; text-align:center; color:#64748b; font-size:12px;'>-</td>"
+                        f"<td style='padding:12px 10px; text-align:center; color:#64748b; font-size:13px; white-space:nowrap;'>0 min</td>"
+                        f"<td style='padding:12px 10px; text-align:center; font-weight:800; color:#64748b; font-size:14px;'>0</td>"
+                        f"<td style='padding:12px 12px; text-align:center; color:#64748b; font-size:12px;'>-</td>"
+                        f"<td style='padding:12px 12px; text-align:center; color:#64748b; font-size:12px; white-space:nowrap;'>0% Match</td>"
+                        f"<td style='padding:12px 14px; text-align:center;'><span style='background:#081120; color:#64748b; padding:4px 9px; border-radius:4px; font-size:11px; font-weight:700; border:1px solid #1e293b; display:inline-block; white-space:nowrap;'>Riposo Programmato</span></td>"
                         f"</tr>"
                     )
                     plot_bar_data.append({
                         "label": f"{d_name[:3]} {d_short}",
                         "tl": 0.0,
                         "pct_match": 0.0,
-                        "color": "#cbd5e1"
+                        "color": "#64748b"
                     })
                 else:
                     # Giorno con 1 o più sessioni
@@ -1191,13 +1191,13 @@ def render_trend_settimanale(t):
 
                         # Colore badge campo
                         if s_campo.lower() == 'clay':
-                            campo_badge = "<span style='background:#ffedd5; color:#c2410c; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>CLAY</span>"
+                            campo_badge = "<span style='background:rgba(234,88,12,0.18); color:#fb923c; border:1px solid #ea580c; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>CLAY</span>"
                         elif s_campo.lower() == 'hard':
-                            campo_badge = "<span style='background:#e0f2fe; color:#0284c7; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>HARD</span>"
+                            campo_badge = "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid #0ea5e9; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>HARD</span>"
                         elif s_campo.lower() == 'grass':
-                            campo_badge = "<span style='background:#dcfce7; color:#15803d; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>GRASS</span>"
+                            campo_badge = "<span style='background:rgba(22,163,74,0.18); color:#4ade80; border:1px solid #16a34a; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>GRASS</span>"
                         else:
-                            campo_badge = f"<span style='background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>{s_campo.upper()}</span>"
+                            campo_badge = f"<span style='background:#1e293b; color:#94a3b8; border:1px solid #334155; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; white-space:nowrap;'>{s_campo.upper()}</span>"
 
                         # Colore badge tipologia
                         t_bg, t_fg = get_tipologia_badge_style(s_tipo)
@@ -1226,17 +1226,17 @@ def render_trend_settimanale(t):
                             cell_tipo_html = (
                                 f"<div style='display:flex; flex-direction:column; align-items:center; white-space:nowrap;'>"
                                 f"<div style='display:flex; align-items:center; gap:5px; white-space:nowrap;'>"
-                                f"<span style='font-size:13px; font-weight:900; color:#0f172a;'>{s_tl:,.0f}</span>"
+                                f"<span style='font-size:13px; font-weight:900; color:#f8fafc;'>{s_tl:,.0f}</span>"
                                 f"<span style='background:{bg_d}; color:{fg_d}; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; display:inline-block; white-space:nowrap;'>{arr_d} {delta_pct:+.0f}%</span>"
                                 f"</div>"
-                                f"<div style='width:90px; background:#f1f5f9; height:5px; border-radius:3px; margin-top:4px; overflow:hidden;'>"
+                                f"<div style='width:90px; background:#1e293b; height:5px; border-radius:3px; margin-top:4px; overflow:hidden;'>"
                                 f"<div style='width:{min(ratio_tipo, 100):.0f}%; background:{bar_col}; height:5px; border-radius:3px;'></div>"
                                 f"</div>"
-                                f"<span style='font-size:9.5px; color:#64748b; font-weight:600; margin-top:2px; white-space:nowrap;'>Media {s_tipo}: {avg_tipo_tl:,.0f}</span>"
+                                f"<span style='font-size:9.5px; color:#94a3b8; font-weight:600; margin-top:2px; white-space:nowrap;'>Media {s_tipo}: {avg_tipo_tl:,.0f}</span>"
                                 f"</div>"
                             )
                         else:
-                            cell_tipo_html = "<span style='color:#94a3b8;'>-</span>"
+                            cell_tipo_html = "<span style='color:#64748b;'>-</span>"
 
                         # Benchmark 2: vs Media Match (Match Benchmark %)
                         if hist_match_tl_avg > 0:
@@ -1260,38 +1260,38 @@ def render_trend_settimanale(t):
                                 f"<div style='display:flex; flex-direction:column; align-items:center; white-space:nowrap;'>"
                                 f"<div style='display:flex; align-items:center; gap:5px; white-space:nowrap;'>"
                                 f"<span style='font-size:13.5px; font-weight:900; color:{m_col};'>{pct_match:.0f}%</span>"
-                                f"<span style='font-size:10px; font-weight:700; color:#64748b; white-space:nowrap;'>di un Match</span>"
+                                f"<span style='font-size:10px; font-weight:700; color:#94a3b8; white-space:nowrap;'>di un Match</span>"
                                 f"</div>"
-                                f"<div style='width:95px; background:#f1f5f9; height:5px; border-radius:3px; margin-top:4px; overflow:hidden;'>"
+                                f"<div style='width:95px; background:#1e293b; height:5px; border-radius:3px; margin-top:4px; overflow:hidden;'>"
                                 f"<div style='width:{bar_pct_w:.0f}%; background:{m_col}; height:5px; border-radius:3px;'></div>"
                                 f"</div>"
-                                f"<span style='font-size:9.5px; color:#64748b; font-weight:600; margin-top:2px; white-space:nowrap;'>{s_tl:,.0f} / {hist_match_tl_avg:,.0f} TL</span>"
+                                f"<span style='font-size:9.5px; color:#94a3b8; font-weight:600; margin-top:2px; white-space:nowrap;'>{s_tl:,.0f} / {hist_match_tl_avg:,.0f} TL</span>"
                                 f"</div>"
                             )
 
-                            cell_status_html = f"<span style='background:#ffffff; border:1px solid {m_col}; color:{m_col}; font-size:11px; font-weight:800; padding:4px 9px; border-radius:5px; display:inline-block; white-space:nowrap;'>{m_status}</span>"
+                            cell_status_html = f"<span style='background:#0d1e38; border:1px solid {m_col}; color:{m_col}; font-size:11px; font-weight:800; padding:4px 9px; border-radius:5px; display:inline-block; white-space:nowrap;'>{m_status}</span>"
                         else:
-                            cell_match_html = "<span style='color:#94a3b8;'>-</span>"
-                            cell_status_html = "<span style='color:#94a3b8;'>-</span>"
+                            cell_match_html = "<span style='color:#64748b;'>-</span>"
+                            cell_status_html = "<span style='color:#64748b;'>-</span>"
 
-                        bg_s_row = "#ffffff" if i % 2 == 0 else "#f8fafc"
-                        lbl_giorno_display = f"<span style='white-space:nowrap;'>{d_name} <span style='color:#64748b; font-weight:600;'>({d_short})</span></span>" if idx_s == 0 else f"<span style='color:#94a3b8; font-size:11.5px; font-weight:700; white-space:nowrap;'>↳ Sess. {idx_s+1}</span>"
+                        bg_s_row = "#081120" if i % 2 == 0 else "#0d1e38"
+                        lbl_giorno_display = f"<span style='white-space:nowrap;'>{d_name} <span style='color:#94a3b8; font-weight:600;'>({d_short})</span></span>" if idx_s == 0 else f"<span style='color:#64748b; font-size:11.5px; font-weight:700; white-space:nowrap;'>↳ Sess. {idx_s+1}</span>"
 
                         # Sessione: stack verticale con badge tipo e nome sessione troncato con tooltip
                         session_cell_content = (
                             f"<div style='display:flex; flex-direction:column; gap:3px; max-width:210px;'>"
                             f"<div style='display:flex; align-items:center; gap:6px;'>{tipo_badge}</div>"
-                            f"<span style='font-size:12px; font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;' title='{s_name}'>{s_name}</span>"
+                            f"<span style='font-size:12px; font-weight:700; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;' title='{s_name}'>{s_name}</span>"
                             f"</div>"
                         )
 
                         rows_bm_html += (
-                            f"<tr style='background:{bg_s_row}; border-bottom:1px solid #f1f5f9;'>"
-                            f"<td style='padding:12px 14px; font-weight:800; color:#0f172a; font-size:13px; white-space:nowrap;'>{lbl_giorno_display}</td>"
+                            f"<tr style='background:{bg_s_row}; border-bottom:1px solid #1e293b;'>"
+                            f"<td style='padding:12px 14px; font-weight:800; color:#f8fafc; font-size:13px; white-space:nowrap;'>{lbl_giorno_display}</td>"
                             f"<td style='padding:12px 12px;'>{session_cell_content}</td>"
                             f"<td style='padding:12px 10px; text-align:center;'>{campo_badge}</td>"
-                            f"<td style='padding:12px 10px; text-align:center; font-weight:800; color:#0f172a; font-size:13.5px; white-space:nowrap;'>{s_min:.0f} min</td>"
-                            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#0284c7; font-size:15px; white-space:nowrap;'>{s_tl:,.0f}</td>"
+                            f"<td style='padding:12px 10px; text-align:center; font-weight:800; color:#f8fafc; font-size:13.5px; white-space:nowrap;'>{s_min:.0f} min</td>"
+                            f"<td style='padding:12px 10px; text-align:center; font-weight:900; color:#38bdf8; font-size:15px; white-space:nowrap;'>{s_tl:,.0f}</td>"
                             f"<td style='padding:12px 12px; text-align:center;'>{cell_tipo_html}</td>"
                             f"<td style='padding:12px 12px; text-align:center;'>{cell_match_html}</td>"
                             f"<td style='padding:12px 14px; text-align:center;'>{cell_status_html}</td>"
@@ -1300,35 +1300,35 @@ def render_trend_settimanale(t):
 
             # Riga Totale Settimana
             rows_bm_html += (
-                f"<tr style='background:#f0f9ff; border-top:2px solid #bae6fd; font-family:\"Inter\",sans-serif;'>"
-                f"<td style='padding:14px 14px; font-weight:900; color:#0284c7; font-size:13px; text-transform:uppercase; white-space:nowrap;'>TOTALE SETTIMANA</td>"
-                f"<td style='padding:14px 12px; font-weight:800; color:#0369a1; font-size:12.5px; white-space:nowrap;'>{len(df_bm_week)} sessioni totali</td>"
-                f"<td style='padding:14px 10px; text-align:center; color:#0369a1; font-size:11.5px; font-weight:700;'>-</td>"
-                f"<td style='padding:14px 10px; text-align:center; font-weight:900; color:#0f172a; font-size:15px; white-space:nowrap;'>{tot_min_w:.0f} min</td>"
-                f"<td style='padding:14px 10px; text-align:center; font-weight:900; color:#0284c7; font-size:16px; white-space:nowrap;'>{tot_tl_w:,.0f}</td>"
-                f"<td style='padding:14px 12px; text-align:center; font-weight:800; color:#0369a1; font-size:12px; white-space:nowrap;'>Media Giorn: {tot_tl_w/7.0:,.0f} TL</td>"
+                f"<tr style='background:rgba(14,165,233,0.12); border-top:2px solid #0284c7; font-family:\"Inter\",sans-serif;'>"
+                f"<td style='padding:14px 14px; font-weight:900; color:#38bdf8; font-size:13px; text-transform:uppercase; white-space:nowrap;'>TOTALE SETTIMANA</td>"
+                f"<td style='padding:14px 12px; font-weight:800; color:#94a3b8; font-size:12.5px; white-space:nowrap;'>{len(df_bm_week)} sessioni totali</td>"
+                f"<td style='padding:14px 10px; text-align:center; color:#94a3b8; font-size:11.5px; font-weight:700;'>-</td>"
+                f"<td style='padding:14px 10px; text-align:center; font-weight:900; color:#ffffff; font-size:15px; white-space:nowrap;'>{tot_min_w:.0f} min</td>"
+                f"<td style='padding:14px 10px; text-align:center; font-weight:900; color:#38bdf8; font-size:16px; white-space:nowrap;'>{tot_tl_w:,.0f}</td>"
+                f"<td style='padding:14px 12px; text-align:center; font-weight:800; color:#94a3b8; font-size:12px; white-space:nowrap;'>Media Giorn: {tot_tl_w/7.0:,.0f} TL</td>"
                 f"<td style='padding:14px 12px; text-align:center; white-space:nowrap;'><span style='background:#0284c7; color:#ffffff; font-size:12.5px; font-weight:900; padding:4px 9px; border-radius:6px; display:inline-block; white-space:nowrap;'>{match_equiv:.1f} Match Eq.</span></td>"
-                f"<td style='padding:14px 14px; text-align:center; font-weight:800; color:#0f172a; font-size:12px; white-space:nowrap;'>Volume Settimanale</td>"
+                f"<td style='padding:14px 14px; text-align:center; font-weight:800; color:#ffffff; font-size:12px; white-space:nowrap;'>Volume Settimanale</td>"
                 f"</tr>"
             )
 
             table_full_html = (
-                f"<div style='background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); overflow:hidden; margin-bottom:20px; font-family:\"Inter\",sans-serif;'>"
-                f"<div style='background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;'>"
+                f"<div style='background:#081120; border-radius:14px; border:1px solid #1e293b; box-shadow:0 4px 16px rgba(0,0,0,0.4); overflow:hidden; margin-bottom:20px; font-family:\"Inter\",sans-serif;'>"
+                f"<div style='background:linear-gradient(135deg, #0d1e38 0%, #1e293b 100%); padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #1e293b;'>"
                 f"<span style='color:#ffffff; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;'><i class='bi bi-table' style='color:#38bdf8; margin-right:8px;'></i>{tr('BENCHMARK GIORNALIERO VS MEDIE (TIPOLOGIA & MATCH)', 'DAILY BENCHMARK VS AVERAGES (SESSION TYPE & MATCH)')}</span>"
                 f"<span style='color:#38bdf8; font-size:11.5px; font-weight:700;'>{settimana_bm}</span>"
                 f"</div>"
                 f"<div style='overflow-x:auto; width:100%; -webkit-overflow-scrolling:touch;'>"
                 f"<table style='width:100%; border-collapse:collapse; min-width:1150px;'>"
-                f"<thead><tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                f"<th style='text-align:left; padding:12px 14px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:130px;'>Giorno & Data</th>"
-                f"<th style='text-align:left; padding:12px 12px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:220px;'>Sessione</th>"
-                f"<th style='text-align:center; padding:12px 10px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:90px;'>Superficie</th>"
-                f"<th style='text-align:center; padding:12px 10px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:85px;'>Durata</th>"
-                f"<th style='text-align:center; padding:12px 10px; color:#0284c7; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:110px;'>Training Load</th>"
-                f"<th style='text-align:center; padding:12px 12px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:170px;'>vs Media Tipologia</th>"
-                f"<th style='text-align:center; padding:12px 12px; color:#0284c7; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:180px;'>vs Media Match (% Match)</th>"
-                f"<th style='text-align:center; padding:12px 14px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:150px;'>Valutazione</th>"
+                f"<thead><tr style='background:#0d1e38; border-bottom:2px solid #1e293b;'>"
+                f"<th style='text-align:left; padding:12px 14px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:130px;'>Giorno & Data</th>"
+                f"<th style='text-align:left; padding:12px 12px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:220px;'>Sessione</th>"
+                f"<th style='text-align:center; padding:12px 10px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:90px;'>Superficie</th>"
+                f"<th style='text-align:center; padding:12px 10px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:85px;'>Durata</th>"
+                f"<th style='text-align:center; padding:12px 10px; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:110px;'>Training Load</th>"
+                f"<th style='text-align:center; padding:12px 12px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:170px;'>vs Media Tipologia</th>"
+                f"<th style='text-align:center; padding:12px 12px; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:180px;'>vs Media Match (% Match)</th>"
+                f"<th style='text-align:center; padding:12px 14px; color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; white-space:nowrap; width:150px;'>Valutazione</th>"
                 f"</tr></thead>"
                 f"<tbody>{rows_bm_html}</tbody>"
                 f"</table></div></div>"

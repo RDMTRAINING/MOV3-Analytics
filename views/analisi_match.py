@@ -536,14 +536,14 @@ def render_analisi_match(t):
                 z_bg_r, z_fg_r, _, _ = acwr_zone_meta(pv_r)
                 d_str_r = f"{dv_r:+.0f}%" if vm_r > 0 else "N/A"
                 return (
-                    f"<div style='background:white; border:1px solid #e2e8f0; border-top:4px solid {acc_c}; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(15,23,42,0.03);'>"
+                    f"<div style='background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.2); border-top:4px solid {acc_c}; border-radius:10px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.4);'>"
                     "<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                    f"<span style='font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase;'>{lbl_r}</span>"
-                    f"<span style='font-size:10px; font-weight:700; color:#64748b;'>{sub_r}</span>"
+                    f"<span style='font-size:12px; font-weight:800; color:#ffffff; text-transform:uppercase;'>{lbl_r}</span>"
+                    f"<span style='font-size:10px; font-weight:700; color:#94a3b8;'>{sub_r}</span>"
                     "</div>"
                     "<div style='display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px;'>"
-                    f"<span style='font-size:28px; font-weight:900; color:#0f172a;'>{vc_r:.0f}</span>"
-                    f"<span style='font-size:12px; font-weight:700; color:#64748b;'>{tr('Media', 'Avg')}: {vm_r:.0f}</span>"
+                    f"<span style='font-size:28px; font-weight:900; color:#ffffff;'>{vc_r:.0f}</span>"
+                    f"<span style='font-size:12px; font-weight:700; color:#94a3b8;'>{tr('Media', 'Avg')}: {vm_r:.0f}</span>"
                     "</div>"
                     "<div style='display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;'>"
                     f"<span style='background:{z_bg_r}; color:{z_fg_r}; font-size:14px; font-weight:900; padding:3px 9px; border-radius:6px;'>{pv_r:.0f}%</span>"
@@ -560,7 +560,7 @@ def render_analisi_match(t):
                 f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_rec_hdr}</span>"
                 f"<span style='background:rgba(255,255,255,0.1); color:#34d399; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>{lbl_rec_sub}</span>"
                 "</div>"
-                "<div style='display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; margin-bottom:24px; font-family:\"Inter\", sans-serif;'>"
+                "<div style='display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; padding:16px; background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-top:none; border-radius:0 0 12px 12px; margin-bottom:24px; font-family:\"Inter\", sans-serif;'>"
                 + _rec_card_exec('Rec 3" - 30"', tr("Recupero Breve (Tra i punti)", "Short Recovery (Between points)"), v_r3_30, m_r3_30, "#ef4444")
                 + _rec_card_exec('Rec 30" - 60"', tr("Recupero Medio", "Medium Recovery"), v_r30_60, m_r30_60, "#f59e0b")
                 + _rec_card_exec("Rec 1' - 5'", tr("Cambio Campo / Fine Set", "Changeover / Set Break"), v_r1_5, m_r1_5, "#10b981")
@@ -644,18 +644,18 @@ def render_analisi_match(t):
             ]
             lbl_imu_bn = tr("DATI VOLUMETRICI & MECCANICI IMU — CONFRONTO VS MEDIA MATCH", "IMU VOLUMETRIC & MECHANICAL DATA — COMPARISON VS MATCH AVG")
             html_imu_match = (
-                "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                 "<div style='background:#0f172a; border-bottom:2px solid #0ea5e9; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                 f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_imu_bn}</span>"
                 "<span style='background:rgba(255,255,255,0.1); color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>IMU SENSOR</span>"
                 "</div>"
                 "<table style='width:100%; border-collapse:collapse;'>"
-                "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                f"<th style='padding:12px 14px; text-align:left; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica IMU & Area', 'IMU Metric & Area')}</th>"
-                f"<th style='padding:12px 14px; text-align:center; color:#0f172a; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
-                f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
-                f"<th style='padding:12px 14px; text-align:center; color:#0ea5e9; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
-                f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
+                "<tr style='background:rgba(15,23,42,0.85); border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                f"<th style='padding:12px 14px; text-align:left; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica IMU & Area', 'IMU Metric & Area')}</th>"
+                f"<th style='padding:12px 14px; text-align:center; color:#ffffff; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
+                f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
+                f"<th style='padding:12px 14px; text-align:center; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
+                f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
                 "</tr>"
             )
             for lbl_i, tag_i, fg_i, bg_i, vc_i, vm_i, suf_i in imu_rows_m:
@@ -663,13 +663,13 @@ def render_analisi_match(t):
                 pv_i = (vc_i / vm_i * 100.0) if has_ri else 0.0
                 dv_i = pv_i - 100.0 if has_ri else 0.0
                 html_imu_match += (
-                    "<tr style='border-bottom:1px solid #f1f5f9;'>"
+                    "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'>"
                     "<td style='padding:13px 14px;'>"
-                    f"<div style='font-weight:700; color:#0f172a; font-size:14px;'>{lbl_i}</div>"
+                    f"<div style='font-weight:700; color:#ffffff; font-size:14px;'>{lbl_i}</div>"
                     f"<span style='display:inline-block; margin-top:3px; background:{bg_i}; color:{fg_i}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px;'>{tag_i}</span>"
                     "</td>"
-                    f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#0f172a;'>{vc_i:.0f}{suf_i}</td>"
-                    f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#64748b;'>{vm_i:.0f}{suf_i}</td>"
+                    f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#ffffff;'>{vc_i:.0f}{suf_i}</td>"
+                    f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#cbd5e1;'>{vm_i:.0f}{suf_i}</td>"
                     f"<td style='padding:13px 14px; text-align:center;'>{render_pct_badge_cell(pv_i, dv_i, has_ri, lbl_vs_m3)}</td>"
                     f"<td style='padding:13px 14px;'>{render_pct_progress_bar(pv_i)}</td>"
                     "</tr>"
@@ -721,18 +721,18 @@ def render_analisi_match(t):
                 ]
                 lbl_gps_bn = tr("DATI GPS & SATELLITARI OUTDOOR — CONFRONTO VS MEDIA MATCH", "OUTDOOR GPS & SATELLITE DATA — COMPARISON VS MATCH AVG")
                 html_gps_match = (
-                    "<div style='background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px -1px rgba(15,23,42,0.04); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
+                    "<div style='background:linear-gradient(165deg, rgba(13,23,42,0.92) 0%, rgba(8,15,28,0.98) 100%); border:1px solid rgba(56,189,248,0.22); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.5); margin-bottom:18px; font-family:\"Inter\", sans-serif;'>"
                     "<div style='background:#0f172a; border-bottom:2px solid #f59e0b; padding:13px 18px; display:flex; justify-content:space-between; align-items:center;'>"
                     f"<span style='color:white; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:0.8px;'>{lbl_gps_bn}</span>"
                     "<span style='background:rgba(255,255,255,0.1); color:#fbbf24; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>OUTDOOR GPS</span>"
                     "</div>"
                     "<table style='width:100%; border-collapse:collapse;'>"
-                    "<tr style='background:#f8fafc; border-bottom:2px solid #e2e8f0;'>"
-                    f"<th style='padding:12px 14px; text-align:left; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica GPS & Area', 'GPS Metric & Area')}</th>"
-                    f"<th style='padding:12px 14px; text-align:center; color:#0f172a; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
-                    f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
-                    f"<th style='padding:12px 14px; text-align:center; color:#0ea5e9; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
-                    f"<th style='padding:12px 14px; text-align:center; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
+                    "<tr style='background:rgba(15,23,42,0.85); border-bottom:2px solid rgba(56,189,248,0.2);'>"
+                    f"<th style='padding:12px 14px; text-align:left; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:28%;'>{tr('Metrica GPS & Area', 'GPS Metric & Area')}</th>"
+                    f"<th style='padding:12px 14px; text-align:center; color:#ffffff; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Valore Match', 'Match Score')}</th>"
+                    f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:16%;'>{tr('Media Match', 'Match Avg')}</th>"
+                    f"<th style='padding:12px 14px; text-align:center; color:#38bdf8; font-size:11px; font-weight:800; text-transform:uppercase; width:22%;'>{tr('% Raggiunta (Scostamento)', 'Percentage Reached (Delta)')}</th>"
+                    f"<th style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; width:18%;'>{tr('Fascia (Tacca = 100%)', 'Zone (Tick = 100%)')}</th>"
                     "</tr>"
                 )
                 for lbl_g, tag_g, fg_g, bg_g, vc_g, vm_g, suf_g in gps_rows_m:
@@ -740,13 +740,13 @@ def render_analisi_match(t):
                     pv_g = (vc_g / vm_g * 100.0) if has_rg else 0.0
                     dv_g = pv_g - 100.0 if has_rg else 0.0
                     html_gps_match += (
-                        "<tr style='border-bottom:1px solid #f1f5f9;'>"
+                        "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);'>"
                         "<td style='padding:13px 14px;'>"
-                        f"<div style='font-weight:700; color:#0f172a; font-size:14px;'>{lbl_g}</div>"
+                        f"<div style='font-weight:700; color:#ffffff; font-size:14px;'>{lbl_g}</div>"
                         f"<span style='display:inline-block; margin-top:3px; background:{bg_g}; color:{fg_g}; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px;'>{tag_g}</span>"
                         "</td>"
-                        f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#0f172a;'>{vc_g:.0f}{suf_g}</td>"
-                        f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#64748b;'>{vm_g:.0f}{suf_g}</td>"
+                        f"<td style='padding:13px 14px; text-align:center; font-weight:900; font-size:19px; color:#ffffff;'>{vc_g:.0f}{suf_g}</td>"
+                        f"<td style='padding:13px 14px; text-align:center; font-weight:700; font-size:16px; color:#cbd5e1;'>{vm_g:.0f}{suf_g}</td>"
                         f"<td style='padding:13px 14px; text-align:center;'>{render_pct_badge_cell(pv_g, dv_g, has_rg, lbl_vs_m3)}</td>"
                         f"<td style='padding:13px 14px;'>{render_pct_progress_bar(pv_g)}</td>"
                         "</tr>"

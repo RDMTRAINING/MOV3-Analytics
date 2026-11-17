@@ -60,21 +60,21 @@ from views.calendario_medico import render_master_timeline
 
 def _acwr_zone_style(pct_val, has_baseline=True):
     if not has_baseline or pd.isna(pct_val) or pct_val <= 0:
-        return "#f1f5f9", "#64748b", "#94a3b8", "NO BASELINE"
+        return "#1e293b", "#94a3b8", "#475569", "NO BASELINE"
     if pct_val < 80:
-        return "#e0f2fe", "#0284c7", "#0ea5e9", "LOW (<80%)"
+        return "rgba(14, 165, 233, 0.20)", "#38bdf8", "#0ea5e9", "LOW (<80%)"
     if pct_val <= 125:
-        return "#dcfce7", "#166534", "#10b981", "OPTIMAL (80-125%)"
+        return "rgba(16, 185, 129, 0.20)", "#34d399", "#10b981", "OPTIMAL (80-125%)"
     if pct_val <= 150:
-        return "#fef3c7", "#b45309", "#f59e0b", "HIGH (125-150%)"
-    return "#fee2e2", "#991b1b", "#ef4444", "OVERLOAD (>150%)"
+        return "rgba(245, 158, 11, 0.20)", "#fbbf24", "#f59e0b", "HIGH (125-150%)"
+    return "rgba(239, 68, 68, 0.20)", "#f87171", "#ef4444", "OVERLOAD (>150%)"
 
 def _render_mini_acwr_bar(pct_val, bar_col, has_baseline=True):
     fill_w = min(100.0, max(0.0, (float(pct_val) / 160.0) * 100.0)) if has_baseline and pct_val > 0 else 0.0
     return (
-        "<div style='width:100%; height:8px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; position:relative; overflow:hidden; margin-top:4px;'>"
+        "<div style='width:100%; height:8px; background:#070d18; border:1px solid #1e293b; border-radius:4px; position:relative; overflow:hidden; margin-top:4px;'>"
         f"<div style='position:absolute; left:0; top:0; bottom:0; width:{fill_w:.1f}%; background:{bar_col}; border-radius:3px;'></div>"
-        "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#0f172a; z-index:2;' title='100% Baseline'></div>"
+        "<div style='position:absolute; left:62.5%; top:0; bottom:0; width:2px; background:#38bdf8; z-index:2;' title='100% Baseline'></div>"
         "</div>"
     )
 
@@ -576,10 +576,10 @@ def render_home(t):
         df_a = df_storico[df_storico['Players'] == ath].dropna(subset=['Date_obj']).sort_values('Date_obj') if not df_storico.empty else pd.DataFrame()
         if df_a.empty:
             roster_rows_html += (
-                "<tr style='border-bottom:1px solid #f1f5f9;'>"
-                f"<td style='padding:12px 14px;'><div style='font-weight:800; color:#0f172a; font-size:14.5px;'>{ath}</div>"
+                "<tr style='border-bottom:1px solid rgba(56,189,248,0.12);'>"
+                f"<td style='padding:12px 14px;'><div style='font-weight:800; color:#f8fafc; font-size:14.5px;'>{ath}</div>"
                 f"<div style='font-size:11px; color:#94a3b8;'>{tr('Nessuna sessione registrata', 'No recorded sessions')}</div></td>"
-                "<td style='padding:12px 10px; text-align:center;'><span style='background:#f1f5f9; color:#64748b; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800;'>NO DATA</span></td>"
+                "<td style='padding:12px 10px; text-align:center;'><span style='background:#1e293b; color:#94a3b8; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800;'>NO DATA</span></td>"
                 "<td style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:12px;'>—</td>"
                 "<td style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:12px;'>—</td>"
                 "<td style='padding:12px 14px; text-align:center; color:#94a3b8; font-size:12px;'>0 sess · 0 min</td>"
@@ -593,17 +593,17 @@ def render_home(t):
         last_sess_name = str(last_row.get('Session', 'N/D'))
         last_sess_type = str(last_row.get('Tipologia Sessione', 'N/D'))
         last_is_sim = bool(last_row.get('Dato_Simulato', False))
-        sim_tag = " <span style='background:#fef3c7; color:#b45309; font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px;'>SIM</span>" if last_is_sim else ""
+        sim_tag = " <span style='background:rgba(245,158,11,0.20); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px;'>SIM</span>" if last_is_sim else ""
 
         days_ago = max(0, int((today_ts - last_dt.normalize()).days))
         if days_ago == 0:
-            fresh_bg, fresh_fg, fresh_txt = "#dcfce7", "#166534", tr("OGGI", "TODAY")
+            fresh_bg, fresh_fg, fresh_txt = "rgba(16, 185, 129, 0.20)", "#34d399", tr("OGGI", "TODAY")
         elif days_ago == 1:
-            fresh_bg, fresh_fg, fresh_txt = "#e0f2fe", "#0369a1", tr("IERI", "YESTERDAY")
+            fresh_bg, fresh_fg, fresh_txt = "rgba(14, 165, 233, 0.20)", "#38bdf8", tr("IERI", "YESTERDAY")
         elif days_ago <= 7:
-            fresh_bg, fresh_fg, fresh_txt = "#f1f5f9", "#475569", f"{days_ago} {tr('gg fa', 'd ago')}"
+            fresh_bg, fresh_fg, fresh_txt = "#1e293b", "#cbd5e1", f"{days_ago} {tr('gg fa', 'd ago')}"
         else:
-            fresh_bg, fresh_fg, fresh_txt = "#fef3c7", "#b45309", last_dt_str
+            fresh_bg, fresh_fg, fresh_txt = "rgba(245, 158, 11, 0.20)", "#fbbf24", last_dt_str
 
         # 1. ACWR 2 Giorni (Acute Load)
         w2_start = last_dt - timedelta(days=1)
@@ -622,15 +622,15 @@ def render_home(t):
             cell_2d = (
                 f"<div style='display:flex; justify-content:space-between; align-items:center;'>"
                 f"<span style='background:{z2_bg}; color:{z2_fg}; padding:2px 7px; border-radius:5px; font-weight:900; font-size:13px;'>{pct_2:.0f}% <span style='font-size:10.5px; font-weight:700;'>({diff_2:+.0f}%)</span></span>"
-                f"<span style='font-size:11px; color:#64748b; font-weight:700;'><b>{tl_ac_2:.0f}</b> / {tl_ch_2:.0f} TL</span>"
+                f"<span style='font-size:11px; color:#94a3b8; font-weight:700;'><b>{tl_ac_2:.0f}</b> / {tl_ch_2:.0f} TL</span>"
                 f"</div>"
                 f"{_render_mini_acwr_bar(pct_2, z2_bar, True)}"
             )
         else:
             cell_2d = (
                 f"<div style='display:flex; justify-content:space-between; align-items:center;'>"
-                f"<span style='background:#f1f5f9; color:#64748b; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10px;'>NO BASELINE</span>"
-                f"<span style='font-size:11px; color:#64748b; font-weight:700;'><b>{tl_ac_2:.0f}</b> TL (2gg)</span>"
+                f"<span style='background:#1e293b; color:#94a3b8; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10px;'>NO BASELINE</span>"
+                f"<span style='font-size:11px; color:#94a3b8; font-weight:700;'><b>{tl_ac_2:.0f}</b> TL (2gg)</span>"
                 f"</div>"
                 f"{_render_mini_acwr_bar(0, z2_bar, False)}"
             )
@@ -652,15 +652,15 @@ def render_home(t):
             cell_7d = (
                 f"<div style='display:flex; justify-content:space-between; align-items:center;'>"
                 f"<span style='background:{z7_bg}; color:{z7_fg}; padding:2px 7px; border-radius:5px; font-weight:900; font-size:13px;'>{pct_7:.0f}% <span style='font-size:10.5px; font-weight:700;'>({diff_7:+.0f}%)</span></span>"
-                f"<span style='font-size:11px; color:#64748b; font-weight:700;'><b>{tl_ac_7:.0f}</b> / {tl_ch_7:.0f} TL</span>"
+                f"<span style='font-size:11px; color:#94a3b8; font-weight:700;'><b>{tl_ac_7:.0f}</b> / {tl_ch_7:.0f} TL</span>"
                 f"</div>"
                 f"{_render_mini_acwr_bar(pct_7, z7_bar, True)}"
             )
         else:
             cell_7d = (
                 f"<div style='display:flex; justify-content:space-between; align-items:center;'>"
-                f"<span style='background:#f1f5f9; color:#64748b; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10px;'>NO BASELINE</span>"
-                f"<span style='font-size:11px; color:#64748b; font-weight:700;'><b>{tl_ac_7:.0f}</b> TL (7gg)</span>"
+                f"<span style='background:#1e293b; color:#94a3b8; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10px;'>NO BASELINE</span>"
+                f"<span style='font-size:11px; color:#94a3b8; font-weight:700;'><b>{tl_ac_7:.0f}</b> TL (7gg)</span>"
                 f"</div>"
                 f"{_render_mini_acwr_bar(0, z7_bar, False)}"
             )
@@ -673,8 +673,8 @@ def render_home(t):
 
         if n_sess_cw > 0:
             cell_cw = (
-                f"<div style='font-weight:900; font-size:13.5px; color:#0f172a;'>{tl_cw:.0f} TL</div>"
-                f"<div style='font-size:11px; color:#64748b; margin-top:2px;'>{n_sess_cw} sess · {min_cw:.0f} min</div>"
+                f"<div style='font-weight:900; font-size:13.5px; color:#f8fafc;'>{tl_cw:.0f} TL</div>"
+                f"<div style='font-size:11px; color:#94a3b8; margin-top:2px;'>{n_sess_cw} sess · {min_cw:.0f} min</div>"
             )
         else:
             cell_cw = (
@@ -683,11 +683,11 @@ def render_home(t):
             )
 
         roster_rows_html += (
-            "<tr style='border-bottom:1px solid #f1f5f9;'>"
+            "<tr style='border-bottom:1px solid rgba(56,189,248,0.12);'>"
             f"<td style='padding:12px 14px;'>"
-            f"<div style='font-weight:900; color:#0f172a; font-size:14.5px;'>{ath}</div>"
-            f"<div style='font-size:11px; color:#64748b; margin-top:2px;'>{tr('Ultima', 'Latest')}: <b style='color:#334155;'>{last_sess_name}</b> "
-            f"<span style='color:#0ea5e9; font-weight:700;'>[{last_sess_type}]</span>{sim_tag}</div>"
+            f"<div style='font-weight:900; color:#f8fafc; font-size:14.5px;'>{ath}</div>"
+            f"<div style='font-size:11px; color:#94a3b8; margin-top:2px;'>{tr('Ultima', 'Latest')}: <b style='color:#e2e8f0;'>{last_sess_name}</b> "
+            f"<span style='color:#38bdf8; font-weight:700;'>[{last_sess_type}]</span>{sim_tag}</div>"
             "</td>"
             f"<td style='padding:12px 10px; text-align:center;'><span style='background:{fresh_bg}; color:{fresh_fg}; padding:3px 9px; border-radius:6px; font-size:10.5px; font-weight:800; display:inline-block;'>{fresh_txt}</span><div style='font-size:10px; color:#94a3b8; margin-top:3px;'>{last_dt_str}</div></td>"
             f"<td style='padding:12px 14px;'>{cell_2d}</td>"
