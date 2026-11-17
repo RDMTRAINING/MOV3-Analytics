@@ -882,6 +882,27 @@ def add_custom_css(image_file=None):
         letter-spacing: 0.6px !important;
         color: #94a3b8 !important;
     }}
+
+    /* Eliminazione definitiva delle istruzioni invasive "Press Enter to submit form" e "Press Enter to apply" */
+    [data-testid="InputInstructions"],
+    div[data-testid="InputInstructions"],
+    span[data-testid="InputInstructions"],
+    .stTextInput [data-testid="InputInstructions"],
+    .stNumberInput [data-testid="InputInstructions"],
+    .stTextArea [data-testid="InputInstructions"],
+    [data-testid="stTextInput"] [data-testid="InputInstructions"],
+    [data-testid="stForm"] [data-testid="InputInstructions"],
+    div[class*="e1gk92lc2"] {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        line-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        pointer-events: none !important;
+    }}
     ul[data-testid="stSelectboxVirtualDropdown"],
     div[data-baseweb="popover"],
     div[data-baseweb="menu"],

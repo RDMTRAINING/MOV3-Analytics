@@ -199,6 +199,15 @@ def auth_module():
                             p.location.replace(curUrl.href);
                         }
                     }
+
+                    var doc = p.document || document;
+                    var styleId = "m0v3-hide-input-instructions";
+                    if (doc && !doc.getElementById(styleId)) {
+                        var st = doc.createElement("style");
+                        st.id = styleId;
+                        st.textContent = '[data-testid="InputInstructions"], div[class*="e1gk92lc2"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; pointer-events: none !important; }';
+                        doc.head.appendChild(st);
+                    }
                 } catch(e) {}
             })();
             </script>
@@ -330,6 +339,27 @@ def auth_module():
         border-color: #38bdf8 !important;
         box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.35), 0 0 15px rgba(56, 189, 248, 0.2) !important;
         outline: none !important;
+    }}
+
+    /* Eliminazione definitiva delle istruzioni invasive "Press Enter to submit form" */
+    [data-testid="InputInstructions"],
+    div[data-testid="InputInstructions"],
+    span[data-testid="InputInstructions"],
+    .stTextInput [data-testid="InputInstructions"],
+    .stNumberInput [data-testid="InputInstructions"],
+    .stTextArea [data-testid="InputInstructions"],
+    [data-testid="stTextInput"] [data-testid="InputInstructions"],
+    [data-testid="stForm"] [data-testid="InputInstructions"],
+    div[class*="e1gk92lc2"] {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        line-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        pointer-events: none !important;
     }}
 
     .stTextInput input::placeholder {{
