@@ -281,7 +281,20 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
             st.session_state['livetennis_preview_data'] = preview_res
         st.rerun()
 
+    def _clean_html(html_str):
+        return "".join(line.strip() for line in str(html_str).splitlines() if line.strip())
+
     # 4. Box Anteprima (se presente in session_state)
+    if 'livetennis_preview_data' in st.session_state:
+        prev = st.session_state['livetennis_preview_data']
+        if prev.get("schema_version", 0) < 2:
+            del st.session_state['livetennis_preview_data']
+            st.info(tr(
+                "Anteprima aggiornata alla nuova versione con elenco Match (data e avversario). Premi di nuovo il pulsante per generare l'anteprima aggiornata.",
+                "Preview updated to the new version with Match list (date and opponent). Click the button again to generate the updated preview."
+            ))
+            prev = None
+
     if 'livetennis_preview_data' in st.session_state:
         prev = st.session_state['livetennis_preview_data']
         athletes_list = prev.get("athletes", [])
@@ -298,8 +311,7 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
         lbl_calls = tr("Chiamate API", "API Calls")
 
         st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
-        st.markdown(
-            f"""
+        header_html = f"""
             <div style="background: rgba(15, 23, 42, 0.96); border: 2px solid #0ea5e9; border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div>
@@ -326,9 +338,8 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                     </div>
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        """
+        st.markdown(_clean_html(header_html), unsafe_allow_html=True)
 
         selected_matches_by_slug = {}
 
@@ -463,8 +474,16 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                         f"ℹ️ {no_match_msg}<div style='font-size:10.5px; color:#94a3b8; margin-top:4px;'>{free_tier_note}</div></div>"
                     )
 
-                st.markdown(
-                    f"""
+                stat_pills = [f"<span><b style='color:#38bdf8;'>ATP #{rank_new}</b> ({pts_fmt} pts)</span>"]
+                if new_st.get('tiebreak_pct', 0.0) > 0:
+                    stat_pills.append(f"<span>Tiebreak: <b style='color:#34d399;'>{tb_new}</b></span>")
+                if new_st.get('deciding_set_pct', 0.0) > 0:
+                    stat_pills.append(f"<span>Set Decisivi: <b style='color:#fbbf24;'>{ds_new}</b></span>")
+                if new_st.get('vs_lefty_pct', 0.0) > 0:
+                    stat_pills.append(f"<span>Vs Mancini: <b style='color:#a78bfa;'>{vl_new}</b></span>")
+                stat_pills_html = "".join(stat_pills)
+
+                card_found_html = f"""
                     <div style="background:rgba(8, 17, 32, 0.92); border:1px solid rgba(16, 185, 129, 0.4); border-left:4px solid #10b981; border-radius:10px; padding:14px 16px; margin-bottom:8px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="font-size:15px; font-weight:900; color:#ffffff;">
@@ -482,15 +501,11 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                         {matches_section_html}
                         {db_matches_html}
                         <div style="display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); font-size:11.5px; color:#94a3b8;">
-                            <span><b style="color:#38bdf8;">ATP #{rank_new}</b> ({pts_fmt} pts)</span>
-                            <span>Tiebreak: <b style="color:#34d399;">{tb_new}</b></span>
-                            <span>Set Decisivi: <b style="color:#fbbf24;">{ds_new}</b></span>
-                            <span>Vs Mancini: <b style="color:#a78bfa;">{vl_new}</b></span>
+                            {stat_pills_html}
                         </div>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                """
+                st.markdown(_clean_html(card_found_html), unsafe_allow_html=True)
 
                 # Checkbox interattive per scegliere quali match caricare nel database
                 if matches_to_load:
@@ -528,8 +543,7 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                     old_desc = tr("Nessun dato precedente presente su LiveTennis. Tutti i dati e i match esistenti nel database rimangono invariati.", "No previous LiveTennis data. All existing database records and matches remain unchanged.")
 
                 badge_nf = tr("NON TROVATO — DATI VECCHI MANTENUTI", "NOT FOUND — OLD DATA PRESERVED")
-                st.markdown(
-                    f"""
+                card_nf_html = f"""
                     <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(245, 158, 11, 0.35); border-left:4px solid #f59e0b; border-radius:10px; padding:12px 16px; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="font-size:14px; font-weight:800; color:#cbd5e1;">
@@ -544,9 +558,8 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                         </div>
                         {db_matches_html}
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                """
+                st.markdown(_clean_html(card_nf_html), unsafe_allow_html=True)
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 

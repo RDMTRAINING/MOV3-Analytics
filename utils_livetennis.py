@@ -511,6 +511,8 @@ def sync_matches_to_parquet(matches, athlete_name="Flavio Cobolli"):
 
 def _parse_player_payload(data):
     """Estrae e normalizza le metriche prestazionali dal payload LiveTennis."""
+    if isinstance(data, dict) and isinstance(data.get("data"), dict) and "stats" not in data:
+        data = data["data"]
     stats = data.get("stats") or {}
     ratings = stats.get("ratings") or {}
     comp = ratings.get("computed") or {}
@@ -821,6 +823,7 @@ def preview_sync_all_athletes(athletes_input):
     calls_made_end = get_daily_api_usage().get("calls_count", 0)
 
     return {
+        "schema_version": 2,
         "timestamp": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "total_athletes": len(clean_athletes),
         "found_count": found_count,
