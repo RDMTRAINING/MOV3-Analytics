@@ -84,6 +84,24 @@ def render_caricamento_dati(t):
     
     if not mappa_utente: st.warning(t['up_no_map'])
 
+    from utils import render_pulsante_segnalazione_gps
+    c_up_box1, c_up_box2 = st.columns([2.5, 1.5])
+    with c_up_box1:
+        st.markdown(
+            f"<div style='font-size:12px; color:#94a3b8; padding-top:6px;'>"
+            f"<i class='bi bi-info-circle' style='color:#38bdf8;'></i> {tr('Hai scaricato sessioni da K-Sport che devono ancora essere tagliate da Riccardo?', 'Have you downloaded sessions from K-Sport that still need to be trimmed by Riccardo?')}"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    with c_up_box2:
+        render_pulsante_segnalazione_gps(
+            key="btn_caricamento_segnala_gps",
+            default_atleta=st.session_state.get('selected_athlete'),
+            lista_atleti=atleti_disponibili,
+            use_container_width=True
+        )
+    st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+
     uploaded_files = st.file_uploader(t['drag_csv'], type=['csv'], accept_multiple_files=True)
     if uploaded_files:
         parsed_files_data = {}

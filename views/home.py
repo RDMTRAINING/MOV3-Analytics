@@ -305,12 +305,44 @@ def render_home(t):
         df_storico['Date_obj'] = pd.to_datetime(df_storico['Date'], format='%d/%m/%Y', errors='coerce')
 
     # =========================================================================
+    # NOTIFICA DIGITAL HANDSHAKE CODA TAGLI GPS (STAFF & SUPER-ADMIN)
+    # =========================================================================
+    if st.session_state.get('role') in ['Super-Admin', 'Coach', 'Staff']:
+        try:
+            from utils import get_coda_tagli_gps
+            df_tagli = get_coda_tagli_gps(only_pending=True)
+            n_pen = len(df_tagli) if not df_tagli.empty else 0
+            if n_pen > 0:
+                c_alert1, c_alert2 = st.columns([3.5, 1.2])
+                with c_alert1:
+                    st.markdown(
+                        f"""
+                        <div style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+                            <i class="bi bi-broadcast" style="color: #38bdf8; font-size: 18px;"></i>
+                            <div>
+                                <span style="font-size: 12.5px; font-weight: 800; color: #f8fafc;">DIGITAL HANDSHAKE: <b style="color: #38bdf8;">{n_pen} sessioni GPS</b> in attesa di ritaglio su K-Sport</span>
+                                <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Sessioni scaricate dallo Staff o Atleti da tagliare ed elaborare nel database storico.</div>
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                with c_alert2:
+                    st.markdown("<div style='padding-top:4px;'></div>", unsafe_allow_html=True)
+                    if st.button("Gestisci Coda Tagli", icon=":material/arrow_forward:", key="btn_home_vai_coda", use_container_width=True):
+                        st.session_state.current_page = "Coda Tagli GPS"
+                        st.rerun()
+                st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+        except Exception:
+            pass
+
+    # =========================================================================
     # SEZIONE FOCUS GIOCATORE: HERO CARD, CLINICA & IDONEITÀ (STILE MOV3)
     # COLLOCATA ALL'INIZIO DELLA PAGINA SUBITO SOTTO EXECUTIVE LOCKER ROOM
     # =========================================================================
     if ath_home_sel:
         # Header Bar Focus Atleta
-        c_hdr_tit, c_hdr_sel = st.columns([1.6, 1.4])
+        c_hdr_tit, c_hdr_sel = st.columns([1.5, 1.5])
         with c_hdr_tit:
             lbl_tit_focus = tr("FOCUS ATLETA & MONITORAGGIO INDIVIDUALE", "ATHLETE FOCUS & INDIVIDUAL MONITORING")
             lbl_sub_focus = tr("Scheda completa, stato clinico e carichi rolling dell'atleta attivo selezionato nel menu laterale.", "Complete profile, clinical status, and rolling loads for the active athlete selected in the sidebar.")
@@ -328,19 +360,30 @@ def render_home(t):
             )
 
         with c_hdr_sel:
-            lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
-            st.markdown(
-                f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
-                f"<div style='background:rgba(14,165,233,0.14); border:1.5px solid rgba(56,189,248,0.35); border-radius:10px; padding:6px 14px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 10px rgba(14,165,233,0.15);'>"
-                f"<i class='bi bi-person-fill' style='color:#38bdf8; font-size:16px;'></i>"
-                f"<div style='text-align:right;'>"
-                f"<div style='font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_act_ath}</div>"
-                f"<div style='font-size:14.5px; font-weight:900; color:#ffffff;'>{ath_home_sel}</div>"
-                f"</div>"
-                f"</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
+            c_ath_info, c_ath_btn = st.columns([1.1, 1.3])
+            with c_ath_info:
+                lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
+                st.markdown(
+                    f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
+                    f"<div style='background:rgba(14,165,233,0.14); border:1.5px solid rgba(56,189,248,0.35); border-radius:10px; padding:6px 12px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 10px rgba(14,165,233,0.15);'>"
+                    f"<i class='bi bi-person-fill' style='color:#38bdf8; font-size:16px;'></i>"
+                    f"<div style='text-align:right;'>"
+                    f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_act_ath}</div>"
+                    f"<div style='font-size:13.5px; font-weight:900; color:#ffffff;'>{ath_home_sel}</div>"
+                    f"</div>"
+                    f"</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            with c_ath_btn:
+                st.markdown("<div style='padding-top:6px;'></div>", unsafe_allow_html=True)
+                from utils import render_pulsante_segnalazione_gps
+                render_pulsante_segnalazione_gps(
+                    key="btn_home_segnala_taglio",
+                    default_atleta=ath_home_sel,
+                    lista_atleti=atleti_visibili,
+                    use_container_width=True
+                )
 
         # Calcolo Iniziali Atleta per Avatar Monogramma
         parts = [p for p in str(ath_home_sel).strip().split() if p]

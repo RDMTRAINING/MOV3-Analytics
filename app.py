@@ -983,6 +983,15 @@ def main():
                     label_visibility="collapsed"
                 )
 
+                if st.session_state.get('role') != 'Atleta' and hasattr(utils, 'render_pulsante_segnalazione_gps'):
+                    st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+                    utils.render_pulsante_segnalazione_gps(
+                        key="btn_sidebar_segnala_gps",
+                        default_atleta=st.session_state.get('selected_athlete'),
+                        lista_atleti=lista_atleti_globale,
+                        use_container_width=True
+                    )
+
         # --- SEZIONE CORPO SCORREVOLE DELLA SIDEBAR (Scorre liberamente sotto l'header) ---
         scelta_lingua = st.radio("Lingua / Language", ["IT", "EN"], index=0 if st.session_state['lang'] == 'IT' else 1, horizontal=True)
         if scelta_lingua != st.session_state['lang']: 
@@ -1079,6 +1088,9 @@ def main():
 
         if st.session_state['role'] == 'Atleta':
             menu_items_raw.insert(1, (tr("Diario Wellness & sRPE", "Wellness & sRPE Diary"), "Diario Atleta", "journal-check"))
+
+        if st.session_state['role'] in ['Super-Admin', 'Coach', 'Staff']:
+            menu_items_raw.append((tr("To-Do Tagli K-Sport", "K-Sport To-Do List"), "Coda Tagli GPS", "broadcast"))
 
         if st.session_state['role'] == 'Super-Admin':
             menu_items_raw.append((tr("Pannello Admin", "Admin Panel"), "Pannello Admin (Gestione Utenti)", "shield-lock"))
@@ -1346,7 +1358,7 @@ def main():
     if DEV_MODE:
         importlib.reload(pdf_generator)
 
-    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)"]:
+    if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)", "Coda Tagli GPS"]:
         st.warning(tr("Non disponi dei permessi per accedere a questa sezione. Contatta l'amministratore.", "You do not have permissions to access this section. Contact the administrator."))
         st.stop()
 
@@ -1385,6 +1397,10 @@ def main():
         import views.admin
         _load_view(views.admin)
         views.admin.render_admin(t)
+    elif active_page == "Coda Tagli GPS":
+        import views.admin
+        _load_view(views.admin)
+        views.admin.render_coda_tagli_kanban(t)
     elif active_page == "Caricamento Dati":
         import views.caricamento_dati
         _load_view(views.caricamento_dati)
