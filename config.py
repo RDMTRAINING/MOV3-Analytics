@@ -9,6 +9,7 @@ import plotly.io as pio
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database_storico.csv")
 DB_PARQUET_PATH = os.path.join(BASE_DIR, "database_storico.parquet")
+CODA_TAGLI_PARQUET_PATH = os.path.join(BASE_DIR, "coda_tagli_gps.parquet")
 LEGENDA_ACWR = "Verde: 80-125% della media  |  Blu: sotto 80%  |  Rosso: sopra 125%"
 SUPPORT_EMAIL = "mov3project26@gmail.com"
 
@@ -100,6 +101,7 @@ LANG = {
         "privacy_check": "Sono consapevole che l'azione è irreversibile e voglio eliminare definitivamente il mio account.",
         "del_acc_btn": "Elimina Account e Revoca Consenso",
         "admin_title": "Pannello di Controllo Super-Admin", "tab_atl": "Gestione Atleti", "tab_usr": "Profili & Accessi",
+        "tab_todo_gps": "To-Do List: Tagli K-Sport in Attesa",
         "tab_rep": "Moduli Report", "tab_map": "Mappatura CSV", "tab_sup": "Supporto & Ticket", "add_atl": "### Aggiungi Nuovo Giocatore",
         "atl_name": "Nome Atleta", "atl_surname": "Cognome Atleta", "btn_add_atl": "Crea Atleta", "curr_atl": "### Parco Giocatori Attuale",
         "del_atl": "### Rimuovi Giocatore", "warn_del_atl": "Attenzione: l'eliminazione di un giocatore rimuoverà automaticamente anche i permessi associati.",
@@ -170,6 +172,7 @@ LANG = {
         "privacy_check": "I am aware that the action is irreversible and I want to permanently delete my account.",
         "del_acc_btn": "Delete Account & Revoke Consent",
         "admin_title": "Super-Admin Control Panel", "tab_atl": "Athlete Management", "tab_usr": "Profiles & Access",
+        "tab_todo_gps": "To-Do List: Pending K-Sport Trimming",
         "tab_rep": "Report Modules", "tab_map": "CSV Mapping", "tab_sup": "Support & Tickets", "add_atl": "### Add New Player",
         "atl_name": "First Name", "atl_surname": "Last Name", "btn_add_atl": "Create Athlete", "curr_atl": "### Current Player Roster",
         "del_atl": "### Remove Player", "warn_del_atl": "Warning: deleting a player will automatically remove associated permissions.",

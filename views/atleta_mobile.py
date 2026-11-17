@@ -24,6 +24,7 @@ from utils import (
     get_catalogo_protocolli,
     valuta_readiness_test,
     set_notification,
+    render_pulsante_segnalazione_gps,
 )
 try:
     from utils import render_m0v3_footer
@@ -665,6 +666,13 @@ def render_atleta_mobile(t=None):
         lbl_storico = tr("STORICO", "HISTORY")
         data_badge = f"<span style='color: #38bdf8; font-weight:800;'>{lbl_oggi} ({data_label})</span>" if is_oggi else f"<span style='color: #f59e0b; font-weight:800;'>{lbl_storico} ({data_label})</span>"
         st.markdown(f"<div style='font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 8px;'>{tr('Rilevazione:', 'Log Entry:')} {data_badge}</div>", unsafe_allow_html=True)
+
+        render_pulsante_segnalazione_gps(
+            key="btn_segnala_gps_atleta_mobile",
+            default_atleta=nome_atleta,
+            use_container_width=True
+        )
+        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
         # Rilevamento URL base per i promemoria calendario
         app_url = "https://webapptennisgps.streamlit.app?device=mobile"

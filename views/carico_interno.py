@@ -21,6 +21,8 @@ from utils import (
     calcola_e_salva_slot_rpe,
     delete_rpe_sessione,
     parse_audit_from_row,
+    render_pulsante_segnalazione_gps,
+    dialog_segnalazione_taglio_gps,
 )
 from views.calendario_medico import render_correlazione_clinica
 
@@ -92,12 +94,22 @@ def render_carico_interno(t):
         tr("Ultimi 60 giorni", "Last 60 days"),
         tr("Tutto lo storico", "All time history")
     ]
-    periodo_sel = st.selectbox(
-        tr("Finestra Temporale", "Time Window"),
-        opz_periodo,
-        index=1,
-        key="sel_periodo_carico_interno"
-    )
+    col_filtro_per, col_filtro_btn = st.columns([3, 2])
+    with col_filtro_per:
+        periodo_sel = st.selectbox(
+            tr("Finestra Temporale", "Time Window"),
+            opz_periodo,
+            index=1,
+            key="sel_periodo_carico_interno"
+        )
+    with col_filtro_btn:
+        st.markdown("<div style='padding-top:28px;'></div>", unsafe_allow_html=True)
+        render_pulsante_segnalazione_gps(
+            key="btn_segnala_taglio_staff",
+            default_atleta=atleta_sel,
+            lista_atleti=atleti_selezionabili,
+            use_container_width=True
+        )
     label_periodo_sel = str(periodo_sel)
 
     # Striscia Compatta Identità Atleta MOV3 con tag periodo

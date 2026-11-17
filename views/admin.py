@@ -52,6 +52,10 @@ from utils import (
     get_atleti_associati,
     get_tutti_gli_atleti,
     slugify_name,
+    get_coda_tagli_gps,
+    update_stato_taglio_gps,
+    dialog_segnalazione_taglio_gps,
+    insert_segnalazione_taglio_gps,
 )
 from pdf_generator import (
     crea_pdf_m0v3,
@@ -79,13 +83,200 @@ def render_admin(t):
         st.error("Accesso negato: questa sezione è riservata ai Super-Admin.")
         st.stop()
     render_page_header(t['admin_title'], t['home_admin_desc'], "SYSTEM ADMINISTRATION")
-    tab_list = [t['tab_atl'], t['tab_usr'], t['tab_map'], t['tab_rep'], t.get('tab_sup', 'Supporto & Ticket')]
+    tab_list = [
+        t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'),
+        t['tab_atl'],
+        t['tab_usr'],
+        t['tab_map'],
+        t['tab_rep'],
+        t.get('tab_sup', 'Supporto & Ticket')
+    ]
     active_admin_tab = render_tab_navigation(
         tab_list,
         key="nav_sub_admin_tabs",
-        default=t['tab_atl']
+        default=t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa')
     )
-    
+
+    # =========================================================================
+    # TAB: TO-DO LIST TAGLI K-SPORT IN ATTESA ("DIGITAL HANDSHAKE")
+    # =========================================================================
+    if active_admin_tab == t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'):
+        st.markdown(
+            """
+            <div style="background:#081120; border:1px solid #1e293b; border-radius:12px; padding:16px 20px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <div style="font-size:16px; font-weight:900; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+                            <i class="bi bi-broadcast" style="color:#38bdf8;"></i> DIGITAL HANDSHAKE · CODA TAGLI GPS K-SPORT
+                        </div>
+                        <div style="font-size:12px; color:#94a3b8; margin-top:3px;">
+                            To-Do List operativa delle sessioni scaricate da Staff e Atleti in attesa di ritaglio su K-Sport. Spunta il checkbox per archiviare la lavorazione.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        df_all_tagli = get_coda_tagli_gps(only_pending=False)
+        df_pending = pd.DataFrame()
+        if not df_all_tagli.empty:
+            df_pending = df_all_tagli[df_all_tagli['completato'] == False].copy().reset_index(drop=True)
+
+        n_pending = len(df_pending) if not df_pending.empty else 0
+        n_completed = len(df_all_tagli[df_all_tagli['completato'] == True]) if not df_all_tagli.empty else 0
+
+        # KPI Metrics Header
+        c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
+        with c_kpi1:
+            st.markdown(
+                f"""
+                <div style="background:#0b1528; border:1px solid rgba(56, 189, 248, 0.35); border-radius:10px; padding:12px 16px;">
+                    <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase;">Tagli in Attesa</div>
+                    <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:2px;">{n_pending}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        with c_kpi2:
+            st.markdown(
+                f"""
+                <div style="background:#0b1528; border:1px solid #1e293b; border-radius:10px; padding:12px 16px;">
+                    <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase;">Tagli Completati</div>
+                    <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:2px;">{n_completed}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        with c_kpi3:
+            ultima_seg = "-"
+            if not df_all_tagli.empty and 'created_at' in df_all_tagli.columns:
+                valid_ts = df_all_tagli['created_at'].dropna()
+                if not valid_ts.empty:
+                    ultima_seg = str(valid_ts.iloc[0])[:16]
+            st.markdown(
+                f"""
+                <div style="background:#0b1528; border:1px solid #1e293b; border-radius:10px; padding:12px 16px;">
+                    <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase;">Ultima Segnalazione</div>
+                    <div style="font-size:14px; font-weight:700; color:#f8fafc; margin-top:8px;">{ultima_seg}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        st.markdown("<div style='margin-top:16px;'></div>", unsafe_allow_html=True)
+
+        c_act1, c_act2 = st.columns([3, 1])
+        with c_act2:
+            if st.button("Nuova Segnalazione", icon=":material/add:", key="btn_admin_add_taglio", use_container_width=True):
+                dialog_segnalazione_taglio_gps()
+
+        if df_pending.empty:
+            st.markdown(
+                """
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 24px; text-align: center; margin-top: 10px;">
+                    <i class="bi bi-check2-all" style="font-size: 32px; color: #10b981;"></i>
+                    <div style="font-size: 15px; font-weight: 800; color: #f8fafc; margin-top: 8px;">Coda Tagli Completata</div>
+                    <div style="font-size: 12.5px; color: #94a3b8; margin-top: 4px;">Nessuna sessione GPS in attesa di ritaglio. Tutti i dati scaricati sono stati processati.</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            cols_order = ['completato', 'atleta', 'data_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at', 'id']
+            cols_present = [c for c in cols_order if c in df_pending.columns]
+            df_editor_input = df_pending[cols_present].copy()
+
+            editor_key = "todo_coda_tagli_editor"
+            edited_res = st.data_editor(
+                df_editor_input,
+                key=editor_key,
+                column_config={
+                    "completato": st.column_config.CheckboxColumn(
+                        "Taglio Eseguito",
+                        help="Spunta per confermare l'avvenuto ritaglio ed eliminare la riga dalla coda delle priorità",
+                        default=False,
+                        disabled=False
+                    ),
+                    "atleta": st.column_config.TextColumn(
+                        "Atleta / Squadra",
+                        disabled=True
+                    ),
+                    "data_sessione": st.column_config.DateColumn(
+                        "Data Sessione",
+                        disabled=True,
+                        format="YYYY-MM-DD"
+                    ),
+                    "tipologia_superficie": st.column_config.TextColumn(
+                        "Superficie / Ambiente",
+                        disabled=True
+                    ),
+                    "orari_note_taglio": st.column_config.TextColumn(
+                        "Orari Effettivi & Note Taglio",
+                        disabled=True
+                    ),
+                    "created_at": st.column_config.TextColumn(
+                        "Ricevuta il",
+                        disabled=True
+                    ),
+                    "id": None,
+                },
+                disabled=["atleta", "data_sessione", "tipologia_superficie", "orari_note_taglio", "created_at"],
+                hide_index=True,
+                use_container_width=True
+            )
+
+            if edited_res is not None and not edited_res.empty:
+                ids_to_complete = []
+                for idx, row in edited_res.iterrows():
+                    if row.get('completato') is True:
+                        r_id = row.get('id')
+                        if r_id:
+                            ids_to_complete.append(r_id)
+
+                if ids_to_complete:
+                    for r_id in ids_to_complete:
+                        update_stato_taglio_gps(r_id, completato=True)
+                    if editor_key in st.session_state:
+                        del st.session_state[editor_key]
+                    st.toast("Taglio registrato come completato!")
+                    time.sleep(0.3)
+                    st.rerun()
+
+        # Storico Tagli Completati
+        df_completed = pd.DataFrame()
+        if not df_all_tagli.empty:
+            df_completed = df_all_tagli[df_all_tagli['completato'] == True].copy().reset_index(drop=True)
+
+        if not df_completed.empty:
+            st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
+            with st.expander(f"Archivio Storico Tagli Completati ({len(df_completed)})", expanded=False):
+                cols_c = ['atleta', 'data_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at']
+                cols_c_present = [c for c in cols_c if c in df_completed.columns]
+                st.dataframe(df_completed[cols_c_present], use_container_width=True, hide_index=True)
+
+                dict_restore = {
+                    f"{r.get('atleta', 'Atleta')} ({r.get('data_sessione', '')} - {r.get('tipologia_superficie', '')})": str(r.get('id'))
+                    for _, r in df_completed.iterrows() if r.get('id')
+                }
+                if dict_restore:
+                    c_res1, c_res2 = st.columns([3, 1])
+                    with c_res1:
+                        sel_restore = st.selectbox(
+                            "Seleziona sessione da ripristinare nella To-Do List:",
+                            list(dict_restore.keys()),
+                            key="sel_restore_taglio"
+                        )
+                    with c_res2:
+                        st.markdown("<div style='padding-top:28px;'></div>", unsafe_allow_html=True)
+                        if st.button("Ripristina in Coda", key="btn_restore_taglio"):
+                            update_stato_taglio_gps(dict_restore[sel_restore], completato=False)
+                            if "todo_coda_tagli_editor" in st.session_state:
+                                del st.session_state["todo_coda_tagli_editor"]
+                            st.toast("Sessione ripristinata in coda!")
+                            st.rerun()
+
     if active_admin_tab == t['tab_atl']:
         st.markdown(t['add_atl'])
         col1, col2 = st.columns(2)

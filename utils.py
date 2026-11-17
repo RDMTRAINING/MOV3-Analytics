@@ -18,7 +18,8 @@ except Exception:
         from postgrest.request_builder import SyncQueryRequestBuilder
     except Exception:
         SyncQueryRequestBuilder = None
-from config import DB_PATH, DB_PARQUET_PATH, LEGENDA_ACWR, COLONNE_STANDARD, tr, PLOTLY_CONFIG
+import uuid
+from config import DB_PATH, DB_PARQUET_PATH, CODA_TAGLI_PARQUET_PATH, LEGENDA_ACWR, COLONNE_STANDARD, tr, PLOTLY_CONFIG
 
 COLONNE_METADATI = [
     "Tipologia Campo", "Ambiente", "Minuti Sparring",
@@ -4729,6 +4730,279 @@ def check_and_render_notifications():
         _render_m0v3_modal_dialog(title, message, details=details)
     else:
         st.toast(f"**{title}**\n\n{message}")
+
+
+# =========================================================================
+# DIGITAL HANDSHAKE: CODA TAGLI GPS K-SPORT (TICKETING & TO-DO LIST)
+# =========================================================================
+
+CODA_TAGLI_COLUMNS = [
+    "id", "created_at", "atleta", "data_sessione", "tipologia_superficie",
+    "orari_note_taglio", "completato"
+]
+
+OPZIONI_SUPERFICIE_TAGLIO = [
+    "Tennis - Terra Outdoor",
+    "Tennis - Terra Indoor",
+    "Tennis - Cemento Outdoor",
+    "Tennis - Cemento Indoor",
+    "Tennis - Erba",
+    "Prep. Fisica - Palestra",
+    "Prep. Fisica - Campo / Prato",
+    "Padel",
+    "Altro"
+]
+
+
+def _init_coda_tagli_df():
+    """Inizializza un DataFrame vuoto con lo schema ufficiale di coda_tagli_gps."""
+    return pd.DataFrame(columns=CODA_TAGLI_COLUMNS)
+
+
+def get_coda_tagli_gps(only_pending=False):
+    """
+    Recupera i dati della coda tagli GPS.
+    Prova prima la tabella Supabase 'coda_tagli_gps'.
+    In caso di tabella assente o errore di rete, effettua il fallback resiliente
+    su 'coda_tagli_gps.parquet' locale.
+    Se only_pending=True, restituisce solo i record con completato == False.
+    """
+    df = None
+    # 1. Tentativo Supabase
+    try:
+        if supabase_admin is not None:
+            q = supabase_admin.table("coda_tagli_gps").select("*")
+            if only_pending:
+                q = q.eq("completato", False)
+            res = q.order("created_at", desc=True).execute()
+            if res and hasattr(res, "data") and res.data is not None:
+                df = pd.DataFrame(res.data)
+    except Exception:
+        df = None
+
+    # 2. Fallback su file locale parquet
+    if df is None:
+        if os.path.exists(CODA_TAGLI_PARQUET_PATH):
+            try:
+                df = pd.read_parquet(CODA_TAGLI_PARQUET_PATH)
+            except Exception:
+                df = _init_coda_tagli_df()
+        else:
+            df = _init_coda_tagli_df()
+
+    if df.empty:
+        for c in CODA_TAGLI_COLUMNS:
+            if c not in df.columns:
+                df[c] = None
+        return df
+
+    # Normalizzazione colonne e tipi
+    for c in CODA_TAGLI_COLUMNS:
+        if c not in df.columns:
+            df[c] = None
+
+    if 'completato' in df.columns:
+        df['completato'] = df['completato'].fillna(False).astype(bool)
+
+    if only_pending and not df.empty:
+        df = df[df['completato'] == False]
+
+    # Ordinamento per created_at decrescente
+    if 'created_at' in df.columns and not df.empty:
+        df = df.sort_values(by="created_at", ascending=False)
+
+    return df.reset_index(drop=True)
+
+
+def _save_coda_tagli_local_parquet(df):
+    """Salva il DataFrame nel file locale coda_tagli_gps.parquet."""
+    try:
+        df.to_parquet(CODA_TAGLI_PARQUET_PATH, index=False)
+        return True
+    except Exception:
+        return False
+
+
+def insert_segnalazione_taglio_gps(atleta, data_sessione, tipologia_superficie, orari_note_taglio):
+    """
+    Inserisce una nuova segnalazione di taglio GPS.
+    Salva su Supabase 'coda_tagli_gps' e aggiorna 'coda_tagli_gps.parquet'.
+    Restituisce (success: bool, id_o_messaggio: str).
+    """
+    rec_id = str(uuid.uuid4())
+    created_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    dt_str = str(data_sessione) if data_sessione else datetime.date.today().strftime("%Y-%m-%d")
+
+    new_record = {
+        "id": rec_id,
+        "created_at": created_at,
+        "atleta": str(atleta).strip(),
+        "data_sessione": dt_str,
+        "tipologia_superficie": str(tipologia_superficie).strip(),
+        "orari_note_taglio": str(orari_note_taglio or "").strip(),
+        "completato": False
+    }
+
+    # 1. Inserimento Supabase
+    try:
+        if supabase_admin is not None:
+            supabase_admin.table("coda_tagli_gps").insert(new_record).execute()
+    except Exception:
+        pass
+
+    # 2. Aggiornamento Parquet locale (garantisce persistenza offline/container)
+    try:
+        df_curr = None
+        if os.path.exists(CODA_TAGLI_PARQUET_PATH):
+            try:
+                df_curr = pd.read_parquet(CODA_TAGLI_PARQUET_PATH)
+            except Exception:
+                df_curr = None
+        if df_curr is None or df_curr.empty:
+            df_curr = pd.DataFrame([new_record])
+        else:
+            df_curr = pd.concat([pd.DataFrame([new_record]), df_curr], ignore_index=True)
+        _save_coda_tagli_local_parquet(df_curr)
+    except Exception:
+        pass
+
+    return True, rec_id
+
+
+def update_stato_taglio_gps(record_id, completato=True):
+    """
+    Aggiorna lo stato 'completato' di una segnalazione in coda tagli GPS.
+    Aggiorna Supabase e il file locale .parquet.
+    """
+    rec_id_str = str(record_id)
+
+    # 1. Supabase update
+    try:
+        if supabase_admin is not None:
+            supabase_admin.table("coda_tagli_gps").update({"completato": bool(completato)}).eq("id", rec_id_str).execute()
+    except Exception:
+        pass
+
+    # 2. Parquet locale update
+    try:
+        if os.path.exists(CODA_TAGLI_PARQUET_PATH):
+            df = pd.read_parquet(CODA_TAGLI_PARQUET_PATH)
+            if not df.empty and 'id' in df.columns:
+                mask = df['id'].astype(str) == rec_id_str
+                if mask.any():
+                    df.loc[mask, 'completato'] = bool(completato)
+                    _save_coda_tagli_local_parquet(df)
+    except Exception:
+        pass
+
+    return True
+
+
+@_m0v3_dialog_decorator("Segnalazione Taglio GPS", width="medium")
+def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
+    """
+    Modale pop-up (@st.dialog) per la segnalazione rapida del Digital Handshake.
+    Permette a Staff o Atleta di notificare a Riccardo l'avvenuto scarico dati K-Sport
+    e la richiesta di taglio della sessione.
+    """
+    st.markdown(
+        """
+        <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-family:'Inter', sans-serif;">
+            <div style="font-size: 13.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-broadcast"></i> DIGITAL HANDSHAKE · NOTIFICA SCARICO K-SPORT
+            </div>
+            <div style="font-size: 11.5px; color: #94a3b8; margin-top: 3px; line-height: 1.45;">
+                Segnala all'Amministratore (Riccardo) l'avvenuto scarico dei dati GPS per eseguire il taglio della sessione.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 1. Campo Atleta
+    if lista_atleti and len(lista_atleti) > 1:
+        idx_atl = lista_atleti.index(default_atleta) if default_atleta in lista_atleti else 0
+        atleta_sel = st.selectbox(
+            tr("Atleta / Squadra", "Athlete / Team"),
+            lista_atleti,
+            index=idx_atl,
+            key="dg_taglio_atleta_sel"
+        )
+    else:
+        nome_fisso = default_atleta or "Atleta"
+        st.text_input(
+            tr("Atleta / Squadra", "Athlete / Team"),
+            value=nome_fisso,
+            disabled=True,
+            key="dg_taglio_atleta_fixed"
+        )
+        atleta_sel = nome_fisso
+
+    # 2. Data Sessione
+    data_sel = st.date_input(
+        tr("Data Sessione", "Session Date"),
+        value=datetime.date.today(),
+        key="dg_taglio_data_input"
+    )
+
+    # 3. Superficie / Ambiente
+    superficie_sel = st.selectbox(
+        tr("Superficie / Ambiente", "Surface / Environment"),
+        OPZIONI_SUPERFICIE_TAGLIO,
+        key="dg_taglio_sup_sel"
+    )
+
+    # 4. Note orari effettivi in campo (per escludere tempi morti)
+    note_sel = st.text_area(
+        tr("Note Orari Effettivi in Campo (escludi tempi morti)", "Effective Field Times & Notes (exclude dead time)"),
+        placeholder=tr("Es. 10:30 - 12:00, no riscaldamento, pausa pioggia 11:15-11:30...", "E.g. 10:30 - 12:00, no warm-up, rain break 11:15-11:30..."),
+        key="dg_taglio_note_input",
+        height=95
+    )
+
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+
+    c_b1, c_b2 = st.columns([1, 1])
+    with c_b1:
+        if st.button(tr("Annulla", "Cancel"), key="dg_taglio_btn_annulla", use_container_width=True):
+            st.rerun()
+
+    with c_b2:
+        btn_invia = st.button(
+            tr("Invia Segnalazione", "Send Signal"),
+            type="primary",
+            use_container_width=True,
+            key="dg_taglio_btn_invia"
+        )
+
+    if btn_invia:
+        if not atleta_sel:
+            st.error(tr("Seleziona o indica un atleta valido.", "Please select or provide a valid athlete."))
+        else:
+            ok, res_id = insert_segnalazione_taglio_gps(
+                atleta=atleta_sel,
+                data_sessione=data_sel,
+                tipologia_superficie=superficie_sel,
+                orari_note_taglio=note_sel
+            )
+            st.success("Segnalazione inviata a Riccardo per il taglio.")
+            time.sleep(1.2)
+            st.rerun()
+
+
+def render_pulsante_segnalazione_gps(key="btn_segnala_gps", default_atleta=None, lista_atleti=None, use_container_width=True):
+    """
+    Renderizza il pulsante ufficiale Digital Handshake per innescare il modale di segnalazione taglio GPS K-Sport.
+    """
+    if st.button(
+        "Segnala GPS da Tagliare su K-Sport",
+        icon=":material/cell_tower:",
+        key=key,
+        type="secondary",
+        use_container_width=use_container_width
+    ):
+        dialog_segnalazione_taglio_gps(default_atleta=default_atleta, lista_atleti=lista_atleti)
+
 
 
 
