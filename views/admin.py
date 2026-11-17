@@ -284,41 +284,100 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
     # 4. Box Anteprima (se presente in session_state)
     if 'livetennis_preview_data' in st.session_state:
         prev = st.session_state['livetennis_preview_data']
+        athletes_list = prev.get("athletes", [])
+        total_matches_detected = sum(len(a.get("matches_to_load") or []) for a in athletes_list)
+
+        title_prev = tr("Anteprima Match e Dati LiveTennis prima del Salvataggio", "LiveTennis Matches & Data Preview before Saving")
+        sub_prev = tr(
+            "Controlla <b>data del match</b>, <b>avversario</b> e <b>torneo</b> prima di caricare. <b>Nessun dato è stato ancora salvato nel database.</b>",
+            "Check <b>match date</b>, <b>opponent</b>, and <b>tournament</b> before loading. <b>No data has been saved to database yet.</b>"
+        )
+        lbl_found = tr("Trovati", "Found")
+        lbl_matches = tr("Match Rilevati", "Matches Found")
+        lbl_not_found = tr("Non Trovati (Invariati)", "Not Found (Unchanged)")
+        lbl_calls = tr("Chiamate API", "API Calls")
+
         st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
         st.markdown(
             f"""
-            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #0ea5e9; border-radius: 12px; padding: 18px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid rgba(56, 189, 248, 0.2); padding-bottom:12px; margin-bottom:14px;">
+            <div style="background: rgba(15, 23, 42, 0.96); border: 2px solid #0ea5e9; border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div>
                         <span style="font-size:15px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">
-                            🔍 {tr("Anteprima Dati LiveTennis prima del Salvataggio nel Database", "LiveTennis Data Preview before Database Commit")}
+                            🔍 {title_prev}
                         </span>
-                        <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
-                            {tr("Verifica chi e cosa sta per essere caricato. <b>Nessun dato è stato ancora salvato nel database.</b>",
-                                "Verify who and what is about to be loaded. <b>No data has been saved to database yet.</b>")}
+                        <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">
+                            {sub_prev}
                         </div>
                     </div>
-                    <div style="display:flex; gap:8px;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
-                            {prev.get('found_count', 0)} {tr('Trovati', 'Found')}
+                            {prev.get('found_count', 0)} {lbl_found}
+                        </span>
+                        <span style="background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.45); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
+                            📅 {total_matches_detected} {lbl_matches}
                         </span>
                         <span style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
-                            {prev.get('not_found_count', 0)} {tr('Non Trovati (Invariati)', 'Not Found (Unchanged)')}
+                            {prev.get('not_found_count', 0)} {lbl_not_found}
                         </span>
-                        <span style="background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(14,165,233,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
-                            {prev.get('calls_made', 0)} {tr('Chiamate API', 'API Calls')}
+                        <span style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid rgba(148,163,184,0.3); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
+                            {prev.get('calls_made', 0)} {lbl_calls}
                         </span>
                     </div>
                 </div>
+            </div>
             """,
             unsafe_allow_html=True
         )
 
-        for ath_item in prev.get("athletes", []):
+        selected_matches_by_slug = {}
+
+        for ath_item in athletes_list:
             ath_name = ath_item.get("athlete_name", "N/D")
+            slug = ath_item.get("slug", ath_name.lower().replace(" ", "_"))
             status = ath_item.get("status")
             old_st = ath_item.get("old_stats")
             new_st = ath_item.get("new_stats")
+            matches_to_load = ath_item.get("matches_to_load") or []
+            recent_db_matches = ath_item.get("recent_db_matches") or []
+
+            # Costruisce tabella HTML delle ultime partite già presenti nel DB (punto di riferimento)
+            db_matches_html = ""
+            if recent_db_matches:
+                db_rows_html = ""
+                for dbm in recent_db_matches:
+                    d_date = dbm.get("date", "N/D")
+                    d_opp = dbm.get("opponent", "N/D")
+                    d_tourn = dbm.get("tournament", "N/D")
+                    d_rnd = dbm.get("round", "-")
+                    d_score = dbm.get("score", "-")
+                    d_res = dbm.get("result", "-")
+                    res_color = "#34d399" if "vittor" in d_res.lower() or d_res.upper() == "W" else ("#f87171" if "sconfitt" in d_res.lower() or d_res.upper() == "L" else "#94a3b8")
+                    tourn_disp = f"{d_tourn} ({d_rnd})" if d_rnd and d_rnd != "-" else d_tourn
+                    db_rows_html += (
+                        f"<tr style='border-top:1px solid rgba(255,255,255,0.06);'>"
+                        f"<td style='padding:5px 8px; color:#94a3b8; font-weight:700; white-space:nowrap;'>{d_date}</td>"
+                        f"<td style='padding:5px 8px; color:#e2e8f0; font-weight:700;'>vs {d_opp}</td>"
+                        f"<td style='padding:5px 8px; color:#94a3b8;'>{tourn_disp}</td>"
+                        f"<td style='padding:5px 8px; color:{res_color}; font-weight:700; white-space:nowrap;'>{d_score} <span style='font-size:10px; opacity:0.85;'>({d_res})</span></td>"
+                        f"</tr>"
+                    )
+                hdr_db_title = tr("Ultime partite già presenti nel database (Riferimento)", "Latest matches already in database (Reference)")
+                hdr_col_date = tr("DATA", "DATE")
+                hdr_col_opp = tr("CON CHI HA GIOCATO (AVVERSARIO)", "OPPONENT")
+                hdr_col_tourn = tr("TORNEO / TURNO", "TOURNAMENT / ROUND")
+                hdr_col_res = tr("PUNTEGGIO / ESITO", "SCORE / RESULT")
+                db_matches_html = (
+                    f"<div style='margin-top:12px; background:rgba(15,23,42,0.55); border:1px solid rgba(148,163,184,0.18); border-radius:8px; padding:10px 12px;'>"
+                    f"<div style='font-size:10.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px;'>📂 {hdr_db_title}</div>"
+                    f"<table style='width:100%; border-collapse:collapse; font-size:11.5px;'>"
+                    f"<thead><tr style='text-align:left; font-size:10px; color:#64748b; text-transform:uppercase;'>"
+                    f"<th style='padding:4px 8px;'>{hdr_col_date}</th>"
+                    f"<th style='padding:4px 8px;'>{hdr_col_opp}</th>"
+                    f"<th style='padding:4px 8px;'>{hdr_col_tourn}</th>"
+                    f"<th style='padding:4px 8px;'>{hdr_col_res}</th>"
+                    f"</tr></thead><tbody>{db_rows_html}</tbody></table></div>"
+                )
 
             if status == "TROVATO" and new_st:
                 p_id = ath_item.get("player_id", "N/D")
@@ -329,93 +388,182 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                 vl_new = f"{new_st.get('vs_lefty_pct', 0.0):.1f}%"
                 country = new_st.get("country", "N/D")
                 hand = new_st.get("hand", "N/D")
-
-                # Confronto con dati vecchi se presenti
-                if old_st:
-                    old_info = f"#{old_st.get('ranking', 'N/D')} ({old_st.get('ranking_points', 'N/D')} pts) · TB: {old_st.get('tiebreak_pct', 0.0):.1f}% · Set Dec: {old_st.get('deciding_set_pct', 0.0):.1f}%"
-                else:
-                    old_info = tr("Nessun dato precedente in cache (Prima sincronizzazione)", "No previous data in cache (First sync)")
-
                 pts_fmt = f"{pts_new:,}" if isinstance(pts_new, (int, float)) else str(pts_new)
+
+                badge_found = tr("TROVATO — PRONTO PER IL DATABASE", "FOUND — READY FOR DATABASE")
+                badge_m_cnt = tr(f"{len(matches_to_load)} Match rilevati", f"{len(matches_to_load)} Matches detected")
+
+                # Tabella principale dei MATCH RILEVATI DA LIVETENNIS (Data + Avversario)
+                if matches_to_load:
+                    m_rows_html = ""
+                    for m in matches_to_load:
+                        m_date = m.get("date", "N/D")
+                        m_opp = m.get("opponent", "N/D")
+                        m_cnt = f" <span style='color:#94a3b8; font-weight:600;'>[{m['opponent_country']}]</span>" if m.get("opponent_country") else ""
+                        m_rank = f" <span style='color:#64748b; font-size:10.5px;'>(#{m['opponent_rank']})</span>" if m.get("opponent_rank") else ""
+                        m_tourn = m.get("tournament", "ATP Tour")
+                        m_rnd = m.get("round", "-")
+                        m_tourn_disp = f"{m_tourn} · <span style='color:#94a3b8;'>{m_rnd}</span>" if m_rnd and m_rnd != "-" else m_tourn
+                        m_surf = m.get("surface", "Hard")
+                        is_live = m.get("is_live", False)
+                        m_score = m.get("score", m.get("status", "In programma"))
+                        st_badge = (
+                            "<span style='background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.45); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>🔴 LIVE</span>"
+                            if is_live else
+                            "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>📅 IN PROGRAMMA</span>"
+                        )
+                        already = m.get("already_in_db", False)
+                        db_tag = (
+                            "<span style='color:#94a3b8; font-size:10.5px; font-weight:700;'>✅ Già nel DB</span>"
+                            if already else
+                            "<span style='color:#34d399; font-size:10.5px; font-weight:800;'>🆕 NUOVO</span>"
+                        )
+                        m_rows_html += (
+                            f"<tr style='border-top:1px solid rgba(56,189,248,0.14); background:rgba(14,165,233,0.04);'>"
+                            f"<td style='padding:8px 10px; color:#38bdf8; font-weight:900; font-size:12.5px; white-space:nowrap;'>📅 {m_date}</td>"
+                            f"<td style='padding:8px 10px; color:#ffffff; font-weight:800; font-size:13px;'>vs {m_opp}{m_cnt}{m_rank}</td>"
+                            f"<td style='padding:8px 10px; color:#e2e8f0; font-weight:600;'>{m_tourn_disp}</td>"
+                            f"<td style='padding:8px 10px; color:#94a3b8;'>{m_surf}</td>"
+                            f"<td style='padding:8px 10px; white-space:nowrap;'>{st_badge} <span style='font-size:11px; color:#cbd5e1; margin-left:4px;'>{m_score}</span></td>"
+                            f"<td style='padding:8px 10px; white-space:nowrap;'>{db_tag}</td>"
+                            f"</tr>"
+                        )
+
+                    lbl_m_hdr = tr("MATCH RILEVATI DA CARICARE (LiveTennis API)", "MATCHES DETECTED TO LOAD (LiveTennis API)")
+                    th_dt = tr("DATA DEL MATCH", "MATCH DATE")
+                    th_opp = tr("CON CHI GIOCA / HA GIOCATO (AVVERSARIO)", "OPPONENT")
+                    th_trn = tr("TORNEO & TURNO", "TOURNAMENT & ROUND")
+                    th_srf = tr("SUPERFICIE", "SURFACE")
+                    th_st = tr("STATO / SCORE", "STATUS / SCORE")
+                    th_db = tr("DATABASE", "DATABASE")
+                    matches_section_html = (
+                        f"<div style='margin-top:10px; background:rgba(7, 20, 38, 0.9); border:1px solid rgba(56,189,248,0.4); border-radius:8px; padding:10px 12px;'>"
+                        f"<div style='font-size:11px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>🎾 {lbl_m_hdr}</div>"
+                        f"<table style='width:100%; border-collapse:collapse; font-size:12px;'>"
+                        f"<thead><tr style='text-align:left; font-size:10px; color:#94a3b8; text-transform:uppercase; border-bottom:1px solid rgba(56,189,248,0.25);'>"
+                        f"<th style='padding:5px 10px;'>{th_dt}</th>"
+                        f"<th style='padding:5px 10px;'>{th_opp}</th>"
+                        f"<th style='padding:5px 10px;'>{th_trn}</th>"
+                        f"<th style='padding:5px 10px;'>{th_srf}</th>"
+                        f"<th style='padding:5px 10px;'>{th_st}</th>"
+                        f"<th style='padding:5px 10px;'>{th_db}</th>"
+                        f"</tr></thead><tbody>{m_rows_html}</tbody></table></div>"
+                    )
+                else:
+                    no_match_msg = tr(
+                        f"Nessun match Live o in programma rilevato su LiveTennis per <b>{ath_name}</b> al momento. Confermando verrà aggiornato solo il profilo ATP (#{rank_new} · {pts_fmt} pts).",
+                        f"No live or upcoming matches detected on LiveTennis for <b>{ath_name}</b> right now. Confirming will only update the ATP profile (#{rank_new} · {pts_fmt} pts)."
+                    )
+                    free_tier_note = tr(
+                        "Nota: l'API gratuita LiveTennis restituisce i match live e in programma (upcoming); lo storico dei match già conclusi è mostrato qui sotto dal database locale.",
+                        "Note: LiveTennis free tier returns live and upcoming matches; historical completed matches are shown below from the local database."
+                    )
+                    matches_section_html = (
+                        f"<div style='margin-top:10px; background:rgba(15,23,42,0.7); border:1px dashed rgba(148,163,184,0.35); border-radius:8px; padding:10px 12px; font-size:12px; color:#cbd5e1;'>"
+                        f"ℹ️ {no_match_msg}<div style='font-size:10.5px; color:#94a3b8; margin-top:4px;'>{free_tier_note}</div></div>"
+                    )
 
                 st.markdown(
                     f"""
-                    <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(16, 185, 129, 0.35); border-left:4px solid #10b981; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+                    <div style="background:rgba(8, 17, 32, 0.92); border:1px solid rgba(16, 185, 129, 0.4); border-left:4px solid #10b981; border-radius:10px; padding:14px 16px; margin-bottom:8px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <div style="font-size:14px; font-weight:800; color:#ffffff;">
-                                🎾 {ath_name} <span style="font-size:11px; font-weight:600; color:#94a3b8;">(ID LiveTennis: #{p_id} · {country} · {hand})</span>
+                            <div style="font-size:15px; font-weight:900; color:#ffffff;">
+                                🎾 {ath_name} <span style="font-size:11.5px; font-weight:600; color:#94a3b8;">(ID LiveTennis: #{p_id} · {country} · {hand})</span>
                             </div>
-                            <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
-                                🟢 {tr("TROVATO — PRONTO PER IL DATABASE", "FOUND — READY FOR DATABASE")}
-                            </span>
-                        </div>
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-top:8px;">
-                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">RANKING ATP</div>
-                                <div style="font-size:15px; font-weight:900; color:#38bdf8;">#{rank_new} <span style="font-size:11px; color:#94a3b8;">({pts_fmt} pts)</span></div>
-                            </div>
-                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">TIEBREAK WIN%</div>
-                                <div style="font-size:13px; font-weight:800; color:#34d399;">{tb_new}</div>
-                            </div>
-                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">SET DECISIVI</div>
-                                <div style="font-size:13px; font-weight:800; color:#fbbf24;">{ds_new}</div>
-                            </div>
-                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">VS MANCINI</div>
-                                <div style="font-size:13px; font-weight:800; color:#a78bfa;">{vl_new}</div>
+                            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                                <span style="background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
+                                    📅 {badge_m_cnt}
+                                </span>
+                                <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
+                                    🟢 {badge_found}
+                                </span>
                             </div>
                         </div>
-                        <div style="font-size:10.5px; color:#64748b; margin-top:6px;">
-                            <b>{tr("Dati nel database prima dell'aggiornamento:", "Data in database before update:")}</b> {old_info}
+                        {matches_section_html}
+                        {db_matches_html}
+                        <div style="display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); font-size:11.5px; color:#94a3b8;">
+                            <span><b style="color:#38bdf8;">ATP #{rank_new}</b> ({pts_fmt} pts)</span>
+                            <span>Tiebreak: <b style="color:#34d399;">{tb_new}</b></span>
+                            <span>Set Decisivi: <b style="color:#fbbf24;">{ds_new}</b></span>
+                            <span>Vs Mancini: <b style="color:#a78bfa;">{vl_new}</b></span>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
+
+                # Checkbox interattive per scegliere quali match caricare nel database
+                if matches_to_load:
+                    sel_hdr = tr("Seleziona i match da caricare nel database per", "Select matches to load into database for")
+                    st.markdown(
+                        f"<div style='font-size:11.5px; font-weight:800; color:#38bdf8; margin:2px 0 4px 4px;'>✅ {sel_hdr} {ath_name}:</div>",
+                        unsafe_allow_html=True
+                    )
+                    selected_for_ath = []
+                    for m_idx, m in enumerate(matches_to_load):
+                        m_date = m.get("date", "N/D")
+                        m_opp = m.get("opponent", "N/D")
+                        m_cnt = f" [{m['opponent_country']}]" if m.get("opponent_country") else ""
+                        m_tourn = m.get("tournament", "ATP Tour")
+                        m_rnd = f" ({m['round']})" if m.get("round") and m.get("round") != "-" else ""
+                        m_stat = m.get("status", "")
+                        already = m.get("already_in_db", False)
+                        dup_tag = tr(" — Già presente nel DB", " — Already in DB") if already else tr(" — Nuovo match", " — New match")
+                        cb_label = f"📅 {m_date}  |  vs {m_opp}{m_cnt}  |  {m_tourn}{m_rnd}  [{m_stat}]{dup_tag}"
+                        is_sel = st.checkbox(
+                            cb_label,
+                            value=(not already),
+                            key=f"lt_sel_{slug}_{m_idx}_{m.get('match_id', m_idx)}"
+                        )
+                        if is_sel:
+                            selected_for_ath.append(m)
+                    selected_matches_by_slug[slug] = selected_for_ath
+                    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
             else:
                 # Giocatore non trovato: mantiene dati vecchi
                 if old_st:
-                    old_desc = f"<b>{tr('Dati vecchi mantenuti:', 'Old data preserved:')}</b> Ranking #{old_st.get('ranking', 'N/D')} ({old_st.get('ranking_points', 'N/D')} pts) · TB: {old_st.get('tiebreak_pct', 0.0):.1f}% · Set Dec: {old_st.get('deciding_set_pct', 0.0):.1f}% (Ultimo sync: {old_st.get('sync_date', 'N/D')})"
+                    old_lbl = tr("Dati vecchi mantenuti:", "Old data preserved:")
+                    old_desc = f"<b>{old_lbl}</b> Ranking #{old_st.get('ranking', 'N/D')} ({old_st.get('ranking_points', 'N/D')} pts) · TB: {old_st.get('tiebreak_pct', 0.0):.1f}% · Set Dec: {old_st.get('deciding_set_pct', 0.0):.1f}% (Ultimo sync: {old_st.get('sync_date', 'N/D')})"
                 else:
-                    old_desc = tr("Nessun dato precedente presente nel database. Rimane senza statistiche LiveTennis.", "No previous data in database. Remains without LiveTennis stats.")
+                    old_desc = tr("Nessun dato precedente presente su LiveTennis. Tutti i dati e i match esistenti nel database rimangono invariati.", "No previous LiveTennis data. All existing database records and matches remain unchanged.")
 
+                badge_nf = tr("NON TROVATO — DATI VECCHI MANTENUTI", "NOT FOUND — OLD DATA PRESERVED")
                 st.markdown(
                     f"""
-                    <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(245, 158, 11, 0.35); border-left:4px solid #f59e0b; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+                    <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(245, 158, 11, 0.35); border-left:4px solid #f59e0b; border-radius:10px; padding:12px 16px; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="font-size:14px; font-weight:800; color:#cbd5e1;">
                                 👤 {ath_name}
                             </div>
                             <span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
-                                🟡 {tr("NON TROVATO — DATI VECCHI MANTENUTI", "NOT FOUND — OLD DATA PRESERVED")}
+                                🟡 {badge_nf}
                             </span>
                         </div>
-                        <div style="font-size:11px; color:#94a3b8; margin-top:6px;">
+                        <div style="font-size:11.5px; color:#94a3b8; margin-top:6px;">
                             {old_desc}
                         </div>
+                        {db_matches_html}
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-        st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
         col_commit, col_cancel = st.columns([1, 1])
         with col_commit:
             if st.button("💾 " + tr("Conferma e Salva nel Database", "Confirm and Save to Database"), type="primary", key="btn_confirm_livetennis_sync", use_container_width=True):
-                success, updated = commit_sync_results(prev)
+                success, updated, added_matches = commit_sync_results(prev, selected_matches_by_slug=selected_matches_by_slug)
                 if success:
                     del st.session_state['livetennis_preview_data']
                     set_notification(
                         title=tr("Database Aggiornato con Successo", "Database Updated Successfully"),
-                        message=tr(f"Caricati nel database i nuovi dati LiveTennis per {updated} atleta/i. Quelli non trovati hanno mantenuto i dati vecchi.",
-                                   f"Loaded new LiveTennis data into database for {updated} athlete(s). Those not found kept their old data."),
+                        message=tr(f"Caricati nel database i dati LiveTennis per {updated} atleta/i ({added_matches} nuovo/i match aggiunti). Quelli non trovati hanno mantenuto i dati vecchi.",
+                                   f"Loaded LiveTennis data into database for {updated} athlete(s) ({added_matches} new match(es) added). Those not found kept their old data."),
                         tipo="modal",
                         details=[
                             tr(f"Atleti aggiornati: {updated}", f"Updated athletes: {updated}"),
+                            tr(f"Nuovi match caricati: {added_matches}", f"New matches loaded: {added_matches}"),
                             tr("Cache locale e snapshot cloud Supabase allineati", "Local cache and Supabase cloud snapshot aligned")
                         ]
                     )
@@ -443,6 +591,12 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                     st.markdown(
                         f"• **{c_name}**: ATP #{c_rank} ({pts_str} pts) · TB: {st_data.get('tiebreak_pct', 0.0):.1f}% ({st_data.get('tiebreak_record', '')}) · Dec.Sets: {st_data.get('deciding_set_pct', 0.0):.1f}% · *Ultimo sync: {c_date} {c_time}*"
                     )
+                    saved_matches = item.get("matches") or []
+                    for sm in saved_matches:
+                        sm_cnt = f" [{sm['opponent_country']}]" if sm.get("opponent_country") else ""
+                        st.markdown(
+                            f"   - 📅 `{sm.get('date', 'N/D')}` — **vs {sm.get('opponent', 'N/D')}{sm_cnt}** · {sm.get('tournament', 'ATP Tour')} ({sm.get('status', '')})"
+                        )
 
 def render_coda_tagli_kanban(t):
     """
