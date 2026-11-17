@@ -499,8 +499,13 @@ def add_custom_css(image_file=None):
     div[data-testid="stAlert"]:has([data-testid*="Warning"]) div[data-testid="stAlertContainer"],
     div[data-testid="stAlert"]:has([data-testid*="Warning"]) > div,
     div[data-testid="stAlert"]:has([data-testid*="Warning"]),
-    div[data-testid="stAlertContainer"]:has([data-testid*="Warning"]) {{
+    div[data-testid="stAlertContainer"]:has([data-testid*="Warning"]),
+    div[data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]),
+    div[data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]) div[data-testid="stAlertContainer"],
+    div[data-testid="stAlertContentWarning"],
+    div[data-baseweb="notification"]:has([data-testid*="Warning"]) {{
         background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(180, 83, 9, 0.24) 100%) !important;
+        background-color: rgba(30, 20, 8, 0.95) !important;
         border: 1px solid rgba(245, 158, 11, 0.45) !important;
         border-left: 5px solid #f59e0b !important;
         box-shadow: 0 4px 18px rgba(245, 158, 11, 0.15) !important;
@@ -508,16 +513,23 @@ def add_custom_css(image_file=None):
     div[data-testid="stAlert"] [data-testid*="Warning"],
     div[data-testid="stAlert"] [data-testid*="Warning"] p,
     div[data-testid="stAlert"] [data-testid*="Warning"] span,
-    div[data-testid="stAlert"] [data-testid*="Warning"] div {{
+    div[data-testid="stAlert"] [data-testid*="Warning"] div,
+    [data-testid="stAlertContentWarning"],
+    [data-testid="stAlertContentWarning"] p,
+    [data-testid="stAlertContentWarning"] span,
+    [data-testid="stAlertContentWarning"] div {{
         color: #fef08a !important;
         font-weight: 700 !important;
     }}
     div[data-testid="stAlert"] [data-testid*="Warning"] strong,
-    div[data-testid="stAlert"] [data-testid*="Warning"] b {{
+    div[data-testid="stAlert"] [data-testid*="Warning"] b,
+    [data-testid="stAlertContentWarning"] strong,
+    [data-testid="stAlertContentWarning"] b {{
         color: #ffffff !important;
         font-weight: 900 !important;
     }}
-    div[data-testid="stAlert"] [data-testid*="Warning"] svg {{
+    div[data-testid="stAlert"] [data-testid*="Warning"] svg,
+    [data-testid="stAlertContentWarning"] svg {{
         fill: #f59e0b !important;
         color: #f59e0b !important;
     }}
@@ -887,6 +899,8 @@ def add_custom_css(image_file=None):
     [data-testid="InputInstructions"],
     div[data-testid="InputInstructions"],
     span[data-testid="InputInstructions"],
+    span[class*="eh6ncro"],
+    [data-testid="InputInstructions"] *,
     .stTextInput [data-testid="InputInstructions"],
     .stNumberInput [data-testid="InputInstructions"],
     .stTextArea [data-testid="InputInstructions"],

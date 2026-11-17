@@ -345,6 +345,8 @@ def auth_module():
     [data-testid="InputInstructions"],
     div[data-testid="InputInstructions"],
     span[data-testid="InputInstructions"],
+    span[class*="eh6ncro"],
+    [data-testid="InputInstructions"] *,
     .stTextInput [data-testid="InputInstructions"],
     .stNumberInput [data-testid="InputInstructions"],
     .stTextArea [data-testid="InputInstructions"],
