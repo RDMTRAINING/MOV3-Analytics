@@ -1133,14 +1133,18 @@ def render_admin(t):
 
                     st.markdown("<hr style='margin:24px 0 16px 0;'>", unsafe_allow_html=True)
 
-                    # 2. PAGINE OPERATIVE & ACCESSO DIRETTO
-                    st.markdown(f"#### {tr('Pagine Operative & Accesso Diretto', 'Operational Pages & Direct Access')}")
-                    st.caption(tr("Seleziona quali pagine operative e strumenti possono essere visualizzati nella barra laterale dall'utente.", "Select which operational tools and pages can be accessed in the sidebar."))
+                    # 2. PAGINE OPERATIVE & SERVIZI
+                    st.markdown(f"#### {tr('Pagine Operative & Servizi', 'Operational Pages & Services')}")
+                    st.caption(tr("Seleziona quali pagine operative e servizi di supporto possono essere visualizzati e utilizzati dall'utente.", "Select which operational pages and support services can be accessed and used by the user."))
 
                     cols_op = st.columns(2)
                     for idx_p, pag in enumerate(PAGINE_OPERATIVE):
                         op_key = f"{state_prefix}op_{pag['chiave']}"
-                        default_op = True if not ha_config_salvata else (('Pagine Operative', pag['chiave']) in permessi_attuali)
+                        if pag['chiave'] == 'Richiesta Taglio GPS K-Sport' and ha_config_salvata and not any('Taglio' in rep for (_, rep) in permessi_attuali):
+                            # Default retrocompatibile: abilitato se l'utente aveva accesso al caricamento dati
+                            default_op = ('Pagine Operative', 'Caricamento Dati') in permessi_attuali
+                        else:
+                            default_op = True if not ha_config_salvata else (('Pagine Operative', pag['chiave']) in permessi_attuali)
                         if op_key not in st.session_state:
                             st.session_state[op_key] = default_op
 
@@ -1153,12 +1157,15 @@ def render_admin(t):
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
+                            lbl_check = f"{tr('Abilita', 'Enable')} {pag['chiave']}" if pag['chiave'] == 'Richiesta Taglio GPS K-Sport' else f"{tr('Consenti accesso a', 'Allow access to')} {pag['chiave']}"
                             val_op = st.checkbox(
-                                f"{tr('Consenti accesso a', 'Allow access to')} {pag['chiave']}",
+                                lbl_check,
                                 key=op_key
                             )
                             if val_op:
                                 selezioni_nuove.append({"profilo_id": p_id_rep, "area": "Pagine Operative", "nome_report": pag['chiave']})
+                                if pag['chiave'] == 'Richiesta Taglio GPS K-Sport':
+                                    selezioni_nuove.append({"profilo_id": p_id_rep, "area": "Servizi Operativi", "nome_report": pag['chiave']})
 
                     st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
 

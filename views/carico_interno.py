@@ -94,7 +94,13 @@ def render_carico_interno(t):
         tr("Ultimi 60 giorni", "Last 60 days"),
         tr("Tutto lo storico", "All time history")
     ]
-    col_filtro_per, col_filtro_btn = st.columns([3, 2])
+    from utils import is_servizio_tagli_gps_abilitato
+    if is_servizio_tagli_gps_abilitato():
+        col_filtro_per, col_filtro_btn = st.columns([3, 2])
+    else:
+        col_filtro_per = st.container()
+        col_filtro_btn = None
+
     with col_filtro_per:
         periodo_sel = st.selectbox(
             tr("Finestra Temporale", "Time Window"),
@@ -102,14 +108,15 @@ def render_carico_interno(t):
             index=1,
             key="sel_periodo_carico_interno"
         )
-    with col_filtro_btn:
-        st.markdown("<div style='padding-top:28px;'></div>", unsafe_allow_html=True)
-        render_pulsante_segnalazione_gps(
-            key="btn_segnala_taglio_staff",
-            default_atleta=atleta_sel,
-            lista_atleti=atleti_selezionabili,
-            use_container_width=True
-        )
+    if col_filtro_btn is not None:
+        with col_filtro_btn:
+            st.markdown("<div style='padding-top:28px;'></div>", unsafe_allow_html=True)
+            render_pulsante_segnalazione_gps(
+                key="btn_segnala_taglio_staff",
+                default_atleta=atleta_sel,
+                lista_atleti=atleti_selezionabili,
+                use_container_width=True
+            )
     label_periodo_sel = str(periodo_sel)
 
     # Striscia Compatta Identità Atleta MOV3 con tag periodo

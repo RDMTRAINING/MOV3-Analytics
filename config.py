@@ -375,12 +375,10 @@ def add_custom_css(image_file=None):
         overflow: visible !important;
     }}
     
-    /* 1. HEADER FISSO (Logo MOV3 + Selettore Atleta): Fisso/Sticky in cima */
-    div.st-key-sidebar_fixed_header,
-    div[class*="st-key-sidebar_fixed_header"],
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[class*="st-key-sidebar_fixed_header"]),
+    /* 1. HEADER FISSO (Logo MOV3 + Selettore Atleta + eventuale Pulsante Richiesta): Unico contenitore Sticky in cima */
     [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:first-child,
-    div[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(> div[class*="st-key-sidebar_fixed_header"]) > div:first-child {{
+    div[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(> div[class*="st-key-sidebar_fixed_header"]) > div:first-child,
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(div[class*="st-key-sidebar_fixed_header"]) {{
         position: -webkit-sticky !important;
         position: sticky !important;
         top: 0 !important;
@@ -394,6 +392,22 @@ def add_custom_css(image_file=None):
         width: 100% !important;
         box-sizing: border-box !important;
     }}
+    /* Reset totale dell'elemento interno per eliminare definitivamente doppie cornici, bordi e box fantasma */
+    div.st-key-sidebar_fixed_header,
+    div[class*="st-key-sidebar_fixed_header"],
+    div[class*="st-key-sidebar_fixed_header"] > div[data-testid="stVerticalBlock"] {{
+        position: static !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
     div.st-key-sidebar_fixed_header img,
     div[class*="st-key-sidebar_fixed_header"] img {{
         width: 145px !important;
@@ -401,6 +415,10 @@ def add_custom_css(image_file=None):
         height: auto !important;
         display: block !important;
         margin: 0 auto !important;
+    }}
+    [data-testid="stSidebar"] div[class*="st-key-btn_sidebar_segnala_gps"] {{
+        margin-top: 4px !important;
+        margin-bottom: 0px !important;
     }}
     
     /* Elimina definitivamente qualsiasi sfondo bianco da iframe e custom components nella sidebar */
@@ -1291,6 +1309,7 @@ PAGINE_OPERATIVE = [
     {"chiave": "Gestione File Caricati", "nome": "Gestione File (Archivio Sessioni)", "icona": "folder2-open"},
     {"chiave": "Manuale Report", "nome": "Manuale Report (Documentazione Moduli)", "icona": "journal-bookmark-fill"},
     {"chiave": "Manuale Test", "nome": "Manuale Test (Enciclopedia Protocolli)", "icona": "journal-text"},
+    {"chiave": "Richiesta Taglio GPS K-Sport", "nome": "Servizio Taglio GPS K-Sport (Digital Handshake)", "icona": "broadcast-pin"},
 ]
 
 AREA_TO_PAGINA = {

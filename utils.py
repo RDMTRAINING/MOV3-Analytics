@@ -5034,10 +5034,63 @@ def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
             st.rerun()
 
 
+def is_servizio_tagli_gps_abilitato(user_obj=None, role=None):
+    """
+    Verifica se il servizio di richiesta/segnalazione taglio GPS K-Sport
+    e abilitato per l'utente corrente in base ai permessi configurati in 'moduli_report'.
+    - Super-Admin: sempre abilitato.
+    - Tutti gli altri ruoli (Staff, Coach, Atleta): abilitato se presente nei permessi 'Pagine Operative' / 'Servizi Operativi'
+      o se l'utente non ha ancora una configurazione restrittiva salvata (default retrocompatibile).
+    """
+    curr_role = role or st.session_state.get('role', 'Staff')
+    if curr_role == 'Super-Admin':
+        return True
+
+    perms = st.session_state.get('user_permessi_moduli')
+    if perms is None:
+        try:
+            u = user_obj or st.session_state.get('user')
+            uid = getattr(u, 'id', '') or (u.get('id', '') if isinstance(u, dict) else '')
+            if uid:
+                db_p = supabase_admin if supabase_admin is not None else supabase
+                if db_p is not None:
+                    res_p = db_p.table('moduli_report').select('area, nome_report').eq('profilo_id', uid).execute()
+                    if res_p.data:
+                        perms = set((r['area'], r['nome_report']) for r in res_p.data)
+                        st.session_state['user_permessi_moduli'] = perms
+                    else:
+                        return True
+                else:
+                    return True
+            else:
+                return True
+        except Exception:
+            return True
+
+    if perms is None:
+        return True
+
+    target_keys = {
+        'Richiesta Taglio GPS K-Sport',
+        'Servizio Taglio GPS K-Sport',
+        'Servizio Taglio GPS',
+        'Taglio GPS K-Sport'
+    }
+    for area, rep in perms:
+        if rep in target_keys or (area in ('Pagine Operative', 'Servizi Operativi') and 'Taglio' in rep):
+            return True
+
+    return False
+
+
 def render_pulsante_segnalazione_gps(key="btn_segnala_gps", default_atleta=None, lista_atleti=None, use_container_width=True):
     """
     Renderizza il pulsante ufficiale Digital Handshake per innescare il modale di segnalazione taglio GPS K-Sport.
+    Se il servizio e disattivato nei permessi utente (Moduli Report), non visualizza nulla.
     """
+    if not is_servizio_tagli_gps_abilitato():
+        return
+
     if st.button(
         "Segnala GPS da Tagliare su K-Sport",
         icon=":material/cell_tower:",

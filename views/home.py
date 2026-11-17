@@ -360,8 +360,32 @@ def render_home(t):
             )
 
         with c_hdr_sel:
-            c_ath_info, c_ath_btn = st.columns([1.1, 1.3])
-            with c_ath_info:
+            from utils import is_servizio_tagli_gps_abilitato, render_pulsante_segnalazione_gps
+            if is_servizio_tagli_gps_abilitato():
+                c_ath_info, c_ath_btn = st.columns([1.1, 1.3])
+                with c_ath_info:
+                    lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
+                    st.markdown(
+                        f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
+                        f"<div style='background:rgba(14,165,233,0.14); border:1.5px solid rgba(56,189,248,0.35); border-radius:10px; padding:6px 12px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 10px rgba(14,165,233,0.15);'>"
+                        f"<i class='bi bi-person-fill' style='color:#38bdf8; font-size:16px;'></i>"
+                        f"<div style='text-align:right;'>"
+                        f"<div style='font-size:9.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;'>{lbl_act_ath}</div>"
+                        f"<div style='font-size:13.5px; font-weight:900; color:#ffffff;'>{ath_home_sel}</div>"
+                        f"</div>"
+                        f"</div>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                with c_ath_btn:
+                    st.markdown("<div style='padding-top:6px;'></div>", unsafe_allow_html=True)
+                    render_pulsante_segnalazione_gps(
+                        key="btn_home_segnala_taglio",
+                        default_atleta=ath_home_sel,
+                        lista_atleti=atleti_visibili,
+                        use_container_width=True
+                    )
+            else:
                 lbl_act_ath = tr("Atleta Attivo", "Active Athlete")
                 st.markdown(
                     f"<div style='display:flex; justify-content:flex-end; align-items:center; height:100%; padding-top:6px;'>"
@@ -374,15 +398,6 @@ def render_home(t):
                     f"</div>"
                     f"</div>",
                     unsafe_allow_html=True
-                )
-            with c_ath_btn:
-                st.markdown("<div style='padding-top:6px;'></div>", unsafe_allow_html=True)
-                from utils import render_pulsante_segnalazione_gps
-                render_pulsante_segnalazione_gps(
-                    key="btn_home_segnala_taglio",
-                    default_atleta=ath_home_sel,
-                    lista_atleti=atleti_visibili,
-                    use_container_width=True
                 )
 
         # Calcolo Iniziali Atleta per Avatar Monogramma

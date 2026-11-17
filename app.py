@@ -983,7 +983,7 @@ def main():
                     label_visibility="collapsed"
                 )
 
-                if st.session_state.get('role') != 'Atleta' and hasattr(utils, 'render_pulsante_segnalazione_gps'):
+                if st.session_state.get('role') != 'Atleta' and hasattr(utils, 'is_servizio_tagli_gps_abilitato') and utils.is_servizio_tagli_gps_abilitato():
                     st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
                     utils.render_pulsante_segnalazione_gps(
                         key="btn_sidebar_segnala_gps",
@@ -1244,14 +1244,25 @@ def main():
                         target.style.position = 'sticky';
                         target.style.top = '0px';
                         target.style.zIndex = '99999';
-                        target.style.backgroundColor = '#0A192F';
+                        target.style.backgroundColor = '#070d18';
                         target.style.width = '100%';
                         target.style.boxSizing = 'border-box';
                         target.style.paddingTop = '1.25rem';
                         target.style.paddingBottom = '12px';
                         target.style.marginBottom = '10px';
-                        target.style.borderBottom = '1px solid rgba(255, 255, 255, 0.12)';
-                        target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.45)';
+                        target.style.borderBottom = '1px solid rgba(56, 189, 248, 0.2)';
+                        target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.6)';
+
+                        if (hdr && hdr !== target) {
+                            hdr.style.position = 'static';
+                            hdr.style.background = 'transparent';
+                            hdr.style.backgroundColor = 'transparent';
+                            hdr.style.border = 'none';
+                            hdr.style.borderBottom = 'none';
+                            hdr.style.boxShadow = 'none';
+                            hdr.style.padding = '0px';
+                            hdr.style.margin = '0px';
+                        }
 
                         var scrollContainer = p.document.querySelector('[data-testid="stSidebarContent"]');
                         if (scrollContainer) {
