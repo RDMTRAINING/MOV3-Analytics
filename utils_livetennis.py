@@ -327,7 +327,7 @@ def fetch_player_matches(player_id, player_name=""):
                     surf += " (Indoor)"
 
                 matches.append({
-                    "match_id": m.get("id"),
+                    "match_id": f"LT-{m.get('id')}",
                     "date": dt_str,
                     "date_iso": dt_iso,
                     "opponent": opp_name,
@@ -337,13 +337,371 @@ def fetch_player_matches(player_id, player_name=""):
                     "round": m.get("round") or "-",
                     "surface": surf,
                     "status": "In corso (Live)" if st_filter == "live" else "In programma",
+                    "result": "In corso" if st_filter == "live" else "In programma",
                     "score": score_str,
-                    "is_live": (st_filter == "live")
+                    "is_live": (st_filter == "live"),
+                    "is_completed": False,
+                    "source": "LiveTennis",
+                    "duration_min": 0,
+                    "duration_str": "-",
+                    "total_points": 0,
+                    "aces": 0,
+                    "double_faults": 0,
+                    "service_points": 0,
+                    "first_serve_points": 0,
+                    "second_serve_points": 0,
+                    "opponent_aces": 0,
+                    "games_played": 0,
+                    "sets_played": 0
                 })
         except Exception:
             pass
 
     return matches
+
+
+def _safe_int_val(val, default=0):
+    if val is None or val == "":
+        return default
+    try:
+        return int(float(str(val).strip()))
+    except (ValueError, TypeError):
+        return default
+
+
+def _format_duration_str(minutes):
+    m_int = _safe_int_val(minutes, 0)
+    if m_int <= 0:
+        return "-"
+    h, m = divmod(m_int, 60)
+    return f"{h}h {m:02d}m" if h > 0 else f"{m}m"
+
+
+def _parse_games_sets_from_score(score_str):
+    if not score_str:
+        return 0, 0
+    games_tot = 0
+    sets_tot = 0
+    for tok in str(score_str).split():
+        m_set = re.match(r"^(\d+)-(\d+)", tok)
+        if m_set:
+            games_tot += int(m_set.group(1)) + int(m_set.group(2))
+            sets_tot += 1
+    return games_tot, sets_tot
+
+
+def _extract_surname(name):
+    cleaned = re.sub(r"\([^)]*\)|\[[^\]]*\]", " ", str(name or ""))
+    tokens = [t for t in _normalize_str(cleaned).split() if len(t) >= 2]
+    return tokens[-1] if tokens else ""
+
+
+def _normalize_score_key(score_str):
+    return re.sub(r"\s+", " ", str(score_str or "").strip().lower())
+
+
+def _fetch_espn_exact_dates(athlete_name, days_back=45):
+    """
+    Interroga il feed pubblico gratuito ESPN Tennis Scoreboard (0 chiamate LiveTennis)
+    per ricavare la data esatta di gioco dei match recenti (incluso ieri).
+    """
+    results = []
+    today = datetime.date.today()
+    start_d = (today - datetime.timedelta(days=days_back)).strftime("%Y%m%d")
+    end_d = (today + datetime.timedelta(days=7)).strftime("%Y%m%d")
+
+    for tour in ["atp", "wta"]:
+        url = f"https://site.api.espn.com/apis/site/v2/sports/tennis/{tour}/scoreboard?dates={start_d}-{end_d}"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (MOV3-Analytics)", "Accept": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except Exception:
+            continue
+
+        for ev in data.get("events", []):
+            t_name = ev.get("name", "")
+            for grp in ev.get("groupings", []):
+                for comp in grp.get("competitions", []):
+                    comps = comp.get("competitors", [])
+                    if len(comps) < 2:
+                        continue
+                    c_names = [
+                        (c.get("athlete", {}).get("displayName") or c.get("roster", {}).get("shortDisplayName") or "")
+                        for c in comps
+                    ]
+                    ath_idx = None
+                    for idx, cname in enumerate(c_names):
+                        if _is_name_match(athlete_name, cname):
+                            ath_idx = idx
+                            break
+                    if ath_idx is None:
+                        continue
+
+                    opp_idx = 1 - ath_idx
+                    opp_name = c_names[opp_idx]
+                    raw_dt = comp.get("date") or comp.get("startDate") or ""
+                    date_ddmmyyyy = ""
+                    date_iso = ""
+                    try:
+                        dt_obj = datetime.datetime.fromisoformat(raw_dt.replace("Z", "+00:00"))
+                        date_ddmmyyyy = dt_obj.strftime("%d/%m/%Y")
+                        date_iso = dt_obj.strftime("%Y-%m-%d")
+                    except Exception:
+                        pass
+
+                    st_type = comp.get("status", {}).get("type", {})
+                    results.append({
+                        "date": date_ddmmyyyy,
+                        "date_iso": date_iso,
+                        "opponent": opp_name,
+                        "opponent_surname": _extract_surname(opp_name),
+                        "tournament": t_name,
+                        "completed": bool(st_type.get("completed"))
+                    })
+        if results:
+            break
+
+    return results
+
+
+def fetch_tennisabstract_matches(athlete_name, limit=12):
+    """
+    Recupera i match conclusi più recenti da Tennis Abstract (gratuito, 0 chiamate LiveTennis)
+    completi di tutte le statistiche necessarie per le analisi incrociate GPS
+    (punti totali, durata in minuti, ace, doppi falli, punti al servizio, 1ª e 2ª palla, ace avversario),
+    arricchendo la data esatta del match tramite il feed pubblico ESPN.
+    """
+    norm_tokens = _normalize_str(athlete_name).split()
+    if len(norm_tokens) < 2:
+        return []
+
+    ta_slug = "".join(tok.capitalize() for tok in norm_tokens)
+    url = f"https://www.tennisabstract.com/cgi-bin/player-classic.cgi?p={urllib.parse.quote(ta_slug)}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml"
+        }
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return []
+
+    idx = html.find("var matchmx = ")
+    if idx < 0:
+        return []
+    arr_start = html.find("[", idx)
+    if arr_start < 0:
+        return []
+
+    try:
+        rows, _ = json.JSONDecoder().raw_decode(html, arr_start)
+    except Exception:
+        return []
+
+    if not isinstance(rows, list) or not rows:
+        return []
+
+    heads = [
+        "date", "tourn", "surf", "level", "wl", "rank", "seed", "entry", "round",
+        "score", "max", "opp", "orank", "oseed", "oentry", "ohand", "obday",
+        "oht", "ocountry", "oactive", "time", "aces", "dfs", "pts", "firsts", "fwon",
+        "swon", "games", "saved", "chances", "oaces", "odfs", "opts", "ofirsts",
+        "ofwon", "oswon", "ogames", "osaved", "ochances", "obackhand", "chartlink",
+        "pslink", "whserver", "matchid", "wh", "roundnum", "matchnum"
+    ]
+
+    # Recupera date esatte da ESPN per i match degli ultimi 45 giorni
+    espn_dates = _fetch_espn_exact_dates(athlete_name, days_back=45)
+    ath_surname = norm_tokens[-1].capitalize()
+
+    parsed_matches = []
+    for r in rows[:limit]:
+        if not isinstance(r, list) or len(r) < 12:
+            continue
+        d = dict(zip(heads, r))
+        wl = str(d.get("wl", "")).strip().upper()
+        if wl not in ("W", "L"):
+            continue
+
+        raw_date = str(d.get("date", "")).strip()
+        if len(raw_date) != 8 or not raw_date.isdigit():
+            continue
+
+        try:
+            ta_dt = datetime.datetime.strptime(raw_date, "%Y%m%d").date()
+        except Exception:
+            continue
+
+        opp_raw = str(d.get("opp", "")).strip()
+        opp_cnt = str(d.get("ocountry", "")).strip().upper()
+        opp_disp = f"{opp_raw} [{opp_cnt}]" if opp_cnt else opp_raw
+        opp_surname = _extract_surname(opp_raw)
+
+        # Affina la data usando ESPN (data reale del match anziché lunedì del torneo)
+        final_dt = ta_dt
+        exact_date_matched = False
+        for em in espn_dates:
+            if not em.get("date_iso") or not em.get("opponent_surname"):
+                continue
+            if em["opponent_surname"] == opp_surname:
+                try:
+                    e_dt = datetime.date.fromisoformat(em["date_iso"])
+                    if -2 <= (e_dt - ta_dt).days <= 14:
+                        final_dt = e_dt
+                        exact_date_matched = True
+                        break
+                except Exception:
+                    pass
+
+        date_ddmmyyyy = final_dt.strftime("%d/%m/%Y")
+        date_iso = final_dt.strftime("%Y-%m-%d")
+
+        tourn = str(d.get("tourn", "ATP Tour")).strip()
+        surf_raw = str(d.get("surf", "Hard")).strip()
+        surf_low = surf_raw.lower()
+        if "clay" in surf_low:
+            surf = "Clay"
+        elif "grass" in surf_low:
+            surf = "Grass"
+        else:
+            surf = "Hard"
+
+        rnd = str(d.get("round", "-")).strip() or "-"
+        score = str(d.get("score", "-")).strip()
+        result_it = "Vittoria" if wl == "W" else "Sconfitta"
+        matchup = f"{ath_surname} d. {opp_disp}" if wl == "W" else f"{opp_disp} d. {ath_surname}"
+
+        dur_min = _safe_int_val(d.get("time"), 0)
+        aces = _safe_int_val(d.get("aces"), 0)
+        dfs = _safe_int_val(d.get("dfs"), 0)
+        srv_pts = _safe_int_val(d.get("pts"), 0)
+        firsts = _safe_int_val(d.get("firsts"), 0)
+        seconds = max(0, srv_pts - firsts) if srv_pts > 0 else 0
+        opp_pts = _safe_int_val(d.get("opts"), 0)
+        tot_pts = (srv_pts + opp_pts) if (srv_pts > 0 and opp_pts > 0) else 0
+        opp_aces = _safe_int_val(d.get("oaces"), 0)
+
+        g_score, s_score = _parse_games_sets_from_score(score)
+        g_srv = _safe_int_val(d.get("games"), 0)
+        g_opp = _safe_int_val(d.get("ogames"), 0)
+        games_played = g_score if g_score > 0 else (g_srv + g_opp)
+        sets_played = s_score
+
+        ta_mid = str(d.get("matchid", "")).strip()
+        m_id = f"TA-{ta_mid}" if ta_mid else f"TA-{raw_date}-{opp_surname}"
+
+        parsed_matches.append({
+            "match_id": m_id,
+            "date": date_ddmmyyyy,
+            "date_iso": date_iso,
+            "exact_date": exact_date_matched,
+            "opponent": opp_raw,
+            "opponent_display": opp_disp,
+            "opponent_country": opp_cnt,
+            "opponent_rank": _safe_int_val(d.get("orank"), None),
+            "rank": _safe_int_val(d.get("rank"), None),
+            "tournament": tourn,
+            "round": rnd,
+            "surface": surf,
+            "matchup": matchup,
+            "score": score,
+            "result": result_it,
+            "status": "Concluso",
+            "is_live": False,
+            "is_completed": True,
+            "source": "Tennis Abstract + ESPN" if exact_date_matched else "Tennis Abstract",
+            "duration_min": dur_min,
+            "duration_str": _format_duration_str(dur_min),
+            "total_points": tot_pts,
+            "aces": aces,
+            "double_faults": dfs,
+            "service_points": srv_pts,
+            "first_serve_points": firsts,
+            "second_serve_points": seconds,
+            "opponent_aces": opp_aces,
+            "games_played": games_played,
+            "sets_played": sets_played
+        })
+
+    return parsed_matches
+
+
+def _get_all_database_matches_raw(athlete_name):
+    """Restituisce tutti i match attualmente presenti nel database locale per deduplicazione affidabile."""
+    rows = []
+    if "cobolli" in str(athlete_name).lower():
+        try:
+            parquet_path = os.path.join(DATA_DIR, "cobolli_matches.parquet")
+            if os.path.exists(parquet_path):
+                import pandas as pd
+                df_m = pd.read_parquet(parquet_path)
+                if not df_m.empty:
+                    return df_m.to_dict(orient="records")
+        except Exception:
+            pass
+        try:
+            json_path = os.path.join(DATA_DIR, "cobolli_matches.json")
+            if os.path.exists(json_path):
+                with open(json_path, "r", encoding="utf-8") as f:
+                    data_m = json.load(f)
+                if isinstance(data_m, list):
+                    return data_m
+        except Exception:
+            pass
+    return rows
+
+
+def _is_match_already_in_db(candidate, db_rows):
+    """Verifica se il match candidato è già presente nello storico (per ID, data+avversario o score+avversario±14gg)."""
+    cand_id = str(candidate.get("match_id", "")).strip()
+    cand_date_str = str(candidate.get("date", ""))[:10]
+    cand_iso = str(candidate.get("date_iso", ""))[:10]
+    cand_opp_surn = _extract_surname(candidate.get("opponent_display") or candidate.get("opponent", ""))
+    cand_score = _normalize_score_key(candidate.get("score", ""))
+
+    cand_dt = None
+    try:
+        if cand_iso:
+            cand_dt = datetime.date.fromisoformat(cand_iso)
+    except Exception:
+        pass
+
+    for row in db_rows:
+        r_id = str(row.get("match_id", "")).strip()
+        if cand_id and r_id and cand_id == r_id:
+            return True
+
+        r_opp_surn = _extract_surname(row.get("opponent", ""))
+        if not cand_opp_surn or not r_opp_surn or cand_opp_surn != r_opp_surn:
+            continue
+
+        r_date_str = str(row.get("date", ""))[:10]
+        if cand_date_str and r_date_str and cand_date_str == r_date_str:
+            return True
+
+        r_iso = str(row.get("date_iso", ""))[:10]
+        r_score = _normalize_score_key(row.get("score", ""))
+        if cand_dt and r_iso:
+            try:
+                r_dt = datetime.date.fromisoformat(r_iso)
+                delta = abs((cand_dt - r_dt).days)
+                if delta <= 14 and cand_score and r_score and cand_score == r_score:
+                    return True
+                if delta <= 3:
+                    return True
+            except Exception:
+                pass
+
+    return False
 
 
 def get_recent_database_matches(athlete_name, limit=5):
@@ -425,8 +783,10 @@ def get_recent_database_matches(athlete_name, limit=5):
 
 def sync_matches_to_parquet(matches, athlete_name="Flavio Cobolli"):
     """
-    Integra i nuovi match trovati via LiveTennis nel file cobolli_matches.parquet
-    ed esegue l'upload dello snapshot cloud.
+    Integra i nuovi match selezionati (completi di statistiche Tennis Abstract:
+    punti totali, durata, servizio, 1ª/2ª palla, ace, doppi falli, game/set)
+    nel file cobolli_matches.parquet e cobolli_matches.json, aggiorna lo snapshot cloud
+    e svuota la cache di load_cobolli_matches per renderli subito visibili nelle analisi incrociate.
     """
     if not matches or "cobolli" not in athlete_name.lower():
         return 0
@@ -442,67 +802,99 @@ def sync_matches_to_parquet(matches, athlete_name="Flavio Cobolli"):
     except Exception:
         return 0
 
+    db_rows = df_old.to_dict(orient="records") if not df_old.empty else []
     added_count = 0
     new_rows = []
-    existing_match_ids = set(df_old["match_id"].dropna().astype(str).tolist()) if "match_id" in df_old.columns else set()
-    existing_keys = set(zip(df_old["date"].astype(str), df_old["opponent"].astype(str))) if "date" in df_old.columns and "opponent" in df_old.columns else set()
 
     for m in matches:
-        m_id = f"LT-{m.get('match_id')}"
-        m_date = str(m.get("date", ""))[:10]
-        m_opp = str(m.get("opponent", "N/D"))
-
-        if m_id in existing_match_ids or (m_date, m_opp) in existing_keys:
+        if _is_match_already_in_db(m, db_rows):
             continue
 
-        year_val = 2026
+        raw_mid = str(m.get("match_id") or "").strip()
+        m_id = raw_mid if raw_mid.startswith(("TA-", "LT-", "COB-")) else f"LT-{raw_mid}"
+        m_date = str(m.get("date", ""))[:10]
+        m_opp = str(m.get("opponent_display") or m.get("opponent") or "N/D")
+        if m.get("opponent_country") and "[" not in m_opp:
+            m_opp = f"{m_opp} [{m['opponent_country']}]"
+
+        year_val = datetime.date.today().year
         try:
             year_val = int(m_date.split("/")[-1])
         except Exception:
             pass
 
+        dur_min = _safe_int_val(m.get("duration_min"), 0)
+        dur_str = m.get("duration_str") or _format_duration_str(dur_min)
+        tot_pts = _safe_int_val(m.get("total_points"), 0)
+        aces = _safe_int_val(m.get("aces"), 0)
+        dfs = _safe_int_val(m.get("double_faults"), 0)
+        srv_pts = _safe_int_val(m.get("service_points"), 0)
+        p1_pts = _safe_int_val(m.get("first_serve_points"), 0)
+        p2_pts = _safe_int_val(m.get("second_serve_points"), 0)
+        opp_aces = _safe_int_val(m.get("opponent_aces"), 0)
+        games_p = _safe_int_val(m.get("games_played"), 0)
+        sets_p = _safe_int_val(m.get("sets_played"), 0)
+
+        res_val = m.get("result") or m.get("status") or "In programma"
+        matchup_val = m.get("matchup") or (
+            f"Cobolli d. {m_opp}" if res_val == "Vittoria"
+            else (f"{m_opp} d. Cobolli" if res_val == "Sconfitta" else f"Cobolli vs {m_opp}")
+        )
+
+        dt_parsed = pd.to_datetime(m_date, format="%d/%m/%Y", errors="coerce") if m_date else pd.NaT
+        date_obj_val = dt_parsed.date() if pd.notna(dt_parsed) else datetime.date.today()
+
         row = {
             "match_id": m_id,
             "date": m_date,
-            "date_iso": m.get("date_iso") or datetime.date.today().isoformat(),
-            "date_obj": pd.to_datetime(m_date, format="%d/%m/%Y", errors="coerce") if m_date else pd.Timestamp.today().normalize(),
+            "date_iso": m.get("date_iso") or (dt_parsed.strftime("%Y-%m-%d") if pd.notna(dt_parsed) else datetime.date.today().isoformat()),
+            "date_obj": date_obj_val,
             "year": year_val,
             "tournament": m.get("tournament", "ATP Tour"),
             "surface": m.get("surface", "Hard"),
             "round": m.get("round", "-"),
             "type": "Singolare",
-            "rank": None,
+            "rank": m.get("rank"),
             "opponent_rank": m.get("opponent_rank"),
-            "matchup": f"Cobolli vs {m_opp}",
+            "matchup": matchup_val,
             "opponent": m_opp,
             "score": m.get("score", "In programma"),
-            "result": m.get("status", "In programma"),
-            "duration_min": 0,
-            "duration_str": "-",
-            "total_points": 0,
-            "aces": 0,
-            "double_faults": 0,
-            "service_points": 0,
-            "first_serve_points": 0,
-            "second_serve_points": 0,
-            "opponent_aces": 0,
-            "games_played": 0,
-            "sets_played": 0
+            "result": res_val,
+            "duration_min": dur_min,
+            "duration_str": dur_str,
+            "total_points": tot_pts,
+            "aces": aces,
+            "double_faults": dfs,
+            "service_points": srv_pts,
+            "first_serve_points": p1_pts,
+            "second_serve_points": p2_pts,
+            "opponent_aces": opp_aces,
+            "games_played": games_p,
+            "sets_played": sets_p
         }
         new_rows.append(row)
+        db_rows.append(row)
         added_count += 1
-        existing_match_ids.add(m_id)
-        existing_keys.add((m_date, m_opp))
 
     if new_rows:
         df_new = pd.DataFrame(new_rows)
         df_merged = pd.concat([df_old, df_new], ignore_index=True)
+        # Allinea il tipo di date_obj per compatibilità PyArrow/Parquet
+        if "date_obj" in df_merged.columns:
+            df_merged["date_obj"] = pd.to_datetime(df_merged["date"], format="%d/%m/%Y", errors="coerce").dt.date
         try:
             df_merged.to_parquet(parquet_path, index=False)
             _sync_snapshot_safe(parquet_path, "cobolli_matches.parquet")
-            if os.path.exists(json_path):
-                df_merged.to_json(json_path, orient="records", date_format="iso", indent=2)
-                _sync_snapshot_safe(json_path, "cobolli_matches.json")
+            df_merged.to_json(json_path, orient="records", date_format="iso", indent=2)
+            _sync_snapshot_safe(json_path, "cobolli_matches.json")
+        except Exception:
+            pass
+
+        # Aggiorna calendario tornei e invalida cache Streamlit di load_cobolli_matches
+        try:
+            from utils_tennis_matches import _build_tournament_calendar, load_cobolli_matches
+            _build_tournament_calendar(df_merged)
+            load_cobolli_matches.clear()
         except Exception:
             pass
 
@@ -733,31 +1125,34 @@ def preview_sync_all_athletes(athletes_input):
         except Exception as e:
             error_msg = str(e)
 
-        matches_to_load = []
-        if found_player_id:
-            try:
-                matches_to_load = fetch_player_matches(found_player_id, player_name=full_name)
-            except Exception:
-                matches_to_load = []
-
+        all_db_rows = _get_all_database_matches_raw(full_name)
         recent_db_matches = get_recent_database_matches(full_name, limit=5)
 
-        # Marca ogni match API indicando se è già presente nel database (confronto su data + avversario)
-        existing_db_keys = set()
-        for dbm in recent_db_matches:
-            db_d = str(dbm.get("date", ""))[:10]
-            db_opp = _normalize_str(dbm.get("opponent", ""))
-            existing_db_keys.add((db_d, db_opp))
+        # 1. Match CONCLUSI con statistiche complete (punti, durata, servizio, ace) da Tennis Abstract + data esatta ESPN (0 chiamate LiveTennis)
+        completed_new_matches = []
+        if found_player_id or new_stats:
+            try:
+                ta_matches = fetch_tennisabstract_matches(full_name, limit=12)
+                for tm in ta_matches:
+                    already = _is_match_already_in_db(tm, all_db_rows)
+                    tm["already_in_db"] = already
+                    if not already:
+                        completed_new_matches.append(tm)
+            except Exception:
+                pass
 
-        for m in matches_to_load:
-            m_d = str(m.get("date", ""))[:10]
-            m_opp = _normalize_str(m.get("opponent", ""))
-            is_dup = False
-            for (db_d, db_opp) in existing_db_keys:
-                if db_d == m_d and m_opp and (m_opp in db_opp or db_opp in m_opp):
-                    is_dup = True
-                    break
-            m["already_in_db"] = is_dup
+        # 2. Match LIVE / IN PROGRAMMA da LiveTennis API
+        lt_live_upcoming = []
+        if found_player_id:
+            try:
+                lt_live_upcoming = fetch_player_matches(found_player_id, player_name=full_name)
+                for lm in lt_live_upcoming:
+                    lm["already_in_db"] = _is_match_already_in_db(lm, all_db_rows)
+            except Exception:
+                lt_live_upcoming = []
+
+        # Ordine in anteprima: prima i NUOVI match conclusi (pronti per le analisi incrociate), poi live/upcoming
+        matches_to_load = completed_new_matches + lt_live_upcoming
 
         if new_stats:
             found_count += 1
@@ -823,7 +1218,7 @@ def preview_sync_all_athletes(athletes_input):
     calls_made_end = get_daily_api_usage().get("calls_count", 0)
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "timestamp": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "total_athletes": len(clean_athletes),
         "found_count": found_count,

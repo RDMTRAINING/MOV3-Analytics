@@ -287,11 +287,11 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
     # 4. Box Anteprima (se presente in session_state)
     if 'livetennis_preview_data' in st.session_state:
         prev = st.session_state['livetennis_preview_data']
-        if prev.get("schema_version", 0) < 2:
+        if prev.get("schema_version", 0) < 3:
             del st.session_state['livetennis_preview_data']
             st.info(tr(
-                "Anteprima aggiornata alla nuova versione con elenco Match (data e avversario). Premi di nuovo il pulsante per generare l'anteprima aggiornata.",
-                "Preview updated to the new version with Match list (date and opponent). Click the button again to generate the updated preview."
+                "Anteprima aggiornata: ora scarica gratuitamente anche i match CONCLUSI con statistiche complete (punti totali, durata, servizio, ace) da Tennis Abstract + ESPN! Premi di nuovo il pulsante per generare l'anteprima.",
+                "Preview upgraded: now also fetches COMPLETED matches with full cross-analysis stats (points, duration, serve, aces) for free from Tennis Abstract + ESPN! Click the button again to refresh."
             ))
             prev = None
 
@@ -404,7 +404,7 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                 badge_found = tr("TROVATO — PRONTO PER IL DATABASE", "FOUND — READY FOR DATABASE")
                 badge_m_cnt = tr(f"{len(matches_to_load)} Match rilevati", f"{len(matches_to_load)} Matches detected")
 
-                # Tabella principale dei MATCH RILEVATI DA LIVETENNIS (Data + Avversario)
+                # Tabella principale dei MATCH RILEVATI (Conclusi con stats complete Tennis Abstract + Live/Upcoming LiveTennis)
                 if matches_to_load:
                     m_rows_html = ""
                     for m in matches_to_load:
@@ -414,64 +414,89 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                         m_rank = f" <span style='color:#64748b; font-size:10.5px;'>(#{m['opponent_rank']})</span>" if m.get("opponent_rank") else ""
                         m_tourn = m.get("tournament", "ATP Tour")
                         m_rnd = m.get("round", "-")
-                        m_tourn_disp = f"{m_tourn} · <span style='color:#94a3b8;'>{m_rnd}</span>" if m_rnd and m_rnd != "-" else m_tourn
                         m_surf = m.get("surface", "Hard")
-                        is_live = m.get("is_live", False)
+                        m_tourn_disp = f"{m_tourn} · <span style='color:#94a3b8;'>{m_rnd} · {m_surf}</span>" if m_rnd and m_rnd != "-" else f"{m_tourn} · <span style='color:#94a3b8;'>{m_surf}</span>"
+
+                        is_comp = bool(m.get("is_completed", False))
+                        is_live = bool(m.get("is_live", False))
                         m_score = m.get("score", m.get("status", "In programma"))
-                        st_badge = (
-                            "<span style='background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.45); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>🔴 LIVE</span>"
-                            if is_live else
-                            "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>📅 IN PROGRAMMA</span>"
-                        )
+                        m_res = m.get("result", "")
+
+                        if is_comp:
+                            res_col = "#34d399" if "vittor" in str(m_res).lower() else "#f87171"
+                            st_badge = f"<span style='background:rgba(16,185,129,0.2); color:{res_col}; border:1px solid {res_col}; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>✅ {m_res.upper()}</span>"
+                            score_html = f"{st_badge} <span style='font-size:12px; font-weight:800; color:#ffffff; margin-left:4px;'>{m_score}</span>"
+                            tot_pts = m.get("total_points", 0)
+                            dur_min = m.get("duration_min", 0)
+                            srv_pts = m.get("service_points", 0)
+                            p1_pts = m.get("first_serve_points", 0)
+                            p2_pts = m.get("second_serve_points", 0)
+                            aces_v = m.get("aces", 0)
+                            df_v = m.get("double_faults", 0)
+                            oaces_v = m.get("opponent_aces", 0)
+                            stats_cell_html = (
+                                f"<span style='color:#38bdf8; font-weight:800;'>{tot_pts} pts</span> · "
+                                f"<span style='color:#fbbf24; font-weight:700;'>{dur_min}m</span><br>"
+                                f"<span style='font-size:10.5px; color:#94a3b8;'>Srv {srv_pts} (1ª:{p1_pts} / 2ª:{p2_pts}) · Ace {aces_v} · DF {df_v} · Ace Avv {oaces_v}</span>"
+                            )
+                            row_bg = "rgba(16,185,129,0.08)"
+                        elif is_live:
+                            st_badge = "<span style='background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.45); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>🔴 LIVE</span>"
+                            score_html = f"{st_badge} <span style='font-size:11px; color:#cbd5e1; margin-left:4px;'>{m_score}</span>"
+                            stats_cell_html = "<span style='color:#64748b; font-size:11px;'>Match in corso</span>"
+                            row_bg = "rgba(239,68,68,0.05)"
+                        else:
+                            st_badge = "<span style='background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;'>📅 IN PROGRAMMA</span>"
+                            score_html = st_badge
+                            stats_cell_html = "<span style='color:#64748b; font-size:10.5px;'>Non ancora giocato (0 pts)</span>"
+                            row_bg = "rgba(14,165,233,0.04)"
+
                         already = m.get("already_in_db", False)
+                        m_src = m.get("source", "LiveTennis")
                         db_tag = (
                             "<span style='color:#94a3b8; font-size:10.5px; font-weight:700;'>✅ Già nel DB</span>"
                             if already else
-                            "<span style='color:#34d399; font-size:10.5px; font-weight:800;'>🆕 NUOVO</span>"
+                            f"<span style='color:#34d399; font-size:10.5px; font-weight:800;'>🆕 NUOVO</span><br><span style='font-size:9.5px; color:#64748b;'>{m_src}</span>"
                         )
                         m_rows_html += (
-                            f"<tr style='border-top:1px solid rgba(56,189,248,0.14); background:rgba(14,165,233,0.04);'>"
+                            f"<tr style='border-top:1px solid rgba(56,189,248,0.14); background:{row_bg};'>"
                             f"<td style='padding:8px 10px; color:#38bdf8; font-weight:900; font-size:12.5px; white-space:nowrap;'>📅 {m_date}</td>"
                             f"<td style='padding:8px 10px; color:#ffffff; font-weight:800; font-size:13px;'>vs {m_opp}{m_cnt}{m_rank}</td>"
                             f"<td style='padding:8px 10px; color:#e2e8f0; font-weight:600;'>{m_tourn_disp}</td>"
-                            f"<td style='padding:8px 10px; color:#94a3b8;'>{m_surf}</td>"
-                            f"<td style='padding:8px 10px; white-space:nowrap;'>{st_badge} <span style='font-size:11px; color:#cbd5e1; margin-left:4px;'>{m_score}</span></td>"
+                            f"<td style='padding:8px 10px; white-space:nowrap;'>{score_html}</td>"
+                            f"<td style='padding:8px 10px;'>{stats_cell_html}</td>"
                             f"<td style='padding:8px 10px; white-space:nowrap;'>{db_tag}</td>"
                             f"</tr>"
                         )
 
-                    lbl_m_hdr = tr("MATCH RILEVATI DA CARICARE (LiveTennis API)", "MATCHES DETECTED TO LOAD (LiveTennis API)")
+                    lbl_m_hdr = tr("MATCH RILEVATI DA CARICARE (Conclusi con Stats GPS + Programmati)", "MATCHES DETECTED TO LOAD (Completed with Full Stats + Upcoming)")
                     th_dt = tr("DATA DEL MATCH", "MATCH DATE")
-                    th_opp = tr("CON CHI GIOCA / HA GIOCATO (AVVERSARIO)", "OPPONENT")
-                    th_trn = tr("TORNEO & TURNO", "TOURNAMENT & ROUND")
-                    th_srf = tr("SUPERFICIE", "SURFACE")
-                    th_st = tr("STATO / SCORE", "STATUS / SCORE")
-                    th_db = tr("DATABASE", "DATABASE")
+                    th_opp = tr("CON CHI HA GIOCATO / AVVERSARIO", "OPPONENT")
+                    th_trn = tr("TORNEO · TURNO · SUP.", "TOURNAMENT · ROUND · SURF.")
+                    th_st = tr("ESITO & PUNTEGGIO", "RESULT & SCORE")
+                    th_stats = tr("DATI ANALISI INCROCIATE (PUNTI · DURATA · SERVIZIO)", "CROSS-ANALYSIS STATS (POINTS · DURATION · SERVE)")
+                    th_db = tr("STATO DB", "DB STATUS")
                     matches_section_html = (
-                        f"<div style='margin-top:10px; background:rgba(7, 20, 38, 0.9); border:1px solid rgba(56,189,248,0.4); border-radius:8px; padding:10px 12px;'>"
+                        f"<div style='margin-top:10px; background:rgba(7, 20, 38, 0.92); border:1px solid rgba(56,189,248,0.4); border-radius:8px; padding:10px 12px; overflow-x:auto;'>"
                         f"<div style='font-size:11px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;'>🎾 {lbl_m_hdr}</div>"
                         f"<table style='width:100%; border-collapse:collapse; font-size:12px;'>"
                         f"<thead><tr style='text-align:left; font-size:10px; color:#94a3b8; text-transform:uppercase; border-bottom:1px solid rgba(56,189,248,0.25);'>"
                         f"<th style='padding:5px 10px;'>{th_dt}</th>"
                         f"<th style='padding:5px 10px;'>{th_opp}</th>"
                         f"<th style='padding:5px 10px;'>{th_trn}</th>"
-                        f"<th style='padding:5px 10px;'>{th_srf}</th>"
                         f"<th style='padding:5px 10px;'>{th_st}</th>"
+                        f"<th style='padding:5px 10px;'>{th_stats}</th>"
                         f"<th style='padding:5px 10px;'>{th_db}</th>"
                         f"</tr></thead><tbody>{m_rows_html}</tbody></table></div>"
                     )
                 else:
                     no_match_msg = tr(
-                        f"Nessun match Live o in programma rilevato su LiveTennis per <b>{ath_name}</b> al momento. Confermando verrà aggiornato solo il profilo ATP (#{rank_new} · {pts_fmt} pts).",
-                        f"No live or upcoming matches detected on LiveTennis for <b>{ath_name}</b> right now. Confirming will only update the ATP profile (#{rank_new} · {pts_fmt} pts)."
-                    )
-                    free_tier_note = tr(
-                        "Nota: l'API gratuita LiveTennis restituisce i match live e in programma (upcoming); lo storico dei match già conclusi è mostrato qui sotto dal database locale.",
-                        "Note: LiveTennis free tier returns live and upcoming matches; historical completed matches are shown below from the local database."
+                        f"Nessun nuovo match concluso o in programma rilevato per <b>{ath_name}</b> al momento. Tutti i match recenti risultano già presenti nel database; confermando verrà aggiornato solo il profilo ATP (#{rank_new} · {pts_fmt} pts).",
+                        f"No new completed or upcoming matches detected for <b>{ath_name}</b> right now. Recent matches are already in the database; confirming will update the ATP profile (#{rank_new} · {pts_fmt} pts)."
                     )
                     matches_section_html = (
                         f"<div style='margin-top:10px; background:rgba(15,23,42,0.7); border:1px dashed rgba(148,163,184,0.35); border-radius:8px; padding:10px 12px; font-size:12px; color:#cbd5e1;'>"
-                        f"ℹ️ {no_match_msg}<div style='font-size:10.5px; color:#94a3b8; margin-top:4px;'>{free_tier_note}</div></div>"
+                        f"ℹ️ {no_match_msg}</div>"
                     )
 
                 stat_pills = [f"<span><b style='color:#38bdf8;'>ATP #{rank_new}</b> ({pts_fmt} pts)</span>"]
@@ -509,7 +534,7 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
 
                 # Checkbox interattive per scegliere quali match caricare nel database
                 if matches_to_load:
-                    sel_hdr = tr("Seleziona i match da caricare nel database per", "Select matches to load into database for")
+                    sel_hdr = tr("Seleziona i match da caricare nello storico del database per", "Select matches to load into database history for")
                     st.markdown(
                         f"<div style='font-size:11.5px; font-weight:800; color:#38bdf8; margin:2px 0 4px 4px;'>✅ {sel_hdr} {ath_name}:</div>",
                         unsafe_allow_html=True
@@ -523,11 +548,22 @@ def render_livetennis_admin_section(df_atleti=None, t=None):
                         m_rnd = f" ({m['round']})" if m.get("round") and m.get("round") != "-" else ""
                         m_stat = m.get("status", "")
                         already = m.get("already_in_db", False)
-                        dup_tag = tr(" — Già presente nel DB", " — Already in DB") if already else tr(" — Nuovo match", " — New match")
-                        cb_label = f"📅 {m_date}  |  vs {m_opp}{m_cnt}  |  {m_tourn}{m_rnd}  [{m_stat}]{dup_tag}"
+                        is_comp = bool(m.get("is_completed", False))
+                        if is_comp:
+                            m_res = m.get("result", "Concluso")
+                            m_sc = m.get("score", "-")
+                            m_pts = m.get("total_points", 0)
+                            m_dur = m.get("duration_min", 0)
+                            m_ace = m.get("aces", 0)
+                            dup_tag = tr(" — Già presente nel DB", " — Already in DB") if already else tr(" — PRONTO PER ANALISI INCROCIATE GPS", " — READY FOR GPS CROSS-ANALYSIS")
+                            cb_label = f"✅ {m_date}  |  vs {m_opp}{m_cnt}  |  {m_tourn}{m_rnd}  |  {m_sc} ({m_res})  |  {m_pts} pts · {m_dur}m · {m_ace} Ace{dup_tag}"
+                            default_checked = (not already)
+                        else:
+                            cb_label = f"📅 {m_date}  |  vs {m_opp}{m_cnt}  |  {m_tourn}{m_rnd}  [{m_stat} — non ancora concluso, 0 pts]"
+                            default_checked = False
                         is_sel = st.checkbox(
                             cb_label,
-                            value=(not already),
+                            value=default_checked,
                             key=f"lt_sel_{slug}_{m_idx}_{m.get('match_id', m_idx)}"
                         )
                         if is_sel:
