@@ -78,6 +78,371 @@ from email_service import (
     invia_email_reset_password_admin,
     get_smtp_config,
 )
+from utils_livetennis import (
+    get_daily_api_usage,
+    preview_sync_all_athletes,
+    commit_sync_results,
+    load_livetennis_cache,
+    get_athlete_live_stats,
+)
+
+
+def _get_admin_athletes_df():
+    """Recupera la lista atleti con quadruplo fallback robusto."""
+    records = []
+    try:
+        if supabase_admin is not None:
+            res = supabase_admin.table('atleti').select('*').execute()
+            if res and res.data:
+                records = res.data
+    except Exception:
+        pass
+
+    if not records:
+        try:
+            if supabase is not None:
+                res = supabase.table('atleti').select('*').execute()
+                if res and res.data:
+                    records = res.data
+        except Exception:
+            pass
+
+    if not records:
+        try:
+            nomi = get_tutti_gli_atleti()
+            for n in (nomi or []):
+                parts = str(n).strip().split()
+                nome = parts[0] if parts else ""
+                cognome = " ".join(parts[1:]) if len(parts) > 1 else ""
+                records.append({"nome": nome, "cognome": cognome, "data_nascita": None})
+        except Exception:
+            pass
+
+    if not records:
+        try:
+            df_hist = load_local_database()
+            if df_hist is not None and not df_hist.empty and 'Players' in df_hist.columns:
+                unique_p = df_hist['Players'].dropna().unique().tolist()
+                for p in unique_p:
+                    parts = str(p).strip().split()
+                    nome = parts[0] if parts else ""
+                    cognome = " ".join(parts[1:]) if len(parts) > 1 else ""
+                    records.append({"nome": nome, "cognome": cognome, "data_nascita": None})
+        except Exception:
+            pass
+
+    if not records:
+        records = [
+            {"nome": "Flavio", "cognome": "Cobolli", "data_nascita": "2002-05-06"}
+        ]
+
+    df = pd.DataFrame(records)
+    if 'nome' not in df.columns:
+        df['nome'] = ''
+    if 'cognome' not in df.columns:
+        df['cognome'] = ''
+    if 'data_nascita' not in df.columns:
+        df['data_nascita'] = None
+    return df
+
+
+def render_livetennis_admin_section(df_atleti=None, t=None):
+    """
+    Sezione Amministrativa per la Sincronizzazione LiveTennis API per tutti gli atleti.
+    Include:
+      - Contatore chiamate giornaliere (limite 100 gratis/giorno)
+      - Pulsante per chiamata istantanea per tutti i giocatori in lista atleti
+      - Logica di anteprima (chi e cosa sta per essere caricato) PRIMA del salvataggio nel database
+      - Preservazione dei dati vecchi per gli atleti non trovati
+      - Conferma finale per il salvataggio effettivo nel database / snapshot cloud
+    """
+    if t is None:
+        from config import LANG
+        t = LANG.get("IT", {})
+    if df_atleti is None or (isinstance(df_atleti, pd.DataFrame) and df_atleti.empty):
+        df_atleti = _get_admin_athletes_df()
+
+    st.divider()
+
+    # 1. Header Sezione
+    st.markdown(
+        f"""
+        <div style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+                    border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); width:38px; height:38px;
+                                border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(14,165,233,0.4);">
+                        <i class="bi bi-broadcast" style="color:#ffffff; font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size:16px; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.5px;">
+                            {tr("Sincronizzazione LiveTennis API (ATP Tour)", "LiveTennis API Synchronization (ATP Tour)")}
+                        </h3>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:#94a3b8;">
+                            {tr("Aggiorna ranking ATP, percentuali tiebreak e set decisivi per tutti i giocatori in lista atleti.",
+                                "Update ATP ranking, tiebreak % and deciding set % for all athletes in the list.")}
+                        </p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.35); font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;">
+                        Public API v1
+                    </span>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 2. Contatore Chiamate Giornaliere
+    usage = get_daily_api_usage()
+    used = usage.get("calls_count", 0)
+    limit = usage.get("calls_limit", 100)
+    remaining = usage.get("remaining", max(0, limit - used))
+    used_pct = min(1.0, max(0.0, used / float(limit))) if limit > 0 else 0.0
+
+    rem_color = "#10b981" if remaining > 25 else ("#f59e0b" if remaining > 5 else "#ef4444")
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(
+            f"""
+            <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; text-align:center;">
+                <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">{tr("Chiamate Utilizzate Oggi", "Calls Used Today")}</div>
+                <div style="font-size:24px; font-weight:900; color:#38bdf8; margin-top:2px;">{used} <span style="font-size:13px; color:#64748b;">/ {limit}</span></div>
+                <div style="font-size:10.5px; color:#64748b; margin-top:2px;">{tr("Reset giornaliero a mezzanotte", "Daily midnight reset")}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    with c2:
+        st.markdown(
+            f"""
+            <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; text-align:center;">
+                <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">{tr("Chiamate Rimanenti", "Remaining Calls")}</div>
+                <div style="font-size:24px; font-weight:900; color:{rem_color}; margin-top:2px;">{remaining}</div>
+                <div style="font-size:10.5px; color:#64748b; margin-top:2px;">{tr("Quota gratuita disponibile", "Free quota available")}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    with c3:
+        st.markdown(
+            f"""
+            <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; text-align:center;">
+                <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">{tr("Piano Quota Gratuita", "Free Tier Plan")}</div>
+                <div style="font-size:24px; font-weight:900; color:#cbd5e1; margin-top:2px;">100 <span style="font-size:13px; color:#64748b;">chiamate/giorno</span></div>
+                <div style="font-size:10.5px; color:#64748b; margin-top:2px;">{tr(f"Data attiva: {usage.get('date', 'Oggi')}", f"Active date: {usage.get('date', 'Today')}")}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.progress(used_pct)
+    st.caption(
+        tr(f"Consumo quota giornaliera: {used}/100 chiamate ({used_pct*100:.0f}%) · Rimaste: {remaining}",
+           f"Daily quota consumption: {used}/100 calls ({used_pct*100:.0f}%) · Remaining: {remaining}")
+    )
+
+    if remaining <= 0:
+        st.warning(tr("⚠️ Limite giornaliero di 100 chiamate raggiunto. Le chiamate riprenderanno domani a mezzanotte.",
+                      "⚠️ Daily limit of 100 calls reached. Quota will reset tomorrow at midnight."))
+
+    # 3. Pulsante Chiamata Istantanea
+    n_atleti = len(df_atleti) if df_atleti is not None and not df_atleti.empty else 0
+    col_btn, col_help = st.columns([1.2, 2])
+    with col_btn:
+        btn_instant = st.button(
+            "⚡ " + tr(f"Chiamata Istantanea per Tutti ({n_atleti} Atleti)", f"Instant Call for All ({n_atleti} Athletes)"),
+            type="primary",
+            disabled=(remaining <= 0 or n_atleti == 0),
+            key="btn_run_livetennis_sync",
+            use_container_width=True
+        )
+    with col_help:
+        help_note = tr(
+            "Interroga LiveTennis per ogni giocatore in lista. Quelli non trovati <b>rimangono con i dati vecchi</b>. Prima di caricare nel database vedrai l'anteprima completa di chi e cosa sta per essere caricato.",
+            "Queries LiveTennis for each player in the list. Those not found <b>keep their old data</b>. You will see a full preview before loading into the database."
+        )
+        st.markdown(
+            f"<div style='font-size:11.5px; color:#94a3b8; padding-top:6px;'>"
+            f"ℹ️ {help_note}"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+
+    if btn_instant:
+        with st.spinner(tr(f"Chiamata LiveTennis API in corso per {n_atleti} atleti...", f"LiveTennis API call in progress for {n_atleti} athletes...")):
+            atleti_records = df_atleti.to_dict('records')
+            preview_res = preview_sync_all_athletes(atleti_records)
+            st.session_state['livetennis_preview_data'] = preview_res
+        st.rerun()
+
+    # 4. Box Anteprima (se presente in session_state)
+    if 'livetennis_preview_data' in st.session_state:
+        prev = st.session_state['livetennis_preview_data']
+        st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #0ea5e9; border-radius: 12px; padding: 18px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid rgba(56, 189, 248, 0.2); padding-bottom:12px; margin-bottom:14px;">
+                    <div>
+                        <span style="font-size:15px; font-weight:900; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">
+                            🔍 {tr("Anteprima Dati LiveTennis prima del Salvataggio nel Database", "LiveTennis Data Preview before Database Commit")}
+                        </span>
+                        <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
+                            {tr("Verifica chi e cosa sta per essere caricato. <b>Nessun dato è stato ancora salvato nel database.</b>",
+                                "Verify who and what is about to be loaded. <b>No data has been saved to database yet.</b>")}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
+                            {prev.get('found_count', 0)} {tr('Trovati', 'Found')}
+                        </span>
+                        <span style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
+                            {prev.get('not_found_count', 0)} {tr('Non Trovati (Invariati)', 'Not Found (Unchanged)')}
+                        </span>
+                        <span style="background:rgba(14,165,233,0.18); color:#38bdf8; border:1px solid rgba(14,165,233,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;">
+                            {prev.get('calls_made', 0)} {tr('Chiamate API', 'API Calls')}
+                        </span>
+                    </div>
+                </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        for ath_item in prev.get("athletes", []):
+            ath_name = ath_item.get("athlete_name", "N/D")
+            status = ath_item.get("status")
+            old_st = ath_item.get("old_stats")
+            new_st = ath_item.get("new_stats")
+
+            if status == "TROVATO" and new_st:
+                p_id = ath_item.get("player_id", "N/D")
+                rank_new = new_st.get("ranking", "N/D")
+                pts_new = new_st.get("ranking_points", "N/D")
+                tb_new = f"{new_st.get('tiebreak_pct', 0.0):.1f}% ({new_st.get('tiebreak_record', '')})"
+                ds_new = f"{new_st.get('deciding_set_pct', 0.0):.1f}% ({new_st.get('deciding_set_record', '')})"
+                vl_new = f"{new_st.get('vs_lefty_pct', 0.0):.1f}%"
+                country = new_st.get("country", "N/D")
+                hand = new_st.get("hand", "N/D")
+
+                # Confronto con dati vecchi se presenti
+                if old_st:
+                    old_info = f"#{old_st.get('ranking', 'N/D')} ({old_st.get('ranking_points', 'N/D')} pts) · TB: {old_st.get('tiebreak_pct', 0.0):.1f}% · Set Dec: {old_st.get('deciding_set_pct', 0.0):.1f}%"
+                else:
+                    old_info = tr("Nessun dato precedente in cache (Prima sincronizzazione)", "No previous data in cache (First sync)")
+
+                pts_fmt = f"{pts_new:,}" if isinstance(pts_new, (int, float)) else str(pts_new)
+
+                st.markdown(
+                    f"""
+                    <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(16, 185, 129, 0.35); border-left:4px solid #10b981; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="font-size:14px; font-weight:800; color:#ffffff;">
+                                🎾 {ath_name} <span style="font-size:11px; font-weight:600; color:#94a3b8;">(ID LiveTennis: #{p_id} · {country} · {hand})</span>
+                            </div>
+                            <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
+                                🟢 {tr("TROVATO — PRONTO PER IL DATABASE", "FOUND — READY FOR DATABASE")}
+                            </span>
+                        </div>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-top:8px;">
+                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">RANKING ATP</div>
+                                <div style="font-size:15px; font-weight:900; color:#38bdf8;">#{rank_new} <span style="font-size:11px; color:#94a3b8;">({pts_fmt} pts)</span></div>
+                            </div>
+                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">TIEBREAK WIN%</div>
+                                <div style="font-size:13px; font-weight:800; color:#34d399;">{tb_new}</div>
+                            </div>
+                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">SET DECISIVI</div>
+                                <div style="font-size:13px; font-weight:800; color:#fbbf24;">{ds_new}</div>
+                            </div>
+                            <div style="background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:9.5px; color:#94a3b8; font-weight:700;">VS MANCINI</div>
+                                <div style="font-size:13px; font-weight:800; color:#a78bfa;">{vl_new}</div>
+                            </div>
+                        </div>
+                        <div style="font-size:10.5px; color:#64748b; margin-top:6px;">
+                            <b>{tr("Dati nel database prima dell'aggiornamento:", "Data in database before update:")}</b> {old_info}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                # Giocatore non trovato: mantiene dati vecchi
+                if old_st:
+                    old_desc = f"<b>{tr('Dati vecchi mantenuti:', 'Old data preserved:')}</b> Ranking #{old_st.get('ranking', 'N/D')} ({old_st.get('ranking_points', 'N/D')} pts) · TB: {old_st.get('tiebreak_pct', 0.0):.1f}% · Set Dec: {old_st.get('deciding_set_pct', 0.0):.1f}% (Ultimo sync: {old_st.get('sync_date', 'N/D')})"
+                else:
+                    old_desc = tr("Nessun dato precedente presente nel database. Rimane senza statistiche LiveTennis.", "No previous data in database. Remains without LiveTennis stats.")
+
+                st.markdown(
+                    f"""
+                    <div style="background:rgba(8, 17, 32, 0.85); border:1px solid rgba(245, 158, 11, 0.35); border-left:4px solid #f59e0b; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="font-size:14px; font-weight:800; color:#cbd5e1;">
+                                👤 {ath_name}
+                            </div>
+                            <span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px;">
+                                🟡 {tr("NON TROVATO — DATI VECCHI MANTENUTI", "NOT FOUND — OLD DATA PRESERVED")}
+                            </span>
+                        </div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:6px;">
+                            {old_desc}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+        col_commit, col_cancel = st.columns([1, 1])
+        with col_commit:
+            if st.button("💾 " + tr("Conferma e Salva nel Database", "Confirm and Save to Database"), type="primary", key="btn_confirm_livetennis_sync", use_container_width=True):
+                success, updated = commit_sync_results(prev)
+                if success:
+                    del st.session_state['livetennis_preview_data']
+                    set_notification(
+                        title=tr("Database Aggiornato con Successo", "Database Updated Successfully"),
+                        message=tr(f"Caricati nel database i nuovi dati LiveTennis per {updated} atleta/i. Quelli non trovati hanno mantenuto i dati vecchi.",
+                                   f"Loaded new LiveTennis data into database for {updated} athlete(s). Those not found kept their old data."),
+                        tipo="modal",
+                        details=[
+                            tr(f"Atleti aggiornati: {updated}", f"Updated athletes: {updated}"),
+                            tr("Cache locale e snapshot cloud Supabase allineati", "Local cache and Supabase cloud snapshot aligned")
+                        ]
+                    )
+                    st.rerun()
+        with col_cancel:
+            if st.button("❌ " + tr("Annulla Anteprima (Nessuna modifica)", "Cancel Preview (No changes)"), key="btn_cancel_livetennis_sync", use_container_width=True):
+                del st.session_state['livetennis_preview_data']
+                st.info(tr("Anteprima annullata. Nessuna modifica è stata apportata al database.", "Preview cancelled. No changes were made to database."))
+                st.rerun()
+
+    # 5. Expander con i dati attualmente salvati nel database
+    current_cache = load_livetennis_cache()
+    if current_cache:
+        with st.expander("📋 " + tr("Visualizza Dati LiveTennis Attualmente Salvati nel Database", "View LiveTennis Data Currently Saved in Database"), expanded=False):
+            st.caption(tr("Questi sono i dati attualmente memorizzati nel database per ciascun atleta:", "These are the data currently stored in the database for each athlete:"))
+            for slug, item in current_cache.items():
+                st_data = item.get("stats", {})
+                if st_data:
+                    c_name = st_data.get("name", slug)
+                    c_rank = st_data.get("ranking", "N/D")
+                    c_pts = st_data.get("ranking_points", 0)
+                    c_date = item.get("fetch_date", st_data.get("sync_date", "N/D"))
+                    c_time = item.get("fetch_timestamp", st_data.get("last_sync", "N/D"))
+                    pts_str = f"{c_pts:,}" if isinstance(c_pts, (int, float)) else str(c_pts)
+                    st.markdown(
+                        f"• **{c_name}**: ATP #{c_rank} ({pts_str} pts) · TB: {st_data.get('tiebreak_pct', 0.0):.1f}% ({st_data.get('tiebreak_record', '')}) · Dec.Sets: {st_data.get('deciding_set_pct', 0.0):.1f}% · *Ultimo sync: {c_date} {c_time}*"
+                    )
 
 def render_coda_tagli_kanban(t):
     """
@@ -270,9 +635,11 @@ def render_admin(t):
         st.error("Accesso negato: questa sezione è riservata ai Super-Admin.")
         st.stop()
     render_page_header(t['admin_title'], t['home_admin_desc'], "SYSTEM ADMINISTRATION")
+    tab_livetennis_label = t.get('tab_livetennis', '🎾 LiveTennis API')
     tab_list = [
         t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'),
         t['tab_atl'],
+        tab_livetennis_label,
         t['tab_usr'],
         t['tab_map'],
         t['tab_rep'],
@@ -290,14 +657,40 @@ def render_admin(t):
     if active_admin_tab == t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'):
         render_coda_tagli_kanban(t)
 
+    # =========================================================================
+    # TAB: DEDICATO LIVETENNIS API (ATP TOUR)
+    # =========================================================================
+    if active_admin_tab == tab_livetennis_label:
+        df_atleti = _get_admin_athletes_df()
+        render_livetennis_admin_section(df_atleti, t)
+
+    # =========================================================================
+    # TAB: GESTIONE ATLETI
+    # =========================================================================
     if active_admin_tab == t['tab_atl']:
+        df_atleti = _get_admin_athletes_df()
+
+        # 1. Sezione LiveTennis in primo piano
+        render_livetennis_admin_section(df_atleti, t)
+
+        st.divider()
+        st.markdown(t['curr_atl'])
+        st.dataframe(df_atleti[['nome', 'cognome', 'data_nascita']], use_container_width=True)
+
+        st.divider()
         st.markdown(t['add_atl'])
         col1, col2 = st.columns(2)
         with col1: nuovo_nome = st.text_input(t['atl_name'])
         with col2: nuovo_cognome = st.text_input(t['atl_surname'])
         if st.button(t['btn_add_atl'], type="primary"):
             if nuovo_nome and nuovo_cognome:
-                supabase_admin.table('atleti').insert({"nome": nuovo_nome, "cognome": nuovo_cognome}).execute()
+                try:
+                    if supabase_admin is not None:
+                        supabase_admin.table('atleti').insert({"nome": nuovo_nome, "cognome": nuovo_cognome}).execute()
+                    elif supabase is not None:
+                        supabase.table('atleti').insert({"nome": nuovo_nome, "cognome": nuovo_cognome}).execute()
+                except Exception:
+                    pass
                 clear_atleti_cache()
                 set_notification(
                     title=tr("Atleta Aggiunto con Successo", "Athlete Added Successfully"),
@@ -311,24 +704,18 @@ def render_admin(t):
                 st.rerun()
 
         st.divider()
-        st.markdown(t['curr_atl'])
-        risposta_atleti = supabase_admin.table('atleti').select('*').execute()
-        if risposta_atleti.data:
-            df_atleti = pd.DataFrame(risposta_atleti.data)
-            st.dataframe(df_atleti[['nome', 'cognome', 'data_nascita']], use_container_width=True)
-            
-            st.divider()
-            st.markdown(t['del_atl'])
-            st.warning(t['warn_del_atl'])
-            dict_elimina_atleti = {f"{row['nome']} {row['cognome']}": row['id'] for _, row in df_atleti.iterrows()}
+        st.markdown(t['del_atl'])
+        st.warning(t['warn_del_atl'])
+        dict_elimina_atleti = {f"{row['nome']} {row['cognome']}": row.get('id', '') for _, row in df_atleti.iterrows() if row.get('id')}
+        if dict_elimina_atleti:
             atleta_da_eliminare = st.selectbox(t['sel_del_atl'], [t['select']] + list(dict_elimina_atleti.keys()))
-            
             if st.button(t['btn_del_def'], type="primary"):
                 if atleta_da_eliminare != t['select']:
                     try:
                         id_da_eliminare = dict_elimina_atleti[atleta_da_eliminare]
-                        supabase_admin.table('associazioni').delete().eq('atleta_id', id_da_eliminare).execute()
-                        supabase_admin.table('atleti').delete().eq('id', id_da_eliminare).execute()
+                        if supabase_admin is not None:
+                            supabase_admin.table('associazioni').delete().eq('atleta_id', id_da_eliminare).execute()
+                            supabase_admin.table('atleti').delete().eq('id', id_da_eliminare).execute()
                         clear_atleti_cache()
                         set_notification(
                             title=tr("Atleta Eliminato Definitivamente", "Athlete Permanently Deleted"),
@@ -342,8 +729,6 @@ def render_admin(t):
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error: {e}")
-        else:
-            st.info("Nessun atleta / No athletes")
 
     elif active_admin_tab == t['tab_usr']:
         res_profili = supabase_admin.table('profili').select('*').execute()

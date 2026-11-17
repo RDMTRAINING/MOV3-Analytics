@@ -55,7 +55,7 @@ from pdf_generator import (
     crea_pdf_storico_m0v3,
     crea_pdf_medie_m0v3,
 )
-from utils_livetennis import fetch_cobolli_live_stats
+from utils_livetennis import fetch_cobolli_live_stats, get_athlete_live_stats
 from views.calendario_medico import render_master_timeline
 
 def _acwr_zone_style(pct_val, has_baseline=True):
@@ -512,10 +512,14 @@ def render_home(t):
         st.markdown(hero_card_html, unsafe_allow_html=True)
 
     # =========================================================================
-    # LIVE TENNIS API STATS: FLAVIO COBOLLI
+    # LIVE TENNIS API STATS: ATP TOUR
     # =========================================================================
-    if 'cobolli' in str(ath_home_sel).lower() or any('cobolli' in str(a).lower() for a in atleti_visibili):
+    live_st = get_athlete_live_stats(ath_home_sel)
+    if not live_st and ('cobolli' in str(ath_home_sel).lower() or any('cobolli' in str(a).lower() for a in atleti_visibili)):
         live_st = fetch_cobolli_live_stats()
+
+    if live_st:
+        player_name_live = live_st.get("name", str(ath_home_sel)).upper()
         atp_rank = live_st.get("ranking", 6)
         atp_pts = live_st.get("ranking_points", 3690)
         tb_pct = live_st.get("tiebreak_pct", 80.0)
@@ -525,6 +529,7 @@ def render_home(t):
         vl_pct = live_st.get("vs_lefty_pct", 60.3)
         last_sync_h = live_st.get("last_sync", "22:00")
         sync_dt = live_st.get("sync_date", "Oggi")
+        pts_fmt = f"{atp_pts:,}" if isinstance(atp_pts, (int, float)) else str(atp_pts)
 
         st.markdown(
             f"<div style='background:linear-gradient(165deg, rgba(13, 23, 42, 0.92) 0%, rgba(8, 15, 28, 0.98) 100%); border:1px solid rgba(56, 189, 248, 0.25); border-radius:12px; padding:16px 18px; margin-top:4px; margin-bottom:18px; box-shadow:0 10px 30px -6px rgba(0,0,0,0.65), 0 0 16px rgba(14,165,233,0.08); font-family:\"Inter\", sans-serif;'>"
@@ -535,7 +540,7 @@ def render_home(t):
             f"</div>"
             f"<div>"
             f"<span style='font-size:13.5px; font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;'>"
-            f"{tr('STATISTICHE ATP TOUR (LIVE API)', 'ATP TOUR STATS (LIVE API)')} — <span style='color:#38bdf8;'>FLAVIO COBOLLI</span></span>"
+            f"{tr('STATISTICHE ATP TOUR (LIVE API)', 'ATP TOUR STATS (LIVE API)')} — <span style='color:#38bdf8;'>{player_name_live}</span></span>"
             f"</div>"
             f"</div>"
             f"<div style='display:flex; align-items:center; gap:8px;'>"
@@ -546,12 +551,13 @@ def render_home(t):
             f"<div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;'>"
             f"<div style='background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.20); border-left:4px solid #0ea5e9; border-radius:8px; padding:10px 14px;'>"
             f"<div style='font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase;'>RANKING ATP LIVE</div>"
-            f"<div style='font-size:22px; font-weight:900; color:#38bdf8; margin-top:2px;'>#{atp_rank} <span style='font-size:12px; font-weight:700; color:#cbd5e1;'>({atp_pts:,} pts)</span></div>"
+            f"<div style='font-size:22px; font-weight:900; color:#38bdf8; margin-top:2px;'>#{atp_rank} <span style='font-size:12px; font-weight:700; color:#cbd5e1;'>({pts_fmt} pts)</span></div>"
             f"<div style='font-size:11px; color:#94a3b8; margin-top:3px;'>Posizione ufficiale ATP</div>"
             f"</div>"
             f"<div style='background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.20); border-left:4px solid #10b981; border-radius:8px; padding:10px 14px;'>"
             f"<div style='font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase;'>CLUTCH: TIEBREAK</div>"
             f"<div style='font-size:22px; font-weight:900; color:#34d399; margin-top:2px;'>{tb_pct:.1f}% <span style='font-size:11.5px; font-weight:700; color:#94a3b8;'>({tb_rec})</span></div>"
+            f"<div style='font-size:11px; color:#94a3b8; margin-top:3px;'>Freddezza momenti decisivi</div>"
             f"<div style='font-size:11px; color:#94a3b8; margin-top:3px;'>Freddezza momenti decisivi</div>"
             f"</div>"
             f"<div style='background:rgba(8,17,32,0.85); border:1px solid rgba(56,189,248,0.20); border-left:4px solid #f59e0b; border-radius:8px; padding:10px 14px;'>"

@@ -767,6 +767,19 @@ def sync_binary_snapshots_on_cold_boot():
         except Exception:
             pass
 
+        # I. Sincronizzazione livetennis_usage.json (contatore chiamate giornaliere)
+        usage_rel = "data_supporto/livetennis_usage.json"
+        try:
+            u_bytes = download_binary_snapshot("livetennis_usage.json")
+            if u_bytes:
+                os.makedirs(os.path.dirname(usage_rel), exist_ok=True)
+                with open(usage_rel, "wb") as f:
+                    f.write(u_bytes)
+            elif os.path.exists(usage_rel) and not u_bytes:
+                upload_binary_snapshot(usage_rel, "livetennis_usage.json")
+        except Exception:
+            pass
+
         status["synced"] = True
     except Exception:
         pass
