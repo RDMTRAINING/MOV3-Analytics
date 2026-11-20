@@ -843,7 +843,6 @@ def render_admin(t):
         st.stop()
     render_page_header(t['admin_title'], t['home_admin_desc'], "SYSTEM ADMINISTRATION")
     tab_livetennis_label = t.get('tab_livetennis', 'LiveTennis API')
-    tab_alert_digest_label = tr("Alert & Morning Digest", "Alerts & Morning Digest")
     tab_list = [
         t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'),
         t['tab_atl'],
@@ -852,7 +851,6 @@ def render_admin(t):
         t['tab_map'],
         t['tab_rep'],
         t.get('tab_sup', 'Supporto & Ticket'),
-        tab_alert_digest_label,
     ]
     active_admin_tab = render_tab_navigation(
         tab_list,
@@ -1979,7 +1977,7 @@ def render_admin(t):
     # =========================================================================
     # TAB 8: MOTORE DI ALERT PROATTIVI & MORNING DIGEST AUTOMATICO (MODULO 2 V3.0)
     # =========================================================================
-    elif active_admin_tab == tab_alert_digest_label:
+    elif False:  # Standby: Alert & Morning Digest (accantonato temporaneamente)
         from alert_engine import (
             load_alert_subscriptions,
             save_alert_subscriptions,

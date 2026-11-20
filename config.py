@@ -1394,7 +1394,6 @@ PAGINE_OPERATIVE = [
     {"chiave": "Manuale Report", "nome": "Manuale Report (Documentazione Moduli)", "icona": "journal-bookmark-fill"},
     {"chiave": "Manuale Test", "nome": "Manuale Test (Enciclopedia Protocolli)", "icona": "journal-text"},
     {"chiave": "Richiesta Taglio GPS K-Sport", "nome": "Servizio Taglio GPS K-Sport (Digital Handshake)", "icona": "broadcast-pin"},
-    {"chiave": "Ricezione Morning Digest Email", "nome": "Ricezione Morning Digest Email (Alert Proattivi)", "icona": "envelope-check"},
 ]
 
 AREA_TO_PAGINA = {
