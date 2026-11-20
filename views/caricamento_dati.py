@@ -49,6 +49,8 @@ from utils import (
     delta_confronto,
     get_atleti_associati,
     get_tutti_gli_atleti,
+    get_atleti_dict,
+    upsert_biometria_wearable_batch,
     slugify_name,
 )
 from pdf_generator import (
@@ -59,8 +61,233 @@ from pdf_generator import (
     crea_pdf_medie_m0v3,
 )
 
+
+def _render_wearable_biometrics_importer_tab():
+    """
+    Modulo 3.2 v3.0 — Batch Importer CSV Wearable (Apple Watch / Sleep++, Oura, Whoop, Garmin):
+    Esegue un Upsert Non-Distruttivo sulla tabella `wellness_mattutino` aggiornando esclusivamente
+    `hrv_rmssd_ms`, `rhr_bpm`, `sonno_ore_reali` e `biometria_fonte` senza MAI sovrascrivere i 5 slider soggettivi.
+    """
+    import datetime as dt
+    user = st.session_state.get('user')
+    role = st.session_state.get('role', 'Staff')
+    is_admin = (role in ('Super-Admin', 'Admin'))
+
+    dict_atleti = get_atleti_dict(user=user, is_admin=is_admin, is_coach=True)
+    if not dict_atleti:
+        st.warning(tr("Nessun atleta associato disponibile per l'importazione biometrica.", "No associated athletes available for biometric import."))
+        return
+
+    nomi_atleti = sorted(list(dict_atleti.keys()))
+    glob_ath = st.session_state.get('selected_athlete')
+    idx_ath = nomi_atleti.index(glob_ath) if glob_ath in nomi_atleti else 0
+
+    st.markdown(
+        f"<div style='background:#081120; border:1px solid rgba(56,189,248,0.28); border-left:4px solid #38bdf8; border-radius:12px; padding:14px 18px; margin-bottom:16px;'>"
+        f"<div style='font-size:13.5px; font-weight:800; color:#f8fafc; margin-bottom:4px;'><i class='bi bi-smartwatch' style='color:#38bdf8; margin-right:6px;'></i>"
+        f"{tr('Ingestione Batch Biometria Passiva da Wearable (HRV rMSSD, RHR & Ore Sonno)', 'Batch Wearable Passive Biometrics Ingestion (HRV rMSSD, RHR & Sleep Hours)')}</div>"
+        f"<div style='font-size:12px; color:#94a3b8; line-height:1.5;'>"
+        f"{tr('Carica un file CSV esportato da Apple Health / Sleep++, Oura Ring, Whoop, Garmin Connect o il Template Standard M0V3. Il sistema esegue un <b>Upsert Non-Distruttivo</b> su <code>wellness_mattutino</code>: aggiorna esclusivamente i parametri oggettivi preservando al 100% i voti soggettivi già compilati dall’atleta.', 'Upload a CSV exported from Apple Health / Sleep++, Oura Ring, Whoop, Garmin Connect or the M0V3 Standard Template. The engine performs a <b>Non-Destructive Upsert</b> on <code>wellness_mattutino</code>: it updates only objective biometric fields while 100% preserving any subjective ratings already logged by the athlete.')}"
+        f"</div></div>",
+        unsafe_allow_html=True
+    )
+
+    c_cfg1, c_cfg2, c_cfg3 = st.columns([1.4, 1.2, 1.2])
+    with c_cfg1:
+        sel_atleta_bio = st.selectbox(
+            tr("Atleta Destinatario Biometria", "Target Athlete for Biometrics"),
+            nomi_atleti,
+            index=idx_ath,
+            key="bio_csv_target_athlete"
+        )
+        if sel_atleta_bio != st.session_state.get('selected_athlete'):
+            st.session_state['selected_athlete'] = sel_atleta_bio
+    with c_cfg2:
+        fonti_w = ["Apple Watch / Sleep++", "Whoop", "Oura", "Garmin", "Manuale"]
+        sel_fonte_default = st.selectbox(
+            tr("Dispositivo / Fonte Wearable Predefinita", "Default Wearable Device / Source"),
+            fonti_w,
+            key="bio_csv_default_source"
+        )
+    with c_cfg3:
+        st.markdown("<div style='font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:4px;'>" + tr("Template CSV Standard M0V3", "M0V3 Standard CSV Template") + "</div>", unsafe_allow_html=True)
+        today_iso = dt.date.today().strftime("%Y-%m-%d")
+        yest_iso = (dt.date.today() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        template_csv = (
+            "Date,HRV_rMSSD_ms,RHR_bpm,Sleep_Hours,Source\n"
+            f"{yest_iso},74.5,48,7.75,{sel_fonte_default}\n"
+            f"{today_iso},78.0,47,8.10,{sel_fonte_default}\n"
+        )
+        st.download_button(
+            label=tr("Scarica Template Biometria CSV", "Download Biometrics CSV Template"),
+            data=template_csv.encode("utf-8"),
+            file_name="M0V3_Template_Biometria_Wearable.csv",
+            mime="text/csv",
+            use_container_width=True,
+            key="btn_dl_bio_csv_template"
+        )
+
+    bio_file = st.file_uploader(
+        tr("Trascina qui il file CSV Biometria Wearable (Apple Health, Oura, Whoop, Garmin o Template M0V3)", "Drag & drop Wearable Biometrics CSV file here"),
+        type=["csv"],
+        accept_multiple_files=False,
+        key="uploader_bio_wearable_csv"
+    )
+
+    if bio_file is not None:
+        try:
+            df_bio_raw = leggi_csv_gps_robusto(bio_file)
+        except Exception as e_b:
+            st.error(f"{tr('Errore nella lettura del CSV:', 'Error reading CSV:')} {e_b}")
+            return
+
+        if df_bio_raw is None or df_bio_raw.empty:
+            st.warning(tr("Il file CSV caricato è vuoto.", "Uploaded CSV file is empty."))
+            return
+
+        cols_raw = list(df_bio_raw.columns)
+
+        def _guess_col(candidates):
+            for c in cols_raw:
+                c_low = str(c).strip().lower()
+                for cand in candidates:
+                    if cand == c_low or cand in c_low:
+                        return c
+            return "Non presente"
+
+        guess_date = _guess_col(["date", "data", "day", "giorno", "timestamp", "summary_date", "calendar_date"])
+        guess_hrv = _guess_col(["hrv_rmssd_ms", "rmssd", "hrv", "heart rate variability", "average_hrv"])
+        guess_rhr = _guess_col(["rhr_bpm", "rhr", "resting heart rate", "fc riposo", "lowest_heart_rate", "resting_hr"])
+        guess_sleep = _guess_col(["sleep_hours", "sonno_ore_reali", "sleep duration", "total_sleep", "ore sonno", "sleep", "asleep"])
+        guess_source = _guess_col(["source", "fonte", "biometria_fonte", "device"])
+
+        opts_map = ["Non presente"] + cols_raw
+        with st.expander(tr("Mappatura Colonne CSV Wearable (Auto-Rilevata)", "Wearable CSV Column Mapping (Auto-Detected)"), expanded=True):
+            cm1, cm2, cm3, cm4, cm5 = st.columns(5)
+            with cm1:
+                col_date = st.selectbox(tr("Colonna Data *", "Date Column *"), opts_map, index=opts_map.index(guess_date) if guess_date in opts_map else 0, key="map_bio_date")
+            with cm2:
+                col_hrv = st.selectbox(tr("Colonna HRV rMSSD (ms)", "HRV rMSSD (ms) Col"), opts_map, index=opts_map.index(guess_hrv) if guess_hrv in opts_map else 0, key="map_bio_hrv")
+            with cm3:
+                col_rhr = st.selectbox(tr("Colonna RHR (bpm)", "RHR (bpm) Col"), opts_map, index=opts_map.index(guess_rhr) if guess_rhr in opts_map else 0, key="map_bio_rhr")
+            with cm4:
+                col_sleep = st.selectbox(tr("Colonna Ore Sonno", "Sleep Hours Col"), opts_map, index=opts_map.index(guess_sleep) if guess_sleep in opts_map else 0, key="map_bio_sleep")
+            with cm5:
+                col_src = st.selectbox(tr("Colonna Fonte (Opz.)", "Source Col (Opt.)"), opts_map, index=opts_map.index(guess_source) if guess_source in opts_map else 0, key="map_bio_src")
+
+        if col_date == "Non presente":
+            st.warning(tr("Seleziona la colonna contenente la Data per procedere.", "Please select the Date column to proceed."))
+            return
+
+        parsed_records = []
+        for _, r_b in df_bio_raw.iterrows():
+            raw_d = r_b.get(col_date)
+            dt_val = pd.to_datetime(raw_d, errors="coerce")
+            if pd.isna(dt_val):
+                dt_val = pd.to_datetime(str(raw_d), dayfirst=True, errors="coerce")
+            if pd.isna(dt_val):
+                continue
+            d_iso = dt_val.strftime("%Y-%m-%d")
+
+            def _clean_num(col_name, min_v, max_v, is_sleep=False):
+                if col_name == "Non presente":
+                    return None
+                v = r_b.get(col_name)
+                if pd.isna(v) or str(v).strip() == "":
+                    return None
+                try:
+                    f_v = float(str(v).replace(",", ".").strip())
+                    # Se la durata del sonno nel CSV wearable (es. Oura/Whoop) è espressa in minuti (>24 e <=960) o secondi (>960)
+                    if is_sleep:
+                        if f_v > 960:
+                            f_v = f_v / 3600.0
+                        elif f_v > 24:
+                            f_v = f_v / 60.0
+                    if min_v <= f_v <= max_v:
+                        return round(f_v, 2 if is_sleep else 1)
+                except Exception:
+                    pass
+                return None
+
+            hrv_v = _clean_num(col_hrv, 10.0, 250.0, is_sleep=False)
+            rhr_v = _clean_num(col_rhr, 30.0, 110.0, is_sleep=False)
+            slp_v = _clean_num(col_sleep, 0.5, 16.0, is_sleep=True)
+            src_v = str(r_b.get(col_src)).strip() if (col_src != "Non presente" and pd.notna(r_b.get(col_src)) and str(r_b.get(col_src)).strip()) else sel_fonte_default
+
+            if any(x is not None for x in (hrv_v, rhr_v, slp_v)):
+                parsed_records.append({
+                    "data": d_iso,
+                    "hrv_rmssd_ms": hrv_v,
+                    "rhr_bpm": rhr_v,
+                    "sonno_ore_reali": slp_v,
+                    "biometria_fonte": src_v
+                })
+
+        if not parsed_records:
+            st.warning(tr("Nessuna riga valida estratta dal CSV con i criteri di validazione (HRV 10-250ms, RHR 30-110bpm, Sonno 0.5-16h).", "No valid rows extracted from CSV within physiological ranges (HRV 10-250ms, RHR 30-110bpm, Sleep 0.5-16h)."))
+            return
+
+        df_prev_bio = pd.DataFrame(parsed_records).drop_duplicates(subset=["data"], keep="last").sort_values("data", ascending=False)
+        st.markdown(f"#### {tr('Anteprima Dati Biometrici Pronti per Upsert Non-Distruttivo', 'Biometric Data Preview Ready for Non-Destructive Upsert')} ({len(df_prev_bio)} {tr('giornate', 'days')})")
+        st.dataframe(df_prev_bio, use_container_width=True, hide_index=True)
+
+        if st.button(tr("Importa e Sincronizza Biometria su Wellness Mattutino", "Import & Sync Biometrics onto Morning Wellness"), type="primary", use_container_width=True, key="btn_exec_bio_upsert"):
+            target_atl_id = dict_atleti.get(sel_atleta_bio)
+            prof_id = getattr(user, "id", None)
+            ok_b, n_upd, n_ins, err_b = upsert_biometria_wearable_batch(
+                atleta_id=target_atl_id,
+                profilo_id=prof_id,
+                records_list=df_prev_bio.to_dict(orient="records")
+            )
+            if ok_b:
+                set_notification(
+                    title=tr("Biometria Wearable Sincronizzata", "Wearable Biometrics Synchronized"),
+                    message=tr(
+                        f"Sincronizzate {n_upd + n_ins} giornate biometriche per {sel_atleta_bio} ({n_upd} aggiornate preservando i voti soggettivi, {n_ins} nuove).",
+                        f"Synchronized {n_upd + n_ins} biometric days for {sel_atleta_bio} ({n_upd} updated preserving subjective ratings, {n_ins} newly created)."
+                    ),
+                    tipo="modal",
+                    details=[
+                        tr(f"Atleta: {sel_atleta_bio}", f"Athlete: {sel_atleta_bio}"),
+                        tr(f"Giornate aggiornate (Upsert Non-Distruttivo): {n_upd}", f"Updated days (Non-Destructive Upsert): {n_upd}"),
+                        tr(f"Nuove giornate inserite: {n_ins}", f"Newly inserted days: {n_ins}"),
+                        tr(f"Fonte Wearable: {sel_fonte_default}", f"Wearable Source: {sel_fonte_default}")
+                    ]
+                )
+                st.rerun()
+            else:
+                st.error(f"{tr('Errore durante il salvataggio biometrico:', 'Error during biometric save:')} {err_b}")
+
+
 def render_caricamento_dati(t):
     render_page_header(t['up_title'], t['home_upload_desc'], "DATA INGESTION")
+
+    # Verifica permesso RBAC per il tab di Import Biometria Wearable (CSV)
+    role_curr = st.session_state.get('role', 'Staff')
+    perm_set = st.session_state.get('user_permessi_moduli')
+    can_import_bio = (
+        role_curr == 'Super-Admin'
+        or perm_set is None
+        or ('Pagine Operative', 'Import Biometria Wearable (CSV)') in perm_set
+        or ('Pagine Operative', 'Caricamento Dati') in perm_set
+    )
+
+    if can_import_bio:
+        tab_gps_csv, tab_bio_csv = st.tabs([
+            tr("Ingestione Telemetria GPS (CSV)", "GPS Telemetry Ingestion (CSV)"),
+            tr("Import Biometria Wearable (CSV Apple/Oura/Whoop/Garmin)", "Wearable Biometrics Import (CSV Apple/Oura/Whoop/Garmin)")
+        ])
+        with tab_bio_csv:
+            _render_wearable_biometrics_importer_tab()
+        ctx_container = tab_gps_csv
+    else:
+        ctx_container = st.container()
+
+    with ctx_container:
+        _render_gps_csv_ingestion_body(t)
+
+
+def _render_gps_csv_ingestion_body(t):
     utente_target_email = st.session_state['user'].email
     utente_target_id = st.session_state['user'].id
     
@@ -178,7 +405,9 @@ def render_caricamento_dati(t):
                         atleta_scelto = atleti_disponibili[0]
                         st.text_input(t['assign_to'], value=atleta_scelto, disabled=True, key=f"p_{f_key}")
                     else:
-                        atleta_scelto = st.selectbox(t['assign_to'], atleti_disponibili, key=f"p_{f_key}")
+                        glob_ath = st.session_state.get('selected_athlete')
+                        idx_up_ath = atleti_disponibili.index(glob_ath) if glob_ath in atleti_disponibili else 0
+                        atleta_scelto = st.selectbox(t['assign_to'], atleti_disponibili, index=idx_up_ath, key=f"p_{f_key}")
                 with col_top_name:
                     nome_sessione_edit = st.text_input(
                         tr("Nome Identificativo Sessione", "Session Name"),

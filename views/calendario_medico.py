@@ -2359,8 +2359,17 @@ def render_calendario_medico(t):
     glob_ath = st.session_state.get('selected_athlete')
     if glob_ath in atleta_nomi:
         default_idx = atleta_nomi.index(glob_ath)
+        if st.session_state.get("et_atleta_sel_page") != glob_ath:
+            st.session_state["et_atleta_sel_page"] = glob_ath
     else:
         default_idx = 0
+
+    def _on_et_ath_change():
+        sel_a = st.session_state.get("et_atleta_sel_page")
+        if sel_a:
+            st.session_state["selected_athlete"] = sel_a
+            st.session_state["global_athlete_selector"] = sel_a
+            st.session_state["cal_atleta_sel"] = sel_a
 
     c_sel, c_info = st.columns([2.5, 3.5])
     with c_sel:
@@ -2368,7 +2377,8 @@ def render_calendario_medico(t):
             tr("Atleta Selezionato:", "Selected Athlete:"),
             atleta_nomi,
             index=default_idx,
-            key="et_atleta_sel_page"
+            key="et_atleta_sel_page",
+            on_change=_on_et_ath_change
         )
     atleta_id_sel = dict_atleti.get(atleta_sel)
 

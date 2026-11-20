@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, PageBreak, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, LongTable, TableStyle, Image as RLImage, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Line
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from utils import (
@@ -4351,9 +4351,13 @@ def crea_pdf_carico_interno(atleta_nome, periodo_label, kpis, df_srpe=None, df_w
 
     elements.append(Spacer(1, 8))
 
-    # 4. Tabella Wellness Mattutino
-    elements.append(Paragraph("QUESTIONARIO WELLNESS MATTUTINO (FATICA, SONNO, DOMS, STRESS, UMORE)", sec_title))
+    # 4. Tabella Wellness Mattutino + Biometria Passiva Wearable (HRV, RHR, Ore Sonno)
+    elements.append(Paragraph("QUESTIONARIO WELLNESS MATTUTINO &amp; BIOMETRIA PASSIVA WEARABLE (HRV, RHR, SONNO)", sec_title))
     if df_wellness is not None and not df_wellness.empty:
+        has_bio_cols = any(
+            (c in df_wellness.columns and pd.to_numeric(df_wellness[c], errors="coerce").fillna(0).gt(0).any())
+            for c in ("hrv_rmssd_ms", "rhr_bpm", "sonno_ore_reali")
+        )
         well_headers = [
             Paragraph("DATA", th_st),
             Paragraph("SONNO", th_st),
@@ -4361,17 +4365,27 @@ def crea_pdf_carico_interno(atleta_nome, periodo_label, kpis, df_srpe=None, df_w
             Paragraph("DOMS", th_st),
             Paragraph("STRESS", th_st),
             Paragraph("UMORE", th_st),
-            Paragraph("TOTALE", th_st),
+            Paragraph("SCORE", th_st),
+            Paragraph("HRV ms", th_st),
+            Paragraph("RHR bpm", th_st),
+            Paragraph("ORE SONNO", th_st),
         ]
         well_rows = [well_headers]
         for _, rw in df_wellness.iterrows():
             d_w = str(rw.get('data', ''))
-            s_sl = f"{rw.get('sonno', '-')}"
+            s_sl = f"{rw.get('sonno_qualita', rw.get('sonno', '-'))}"
             s_fat = f"{rw.get('fatica', '-')}"
             s_dom = f"{rw.get('dolori_muscolari', rw.get('doms', '-'))}"
             s_str = f"{rw.get('stress', '-')}"
             s_um = f"{rw.get('umore', '-')}"
-            s_tot = f"{rw.get('score_totale', rw.get('totale', '-'))}"
+            sc_v = rw.get('score_tot', rw.get('score_totale', rw.get('totale', None)))
+            s_tot = f"{float(sc_v):.1f}" if sc_v is not None and pd.notna(sc_v) else "-"
+            hrv_v = rw.get('hrv_rmssd_ms')
+            rhr_v = rw.get('rhr_bpm')
+            slp_v = rw.get('sonno_ore_reali')
+            s_hrv = f"{float(hrv_v):.1f}" if (hrv_v is not None and pd.notna(hrv_v) and float(hrv_v) > 0) else "-"
+            s_rhr = f"{float(rhr_v):.0f}" if (rhr_v is not None and pd.notna(rhr_v) and float(rhr_v) > 0) else "-"
+            s_slp = f"{float(slp_v):.2f}h" if (slp_v is not None and pd.notna(slp_v) and float(slp_v) > 0) else "-"
             well_rows.append([
                 Paragraph(d_w, td_st),
                 Paragraph(s_sl, td_st),
@@ -4380,8 +4394,11 @@ def crea_pdf_carico_interno(atleta_nome, periodo_label, kpis, df_srpe=None, df_w
                 Paragraph(s_str, td_st),
                 Paragraph(s_um, td_st),
                 Paragraph(s_tot, td_bold),
+                Paragraph(s_hrv, td_bold),
+                Paragraph(s_rhr, td_st),
+                Paragraph(s_slp, td_st),
             ])
-        t_well = Table(well_rows, colWidths=[85, 75, 75, 75, 75, 75, 85])
+        t_well = Table(well_rows, colWidths=[65, 48, 48, 48, 48, 48, 55, 62, 60, 63])
         t_well.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8b5cf6')),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
@@ -4390,11 +4407,42 @@ def crea_pdf_carico_interno(atleta_nome, periodo_label, kpis, df_srpe=None, df_w
             ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ]))
         elements.append(t_well)
+
+        if has_bio_cols:
+            try:
+                from utils import calcola_analisi_hrv_autonomica
+                bio_info = calcola_analisi_hrv_autonomica(df_wellness)
+                if bio_info.get("has_biometrics"):
+                    elements.append(Spacer(1, 6))
+                    st_lbl_b = _clean_text_for_pdf(bio_info.get("status_label", "OTTIMALE"))
+                    hrv7_b = bio_info.get("latest_hrv_7d")
+                    swc_l_b = bio_info.get("latest_swc_low")
+                    swc_h_b = bio_info.get("latest_swc_high")
+                    rhr_b = bio_info.get("latest_rhr")
+                    slp_b = bio_info.get("avg_sleep_h")
+                    bio_summary_txt = (
+                        f"<b>SINTESI BIOMETRIA AUTONOMICA (PLEWS ET AL., 2013):</b> Stato Sistema Nervoso Autonomo: <b>[{bio_info.get('status_code', 'OK')}] {st_lbl_b}</b> | "
+                        f"HRV rMSSD 7d Rolling: <b>{f'{hrv7_b:.1f} ms' if hrv7_b else 'N/D'}</b> (Banda SWC 60d: {f'{swc_l_b:.1f}-{swc_h_b:.1f} ms' if swc_l_b and swc_h_b else 'N/D'}) | "
+                        f"FC Riposo (RHR): <b>{f'{rhr_b:.0f} bpm' if rhr_b else 'N/D'}</b> | Media Sonno Reale: <b>{f'{slp_b:.2f} h' if slp_b else 'N/D'}</b>."
+                    )
+                    t_bio_box = Table([[Paragraph(bio_summary_txt, ParagraphStyle('BioBoxP', parent=styles['Normal'], fontName='Helvetica', fontSize=7.2, leading=9.5, textColor=colors.HexColor('#0f172a')))]], colWidths=[545])
+                    t_bio_box.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f0f9ff')),
+                        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#0284c7')),
+                        ('TOPPADDING', (0, 0), (-1, -1), 4),
+                        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                    ]))
+                    elements.append(t_bio_box)
+            except Exception:
+                pass
     else:
         elements.append(Paragraph("<i>Nessuna rilevazione Wellness mattutina nel periodo selezionato.</i>", td_st))
 
     # Sezione Note Metodologiche & Bibliografia Validata
     elements.extend(genera_sezione_metodologia_pdf("carico_interno", styles, width=545))
+    elements.extend(genera_sezione_metodologia_pdf("biometria_hrv", styles, width=545))
 
     build_pdf_con_footer(doc, elements, is_landscape=False)
     return buffer.getvalue()
@@ -4902,6 +4950,174 @@ def crea_pdf_statistiche_match(atleta_nome, df_corr, df_f, df_matches=None, kpis
 
     build_pdf_con_footer(doc, elements, brand="M0V3 Analytics — Match Intelligence", is_landscape=True)
     return buffer.getvalue()
+
+
+# =========================================================================
+# 12. MOTORE PDF V3.0 (MODULO 1 & 5): PIANO DI CARICO PREVISIONALE (WHAT-IF)
+# =========================================================================
+def crea_pdf_pianificazione_whatif(giocatore, orizzonte_gg, start_date_str, kpis, df_plan, fig_forecast=None):
+    """
+    Genera il documento PDF "Piano di Carico Previsionale" (What-If Simulator):
+    - Tabella giorno-per-giorno (LongTable con repeatRows=1) delle sessioni programmate,
+      durate, moltiplicatori d'intensità e volumi stimati (Training Load, TL High, Acc+Dec).
+    - 4 KPI Predittivi (Picco ACWR Previsto, Monotonia di Foster & Strain, Volume Settimanale & Match Equivalenti, Giorni Fuori Soglia).
+    - Grafico Plotly ad alta risoluzione (scale=2) della curva Real vs Forecast incapsulato in KeepTogether.
+    - Box Metodologia Validata e Filigrana di Audit Forense a piè di pagina.
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=24,
+        rightMargin=24,
+        topMargin=22,
+        bottomMargin=26,
+    )
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title_st = ParagraphStyle('WfTitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=14, textColor=colors.HexColor('#0f172a'), leading=17)
+    sub_st = ParagraphStyle('WfSub', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor('#0284c7'), leading=10)
+    sec_title = ParagraphStyle('WfSec', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9.5, textColor=colors.HexColor('#0f172a'), leading=12, spaceBefore=6, spaceAfter=4)
+    th_st = ParagraphStyle('WfTH', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7, textColor=colors.white, alignment=1)
+    td_st = ParagraphStyle('WfTD', parent=styles['Normal'], fontName='Helvetica', fontSize=7, textColor=colors.HexColor('#0f172a'), alignment=1)
+    td_bold = ParagraphStyle('WfTDB', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7, textColor=colors.HexColor('#0f172a'), alignment=1)
+    kpi_lbl = ParagraphStyle('WfKPILbl', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7, textColor=colors.HexColor('#64748b'), alignment=1)
+    kpi_val = ParagraphStyle('WfKPIVal', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=11, textColor=colors.HexColor('#0f172a'), alignment=1)
+
+    header_title = [
+        Paragraph("M0V3 ANALYTICS — PIANO DI CARICO PREVISIONALE &amp; SIMULAZIONE WHAT-IF", title_st),
+        Paragraph(
+            f"ATLETA: {_clean_text_for_pdf(giocatore).upper()}   |   ORIZZONTE: {orizzonte_gg} GIORNI (INIZIO: {start_date_str})   |   DATA EMISSIONE: {datetime.date.today().strftime('%d/%m/%Y')}",
+            sub_st
+        ),
+    ]
+    if os.path.exists(LOGO_PATH):
+        logo_img = RLImage(LOGO_PATH, width=40, height=40)
+        t_head = Table([[header_title, logo_img]], colWidths=[730, 60])
+        t_head.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT')]))
+        elements.append(t_head)
+    else:
+        elements.extend(header_title)
+
+    elements.append(Spacer(1, 6))
+
+    pk_acwr = float(kpis.get("peak_acwr_tl", 100.0))
+    mon_f = float(kpis.get("monotony_foster", 0.0))
+    str_f = int(kpis.get("strain_foster", 0))
+    tot_tl = float(kpis.get("tot_planned_tl", 0.0))
+    m_eq = float(kpis.get("match_equivalenti", 0.0))
+    n_viol = int(kpis.get("giorni_fuori_soglia", 0))
+
+    col_pk = "#16a34a" if 80 <= pk_acwr <= 130 else ("#d97706" if pk_acwr <= 150 else "#dc2626")
+    col_mon = "#16a34a" if mon_f < 1.5 else ("#d97706" if mon_f <= 2.0 else "#dc2626")
+    col_v = "#dc2626" if n_viol > 0 else "#16a34a"
+
+    kpi_cells = [
+        [
+            Paragraph("PICCO ACWR PREVISTO (EWMA)", kpi_lbl),
+            Paragraph("MONOTONIA &amp; STRAIN (FOSTER)", kpi_lbl),
+            Paragraph("VOLUME TOTALE &amp; MATCH EQ.", kpi_lbl),
+            Paragraph("GIORNI FUORI SOGLIA / CAP 70%", kpi_lbl),
+        ],
+        [
+            Paragraph(f"<font color='{col_pk}'><b>{pk_acwr:.1f}%</b></font> (Mech: {kpis.get('peak_acwr_mech', 100):.0f}%)", kpi_val),
+            Paragraph(f"<font color='{col_mon}'><b>{mon_f:.2f}</b></font> (Strain: {str_f:,} AU)", kpi_val),
+            Paragraph(f"<font color='#0284c7'><b>{tot_tl:,.0f} TL</b></font> ({m_eq:.1f} Match Eq.)", kpi_val),
+            Paragraph(f"<font color='{col_v}'><b>{n_viol} giorni</b></font> (Soglia 70%: {kpis.get('soglia_70', 0):.0f} TL)", kpi_val),
+        ],
+    ]
+    t_kpi = Table(kpi_cells, colWidths=[197, 197, 198, 198])
+    t_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#cbd5e1')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(t_kpi)
+    elements.append(Spacer(1, 6))
+
+    # Grafico Real vs Forecast (alta risoluzione scale=2 con sfondo chiaro per leggibilità su stampa)
+    if fig_forecast is not None:
+        try:
+            import copy
+            fig_pdf = copy.deepcopy(fig_forecast)
+            fig_pdf.update_layout(
+                paper_bgcolor="#ffffff",
+                plot_bgcolor="#ffffff",
+                font=dict(color="#0f172a", family="Inter", size=9),
+                legend=dict(font=dict(color="#0f172a", size=8.5)),
+            )
+            fig_pdf.update_xaxes(tickfont=dict(color="#334155", size=8), gridcolor="#e2e8f0")
+            fig_pdf.update_yaxes(tickfont=dict(color="#0f172a", size=8), gridcolor="#e2e8f0")
+            img_wf = fig_to_rl_image(fig_pdf, width=785, height=230)
+            elements.append(KeepTogether([
+                Paragraph("PROIEZIONE ALGORITMICA REAL VS FORECAST (ACWR UNCOUPLED EWMA &amp; VOLUMI GIORNALIERI)", sec_title),
+                img_wf
+            ]))
+            elements.append(Spacer(1, 6))
+        except Exception:
+            pass
+
+    # Tabella Giorno-per-Giorno del Microciclo Pianificato (LongTable con repeatRows=1)
+    elements.append(Paragraph("CRONOPROGRAMMA GIORNALIERO DEL MICROCICLO &amp; VOLUMI SIMULATI", sec_title))
+    tbl_headers = [
+        Paragraph("GIORNO &amp; DATA", th_st),
+        Paragraph("TIPOLOGIA CAMPO", th_st),
+        Paragraph("DURATA", th_st),
+        Paragraph("INTENSITA", th_st),
+        Paragraph("TL STIMATO", th_st),
+        Paragraph("TL HIGH", th_st),
+        Paragraph("ACC+DEC IMU", th_st),
+        Paragraph("ACWR PREVISTO", th_st),
+        Paragraph("EXTRA-CAMPO (sRPE)", th_st),
+        Paragraph("STATO SOGLIA", th_st),
+    ]
+    tbl_rows = [tbl_headers]
+    if df_plan is not None and not df_plan.empty:
+        for _, r in df_plan.iterrows():
+            ac_v = float(r.get("acwr_tl", 100.0))
+            v70 = bool(r.get("violazione_70_cap", False))
+            if v70 or ac_v > 150.0:
+                st_txt = "<font color='#dc2626'><b>[CRITICO] Fuori Soglia</b></font>"
+            elif ac_v > 130.0 or ac_v < 80.0:
+                st_txt = "<font color='#d97706'><b>[ATTENZIONE]</b></font>"
+            else:
+                st_txt = "<font color='#16a34a'><b>[OK] Sweet Spot</b></font>"
+            ex_au = float(r.get("srpe_extra_au", 0.0))
+            ex_txt = f"{_clean_text_for_pdf(str(r.get('extra_tipo', '')))} ({ex_au:.0f} AU)" if ex_au > 0 else "-"
+            tbl_rows.append([
+                Paragraph(_clean_text_for_pdf(str(r.get("giorno_label", r.get("date_str", "")))), td_bold),
+                Paragraph(_clean_text_for_pdf(str(r.get("tipologia", ""))), td_st),
+                Paragraph(f"{float(r.get('durata_min', 0)):.0f} min", td_st),
+                Paragraph(f"{float(r.get('moltiplicatore_pct', 100)):.0f}%", td_st),
+                Paragraph(f"<b>{float(r.get('tl_sim', 0)):.0f} TL</b>", td_bold),
+                Paragraph(f"{float(r.get('tl_high_sim', 0)):.0f}", td_st),
+                Paragraph(f"{float(r.get('acc_dec_sim', 0)):.0f}", td_st),
+                Paragraph(f"<b>{ac_v:.1f}%</b>", td_bold),
+                Paragraph(ex_txt, td_st),
+                Paragraph(st_txt, td_st),
+            ])
+
+    t_sched = LongTable(tbl_rows, colWidths=[105, 110, 55, 55, 68, 60, 68, 72, 102, 95], repeatRows=1)
+    t_sched.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(t_sched)
+    elements.append(Spacer(1, 6))
+
+    elements.extend(genera_sezione_metodologia_pdf("what_if_planning", styles, width=785))
+
+    build_pdf_con_footer(doc, elements, brand="M0V3 Analytics — Predictive Workload Planning", is_landscape=True)
+    return buffer.getvalue()
+
 
 
 

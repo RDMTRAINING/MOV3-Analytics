@@ -533,16 +533,93 @@ def pulisci_dataframe_database(df):
 
 
 def _get_db_mtime_token():
-    """Genera un token basato sull'ultimo timestamp di modifica tra CSV e Parquet."""
+    """Genera un token basato sull'ultimo timestamp di modifica tra CSV, Parquet e Manifest partizionato."""
     m_csv = os.path.getmtime(DB_PATH) if os.path.exists(DB_PATH) else 0.0
     m_parq = os.path.getmtime(DB_PARQUET_PATH) if os.path.exists(DB_PARQUET_PATH) else 0.0
-    return max(m_csv, m_parq)
+    m_man = os.path.getmtime(MANIFEST_PATH) if os.path.exists(MANIFEST_PATH) else 0.0
+    return max(m_csv, m_parq, m_man)
 
 
 # =========================================================================
-# MODULO 1: LOCAL-PARQUET SPEED + CLOUD BINARY SNAPSHOT (ZERO LATENCY UI)
+# MODULO 1 & MODULO 4 V3.0: LOCAL-PARQUET SPEED + PARTITIONED CLOUD SNAPSHOTS
 # =========================================================================
 BUCKET_SNAPSHOTS = "m0v3-binary-snapshots"
+BASE_DIR_APP = os.path.dirname(os.path.abspath(__file__))
+DATA_CACHE_DIR = os.path.join(BASE_DIR_APP, "data_cache")
+ATHLETES_CACHE_DIR = os.path.join(DATA_CACHE_DIR, "athletes")
+MANIFEST_PATH = os.path.join(DATA_CACHE_DIR, "manifest.json")
+LEGACY_BACKUP_DIR = os.path.join(DATA_CACHE_DIR, "legacy_backup")
+LEGACY_BACKUP_PATH = os.path.join(LEGACY_BACKUP_DIR, "database_storico_legacy.parquet")
+
+
+def _athlete_slug(name):
+    """Genera lo slug canonico minuscolo e deterministico per il file Parquet partizionato dell'atleta."""
+    if not name:
+        return "unknown_athlete"
+    s = str(name).strip().lower()
+    s = re.sub(r'[^a-z0-9]+', '_', s).strip('_')
+    return s or "unknown_athlete"
+
+
+def _compute_bytes_sha256(file_bytes):
+    """Calcola l'impronta SHA-256 esadecimale di un blocco di byte."""
+    import hashlib
+    if not file_bytes:
+        return ""
+    return hashlib.sha256(file_bytes).hexdigest()
+
+
+def _compute_file_sha256(local_path):
+    """Calcola l'impronta SHA-256 esadecimale di un file locale."""
+    if not os.path.exists(local_path):
+        return ""
+    try:
+        with open(local_path, "rb") as f:
+            return _compute_bytes_sha256(f.read())
+    except Exception:
+        return ""
+
+
+def _read_local_manifest():
+    """Legge il manifest locale data_cache/manifest.json."""
+    if os.path.exists(MANIFEST_PATH):
+        try:
+            with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except Exception:
+            pass
+    return {}
+
+
+def _write_local_manifest(manifest_dict):
+    """Scrive in modo atomico data_cache/manifest.json."""
+    try:
+        os.makedirs(DATA_CACHE_DIR, exist_ok=True)
+        with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+            json.dump(manifest_dict, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
+
+
+def _extract_max_date_str(df):
+    """Estrae la data massima in formato DD/MM/YYYY da un DataFrame GPS."""
+    if df is None or df.empty:
+        return "N/D"
+    try:
+        if 'Date_obj' in df.columns and df['Date_obj'].notna().any():
+            max_dt = pd.to_datetime(df['Date_obj'], errors='coerce').dropna().max()
+            if pd.notna(max_dt):
+                return max_dt.strftime('%d/%m/%Y')
+        if 'Date' in df.columns:
+            dt_s = pd.to_datetime(df['Date'], format='%d/%m/%Y', errors='coerce').dropna()
+            if not dt_s.empty:
+                return dt_s.max().strftime('%d/%m/%Y')
+    except Exception:
+        pass
+    return "N/D"
 
 
 def _ensure_snapshot_bucket():
@@ -561,7 +638,7 @@ def _ensure_snapshot_bucket():
 
 def upload_binary_snapshot(local_path, remote_name=None):
     """
-    Carica in binario un file locale (es. database_storico.parquet o JSON/Parquet di supporto)
+    Carica in binario un file locale (es. athletes/{slug}.parquet, manifest.json o database_storico.parquet)
     nel bucket Supabase Storage 'm0v3-binary-snapshots' con upsert='true'.
     Include fallback automatico su tabella SQL 'binary_snapshots' (base64) se Storage non risponde.
     """
@@ -633,21 +710,32 @@ def download_binary_snapshot(remote_name):
     return None
 
 
-@st.cache_resource(ttl=180, show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def sync_binary_snapshots_on_cold_boot():
     """
-    Sincronizzazione Binaria Unica al Cold Boot (Zero Rallentamenti UI):
-    Viene eseguita UNA SOLA VOLTA quando il server Streamlit Cloud si avvia dopo un git push.
+    Sincronizzazione Binaria Unica al Cold Boot & Migrazione Automatica Zero-Downtime a Snapshot Partizionati (Modulo 4 v3.0):
+    Viene eseguita UNA SOLA VOLTA quando il server Streamlit Cloud si avvia.
     1. Verifica/crea su Supabase Storage il bucket privato 'm0v3-binary-snapshots'.
-    2. Scarica 'database_storico.parquet' (e file test/GymAware) dallo snapshot Cloud.
-    3. Legge il file locale 'database_storico.parquet' (proveniente da GitHub).
-    4. Esegue un Merge Additivo Sicuro (pd.concat + drop_duplicates keep='last').
-    5. Sovrascrive 'database_storico.parquet' sul disco locale del container con df_merged.
-    6. Se df_merged ha più righe di df_cloud_snapshot (o lo snapshot non esisteva), ricarica il consolidato nel Cloud.
+    2. Consolida 'database_storico.parquet' locale (da GitHub), 'database_storico.parquet' Cloud e gli snapshot
+       partizionati 'athletes/{slug}.parquet' presenti nel Cloud/disco tramite Merge Additivo Sicuro (Zero Data Loss).
+    3. Archivia una copia di sicurezza immutabile in 'data_cache/legacy_backup/database_storico_legacy.parquet'
+       (e 'legacy_backup/database_storico_legacy.parquet' nel bucket Cloud).
+    4. Suddivide il dataset consolidato per colonna 'Players', salva ogni 'data_cache/athletes/{slug}.parquet',
+       genera 'data_cache/manifest.json' (con SHA-256, rows, max_date, version_ts) e carica nel Cloud solo le partizioni modificate.
+    5. Mantiene 'database_storico.parquet' e 'database_storico.csv' sincronizzati sul disco locale per compatibilità totale.
     """
     import io
-    status = {"synced": False, "rows_local": 0, "rows_cloud": 0, "rows_merged": 0}
+    status = {
+        "synced": False,
+        "partitioned": True,
+        "n_athletes": 0,
+        "rows_local": 0,
+        "rows_cloud": 0,
+        "rows_merged": 0
+    }
     try:
+        os.makedirs(ATHLETES_CACHE_DIR, exist_ok=True)
+        os.makedirs(LEGACY_BACKUP_DIR, exist_ok=True)
         _ensure_snapshot_bucket()
 
         # A. Lettura database_storico.parquet locale (da GitHub / disco)
@@ -668,8 +756,64 @@ def sync_binary_snapshots_on_cold_boot():
         if df_github_local is not None and not df_github_local.empty:
             df_github_local = pulisci_dataframe_database(df_github_local)
             status["rows_local"] = len(df_github_local)
+            # Backup locale pre-migrazione se non ancora esistente
+            if not os.path.exists(LEGACY_BACKUP_PATH):
+                try:
+                    df_github_local.to_parquet(LEGACY_BACKUP_PATH, index=False)
+                except Exception:
+                    pass
 
-        # B. Download database_storico.parquet dallo snapshot Cloud
+        # B. Download manifest.json e partizioni athletes/{slug}.parquet dal Cloud
+        cloud_manifest = {}
+        man_bytes = download_binary_snapshot("manifest.json")
+        if man_bytes:
+            try:
+                d_man = json.loads(man_bytes.decode("utf-8"))
+                if isinstance(d_man, dict):
+                    cloud_manifest = d_man
+            except Exception:
+                cloud_manifest = {}
+
+        local_manifest = _read_local_manifest()
+        partition_dfs = []
+
+        # Se esistono partizioni nel manifest Cloud, scarica solo quelle assenti o con SHA-256 diverso
+        for slug, meta in cloud_manifest.items():
+            if not isinstance(meta, dict):
+                continue
+            loc_p_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+            cloud_sha = str(meta.get("sha256", ""))
+            loc_sha = _compute_file_sha256(loc_p_path) if os.path.exists(loc_p_path) else ""
+            if not os.path.exists(loc_p_path) or (cloud_sha and loc_sha != cloud_sha):
+                p_bytes = download_binary_snapshot(f"athletes/{slug}.parquet")
+                if p_bytes:
+                    try:
+                        with open(loc_p_path, "wb") as f_p:
+                            f_p.write(p_bytes)
+                    except Exception:
+                        pass
+            if os.path.exists(loc_p_path):
+                try:
+                    df_part = pd.read_parquet(loc_p_path)
+                    if df_part is not None and not df_part.empty:
+                        partition_dfs.append(pulisci_dataframe_database(df_part))
+                except Exception:
+                    pass
+
+        # Legge anche eventuali partizioni locali non ancora presenti nel manifest Cloud
+        if os.path.exists(ATHLETES_CACHE_DIR):
+            for fname in os.listdir(ATHLETES_CACHE_DIR):
+                if fname.endswith(".parquet"):
+                    slug_f = fname[:-8]
+                    if slug_f not in cloud_manifest:
+                        try:
+                            df_loc_p = pd.read_parquet(os.path.join(ATHLETES_CACHE_DIR, fname))
+                            if df_loc_p is not None and not df_loc_p.empty:
+                                partition_dfs.append(pulisci_dataframe_database(df_loc_p))
+                        except Exception:
+                            pass
+
+        # B2. Download database_storico.parquet consolidato dallo snapshot Cloud (retrocompatibilità / migrazione)
         df_cloud_snapshot = pd.DataFrame()
         cloud_bytes = download_binary_snapshot("database_storico.parquet")
         if cloud_bytes:
@@ -681,22 +825,42 @@ def sync_binary_snapshots_on_cold_boot():
             except Exception:
                 df_cloud_snapshot = pd.DataFrame()
 
-        # C. Merge Additivo Sicuro
-        if not df_github_local.empty and not df_cloud_snapshot.empty:
-            df_merged = pd.concat([df_github_local, df_cloud_snapshot], ignore_index=True)
+        # C. Merge Additivo Sicuro (GitHub Locale + Cloud Consolidato + Partizioni per Atleta)
+        frames_to_merge = []
+        if not df_github_local.empty:
+            frames_to_merge.append(df_github_local)
+        if not df_cloud_snapshot.empty:
+            frames_to_merge.append(df_cloud_snapshot)
+        if partition_dfs:
+            frames_to_merge.extend(partition_dfs)
+
+        if frames_to_merge:
+            df_merged = pd.concat(frames_to_merge, ignore_index=True)
             if all(c in df_merged.columns for c in ['Players', 'Date', 'Session']):
                 df_merged = df_merged.drop_duplicates(subset=['Players', 'Date', 'Session'], keep='last')
             elif all(c in df_merged.columns for c in ['Atleta', 'Data', 'Sessione']):
                 df_merged = df_merged.drop_duplicates(subset=['Atleta', 'Data', 'Sessione'], keep='last')
             df_merged = pulisci_dataframe_database(df_merged)
-        elif not df_cloud_snapshot.empty:
-            df_merged = df_cloud_snapshot.copy()
         else:
-            df_merged = df_github_local.copy()
+            df_merged = pd.DataFrame(columns=COLONNE_DATABASE)
 
-        # D. Sovrascrive database_storico.parquet (e CSV) sul disco locale del container
+        # D. Salvataggio Backup Legacy + Partizionamento Atomico per Atleta + Manifest
         if df_merged is not None and not df_merged.empty:
             status["rows_merged"] = len(df_merged)
+
+            # 1. Backup Legacy Immutabile
+            if not os.path.exists(LEGACY_BACKUP_PATH):
+                try:
+                    df_merged.to_parquet(LEGACY_BACKUP_PATH, index=False)
+                except Exception:
+                    pass
+            if not cloud_manifest and os.path.exists(LEGACY_BACKUP_PATH):
+                try:
+                    upload_binary_snapshot(LEGACY_BACKUP_PATH, "legacy_backup/database_storico_legacy.parquet")
+                except Exception:
+                    pass
+
+            # 2. Aggiornamento database_storico.parquet e .csv sul disco locale
             try:
                 df_merged.to_parquet(DB_PARQUET_PATH, index=False)
             except Exception:
@@ -706,12 +870,65 @@ def sync_binary_snapshots_on_cold_boot():
             except Exception:
                 pass
 
-            # E. Se df_merged ha più righe di df_cloud_snapshot (o lo snapshot Cloud era assente), ricarica su Cloud
+            # 3. Generazione partizioni data_cache/athletes/{slug}.parquet e manifest.json
+            new_manifest = {}
+            now_iso = datetime.datetime.utcnow().isoformat()
+            manifest_changed = False
+
+            if 'Players' in df_merged.columns:
+                for player_name, df_ath in df_merged.groupby('Players', dropna=True):
+                    p_str = str(player_name).strip()
+                    if not p_str:
+                        continue
+                    slug = _athlete_slug(p_str)
+                    part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+                    df_ath_clean = pulisci_dataframe_database(df_ath)
+                    try:
+                        df_ath_clean.to_parquet(part_path, index=False)
+                    except Exception:
+                        continue
+
+                    new_sha = _compute_file_sha256(part_path)
+                    old_cloud_meta = cloud_manifest.get(slug, {}) if isinstance(cloud_manifest.get(slug), dict) else {}
+                    old_sha = str(old_cloud_meta.get("sha256", ""))
+
+                    new_manifest[slug] = {
+                        "athlete_name": p_str,
+                        "slug": slug,
+                        "version_ts": now_iso if new_sha != old_sha else old_cloud_meta.get("version_ts", now_iso),
+                        "rows": int(len(df_ath_clean)),
+                        "max_date": _extract_max_date_str(df_ath_clean),
+                        "sha256": new_sha
+                    }
+
+                    if new_sha != old_sha or not man_bytes:
+                        manifest_changed = True
+                        try:
+                            upload_binary_snapshot(part_path, f"athletes/{slug}.parquet")
+                        except Exception:
+                            pass
+
+            status["n_athletes"] = len(new_manifest)
+            _write_local_manifest(new_manifest)
+
+            if manifest_changed or not man_bytes or len(new_manifest) != len(cloud_manifest):
+                try:
+                    upload_binary_snapshot(MANIFEST_PATH, "manifest.json")
+                except Exception:
+                    pass
+
+            # E. Se df_merged ha più righe di df_cloud_snapshot (o lo snapshot Cloud era assente), allinea anche il consolidato
             if len(df_merged) > status["rows_cloud"] or not cloud_bytes:
                 upload_binary_snapshot(DB_PARQUET_PATH, "database_storico.parquet")
 
-        # F. Sincronizzazione additiva file di supporto (Test / GymAware / Match)
-        for rel_json in ("data_supporto/sessioni_test.json", "data_supporto/move_tennis_tests.json"):
+        # F. Sincronizzazione additiva file di supporto (Test / GymAware / Match / Piani Microciclo / Alert)
+        for rel_json in (
+            "data_supporto/sessioni_test.json",
+            "data_supporto/move_tennis_tests.json",
+            "data_supporto/piani_microciclo.json",
+            "data_supporto/alert_subscriptions.json",
+            "data_supporto/morning_digest_logs.json"
+        ):
             r_key = os.path.basename(rel_json)
             try:
                 loc_list = []
@@ -730,7 +947,7 @@ def sync_binary_snapshots_on_cold_boot():
                     by_id = {}
                     for idx_item, it in enumerate(loc_list + cld_list):
                         if isinstance(it, dict):
-                            item_key = str(it.get("id") or f"{it.get('atleta_id','')}_{it.get('data','')}_{it.get('codice_univoco','')}_{idx_item}")
+                            item_key = str(it.get("id") or it.get("email") or f"{it.get('atleta_id','')}_{it.get('data','')}_{it.get('codice_univoco','')}_{idx_item}")
                             by_id[item_key] = it
                     merged_list = list(by_id.values())
                     os.makedirs(os.path.dirname(rel_json), exist_ok=True)
@@ -741,16 +958,82 @@ def sync_binary_snapshots_on_cold_boot():
             except Exception:
                 pass
 
-        # G. Sincronizzazione cobolli_matches.parquet
+        # G. Sincronizzazione additiva cobolli_matches.parquet (Merge per match_id tra locale GitHub e Cloud Snapshot)
         matches_rel = "data_supporto/cobolli_matches.parquet"
+        matches_json_rel = "data_supporto/cobolli_matches.json"
         try:
             m_bytes = download_binary_snapshot("cobolli_matches.parquet")
-            if m_bytes and not os.path.exists(matches_rel):
+            df_m_loc = pd.DataFrame()
+            if os.path.exists(matches_rel):
+                try:
+                    df_m_loc = pd.read_parquet(matches_rel)
+                except Exception:
+                    df_m_loc = pd.DataFrame()
+            df_m_cld = pd.DataFrame()
+            if m_bytes:
+                try:
+                    df_m_cld = pd.read_parquet(io.BytesIO(m_bytes))
+                except Exception:
+                    df_m_cld = pd.DataFrame()
+
+            if not df_m_loc.empty and not df_m_cld.empty:
+                df_m_merged = pd.concat([df_m_loc, df_m_cld], ignore_index=True)
+                if "match_id" in df_m_merged.columns:
+                    df_m_merged = df_m_merged.drop_duplicates(subset=["match_id"], keep="last")
+                elif all(c in df_m_merged.columns for c in ["date", "opponent"]):
+                    df_m_merged = df_m_merged.drop_duplicates(subset=["date", "opponent"], keep="last")
+                if "date_obj" in df_m_merged.columns and "date" in df_m_merged.columns:
+                    df_m_merged["date_obj"] = pd.to_datetime(df_m_merged["date"], format="%d/%m/%Y", errors="coerce").dt.date
+                os.makedirs(os.path.dirname(matches_rel), exist_ok=True)
+                df_m_merged.to_parquet(matches_rel, index=False)
+                try:
+                    df_m_merged.to_json(matches_json_rel, orient="records", date_format="iso", indent=2)
+                except Exception:
+                    pass
+                if len(df_m_merged) > len(df_m_cld):
+                    upload_binary_snapshot(matches_rel, "cobolli_matches.parquet")
+            elif not df_m_cld.empty:
                 os.makedirs(os.path.dirname(matches_rel), exist_ok=True)
                 with open(matches_rel, "wb") as f:
                     f.write(m_bytes)
-            elif os.path.exists(matches_rel) and not m_bytes:
+            elif not df_m_loc.empty and not m_bytes:
                 upload_binary_snapshot(matches_rel, "cobolli_matches.parquet")
+        except Exception:
+            pass
+
+        # G2. Sincronizzazione additiva match_gps_links.json (abbinamenti manuali Match <-> GPS)
+        links_rel = "data_supporto/match_gps_links.json"
+        try:
+            loc_links = {}
+            if os.path.exists(links_rel):
+                with open(links_rel, "r", encoding="utf-8") as f:
+                    d_l = json.load(f)
+                    if isinstance(d_l, dict):
+                        loc_links = d_l
+            l_cld_bytes = download_binary_snapshot("match_gps_links.json")
+            cld_links = {}
+            if l_cld_bytes:
+                d_c = json.loads(l_cld_bytes.decode("utf-8"))
+                if isinstance(d_c, dict):
+                    cld_links = d_c
+            if loc_links or cld_links:
+                merged_links = {**loc_links, **cld_links}
+                os.makedirs(os.path.dirname(links_rel), exist_ok=True)
+                with open(links_rel, "w", encoding="utf-8") as f:
+                    json.dump(merged_links, f, ensure_ascii=False, indent=2)
+                if len(merged_links) > len(cld_links) or not l_cld_bytes:
+                    upload_binary_snapshot(links_rel, "match_gps_links.json")
+        except Exception:
+            pass
+
+        # G3. Sincronizzazione coda_tagli_gps.parquet
+        try:
+            coda_bytes = download_binary_snapshot("coda_tagli_gps.parquet")
+            if coda_bytes and not os.path.exists(CODA_TAGLI_PARQUET_PATH):
+                with open(CODA_TAGLI_PARQUET_PATH, "wb") as f:
+                    f.write(coda_bytes)
+            elif os.path.exists(CODA_TAGLI_PARQUET_PATH) and not coda_bytes:
+                upload_binary_snapshot(CODA_TAGLI_PARQUET_PATH, "coda_tagli_gps.parquet")
         except Exception:
             pass
 
@@ -812,32 +1095,147 @@ def sync_sql_database_storico_safe(df):
         return False
 
 
-def get_cloud_snapshot_status():
-    """
-    Restituisce i metadati diagnostici del database consolidato per il badge nella Sidebar Admin:
-    - active (bool)
-    - max_date (str, es. '14/11/2026')
-    - total_rows (int)
-    """
+@st.cache_data(ttl=3600, show_spinner=False)
+def _get_cloud_snapshot_status_cached(_token):
     try:
-        df = load_local_database()
+        df = _load_database_cached(_token)
         total_rows = len(df) if df is not None else 0
-        max_date_str = "N/D"
-        if df is not None and not df.empty:
-            if 'Date_obj' in df.columns and df['Date_obj'].notna().any():
-                max_dt = df['Date_obj'].dropna().max()
-                max_date_str = max_dt.strftime('%d/%m/%Y')
-            elif 'Date' in df.columns:
-                dt_s = pd.to_datetime(df['Date'], format='%d/%m/%Y', errors='coerce').dropna()
-                if not dt_s.empty:
-                    max_date_str = dt_s.max().strftime('%d/%m/%Y')
+        max_date_str = _extract_max_date_str(df)
+        manifest = _read_local_manifest()
+        n_athletes = len(manifest)
+        if n_athletes == 0 and df is not None and not df.empty and 'Players' in df.columns:
+            n_athletes = int(df['Players'].dropna().nunique())
         return {
             "active": True,
+            "partitioned": True,
+            "n_athletes": n_athletes,
             "max_date": max_date_str,
             "total_rows": total_rows
         }
     except Exception:
-        return {"active": False, "max_date": "N/D", "total_rows": 0}
+        return {"active": False, "partitioned": True, "n_athletes": 0, "max_date": "N/D", "total_rows": 0}
+
+
+def get_cloud_snapshot_status():
+    """
+    Restituisce i metadati diagnostici degli snapshot partizionati per il badge nella Sidebar Admin:
+    - active (bool)
+    - partitioned (bool)
+    - n_athletes (int)
+    - max_date (str, es. '14/11/2026')
+    - total_rows (int)
+    """
+    return _get_cloud_snapshot_status_cached(_get_db_mtime_token())
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _get_cached_parquet_bytes_by_mtime(parquet_path, _mtime):
+    with open(parquet_path, "rb") as f_p:
+        return f_p.read()
+
+
+def get_cached_parquet_bytes(parquet_path=DB_PARQUET_PATH):
+    """Restituisce i bytes del file Parquet dalla cache RAM invalidando solo quando il file su disco cambia."""
+    mtime = os.path.getmtime(parquet_path) if os.path.exists(parquet_path) else 0.0
+    return _get_cached_parquet_bytes_by_mtime(parquet_path, mtime)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _get_partitioned_snapshots_zip_cached(_token):
+    """Crea in memoria un archivio .zip contenente manifest.json e tutte le partizioni athletes/{slug}.parquet."""
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        if os.path.exists(MANIFEST_PATH):
+            zf.write(MANIFEST_PATH, arcname="manifest.json")
+        if os.path.exists(ATHLETES_CACHE_DIR):
+            for fname in sorted(os.listdir(ATHLETES_CACHE_DIR)):
+                if fname.endswith(".parquet"):
+                    zf.write(os.path.join(ATHLETES_CACHE_DIR, fname), arcname=f"athletes/{fname}")
+        if os.path.exists(DB_PARQUET_PATH):
+            zf.write(DB_PARQUET_PATH, arcname="database_storico.parquet")
+    return buf.getvalue()
+
+
+def get_partitioned_snapshots_zip_bytes():
+    """Restituisce i byte dell'archivio ZIP con tutti gli snapshot partizionati per atleta e il manifest."""
+    sync_binary_snapshots_on_cold_boot()
+    return _get_partitioned_snapshots_zip_cached(_get_db_mtime_token())
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _load_athlete_partition_cached(slug, _mtime):
+    """Carica in <2ms esclusivamente la partizione Parquet dell'atleta specificato."""
+    part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+    if not os.path.exists(part_path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_parquet(part_path)
+        if df is None or df.empty:
+            return pd.DataFrame(columns=COLONNE_DATABASE + ['Date_obj', 'Date_dt'])
+        if 'Date_obj' not in df.columns:
+            df['Date_obj'] = pd.to_datetime(df['Date'], format='%d/%m/%Y', errors='coerce') if 'Date' in df.columns else pd.NaT
+        if 'Date_dt' not in df.columns:
+            df['Date_dt'] = pd.to_datetime(df['Date_obj'], errors='coerce').dt.date
+        return df
+    except Exception:
+        return pd.DataFrame()
+
+
+def load_athlete_database(atleta_nome):
+    """
+    Lettura Selettiva Ultra-Veloce (<2ms) per le viste Single-Athlete (Modulo 4.2 v3.0):
+    Carica esclusivamente il file data_cache/athletes/{slug}.parquet dell'atleta attivo.
+    Include fallback automatico sul database consolidato se la partizione non è ancora su disco.
+    """
+    sync_binary_snapshots_on_cold_boot()
+    if not atleta_nome:
+        return pd.DataFrame(columns=COLONNE_DATABASE + ['Date_obj', 'Date_dt'])
+    slug = _athlete_slug(atleta_nome)
+    part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+    if os.path.exists(part_path):
+        mtime = os.path.getmtime(part_path)
+        df_p = _load_athlete_partition_cached(slug, mtime)
+        if df_p is not None and not df_p.empty:
+            return df_p.copy()
+    # Fallback trasparente sul database consolidato
+    df_all = load_local_database()
+    if not df_all.empty and 'Players' in df_all.columns:
+        return df_all[df_all['Players'] == atleta_nome].copy()
+    return pd.DataFrame(columns=COLONNE_DATABASE + ['Date_obj', 'Date_dt'])
+
+
+def load_roster_database(atleti_autorizzati=None):
+    """
+    Lettura Multi-Atleta Selettiva per le viste Roster & Testa a Testa (Modulo 4.2 v3.0):
+    Carica e concatena in RAM esclusivamente i file .parquet degli atleti autorizzati per quell'utente.
+    """
+    sync_binary_snapshots_on_cold_boot()
+    if not atleti_autorizzati:
+        return load_local_database()
+    frames = []
+    missing_athletes = []
+    for ath in atleti_autorizzati:
+        slug = _athlete_slug(ath)
+        part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+        if os.path.exists(part_path):
+            df_p = _load_athlete_partition_cached(slug, os.path.getmtime(part_path))
+            if df_p is not None and not df_p.empty:
+                frames.append(df_p)
+            else:
+                missing_athletes.append(ath)
+        else:
+            missing_athletes.append(ath)
+    if missing_athletes:
+        df_all = load_local_database()
+        if not df_all.empty and 'Players' in df_all.columns:
+            df_sub = df_all[df_all['Players'].isin(missing_athletes)]
+            if not df_sub.empty:
+                frames.append(df_sub)
+    if frames:
+        return pd.concat(frames, ignore_index=True)
+    return pd.DataFrame(columns=COLONNE_DATABASE + ['Date_obj', 'Date_dt'])
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -846,7 +1244,7 @@ def _load_database_cached(_token):
     Caricamento database a Latenza Zero (< 0.02s) con cache RAM e lettura ESCLUSIVA da Parquet locale:
     - Esegue una sola volta al Cold Boot la sincronizzazione binaria con Supabase Storage.
     - Durante la navigazione tra le pagine NON esegue mai query SQL su Supabase.
-    - Legge esclusivamente il file binario locale database_storico.parquet.
+    - Legge il file binario locale database_storico.parquet (o ricompone le partizioni athletes/*.parquet).
     """
     sync_binary_snapshots_on_cold_boot()
 
@@ -858,6 +1256,19 @@ def _load_database_cached(_token):
     if p_exists:
         try:
             df = pd.read_parquet(DB_PARQUET_PATH)
+        except Exception:
+            df = pd.DataFrame()
+
+    # 1b. Se il Parquet consolidato non esiste ma esistono le partizioni per atleta, le concatena
+    if (df is None or df.empty) and os.path.exists(ATHLETES_CACHE_DIR):
+        try:
+            part_list = [
+                pd.read_parquet(os.path.join(ATHLETES_CACHE_DIR, f))
+                for f in sorted(os.listdir(ATHLETES_CACHE_DIR))
+                if f.endswith(".parquet")
+            ]
+            if part_list:
+                df = pd.concat(part_list, ignore_index=True)
         except Exception:
             df = pd.DataFrame()
 
@@ -897,6 +1308,14 @@ def clear_database_cache():
     except Exception:
         pass
     try:
+        _load_athlete_partition_cached.clear()
+    except Exception:
+        pass
+    try:
+        _get_partitioned_snapshots_zip_cached.clear()
+    except Exception:
+        pass
+    try:
         sync_binary_snapshots_on_cold_boot.clear()
     except Exception:
         pass
@@ -919,33 +1338,156 @@ load_data = load_local_database
 carica_dati = load_local_database
 
 
+def salva_dati_atleta(atleta_nome_o_slug, df_atleta, update_consolidated=True):
+    """
+    Scrittura Atomica Isolata per Singolo Atleta (Modulo 4.2 v3.0):
+    Salva su disco e carica su Supabase Storage ESCLUSIVAMENTE `athletes/{slug}.parquet` (~15-30 KB)
+    e aggiorna la voce corrispondente in `manifest.json`, azzerando il rischio di race condition
+    quando più Coach caricano dati contemporaneamente per atleti diversi.
+    """
+    os.makedirs(ATHLETES_CACHE_DIR, exist_ok=True)
+    df_ath_clean = pulisci_dataframe_database(df_atleta)
+    athlete_name = str(atleta_nome_o_slug).strip()
+    if not df_ath_clean.empty and 'Players' in df_ath_clean.columns:
+        first_p = str(df_ath_clean['Players'].dropna().iloc[0]).strip()
+        if first_p:
+            athlete_name = first_p
+    slug = _athlete_slug(athlete_name)
+    part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+
+    manifest = _read_local_manifest()
+    if df_ath_clean.empty:
+        # Se un atleta non ha più sessioni, rimuove la partizione locale e aggiorna il manifest
+        if os.path.exists(part_path):
+            try:
+                os.remove(part_path)
+            except Exception:
+                pass
+        manifest.pop(slug, None)
+        _write_local_manifest(manifest)
+        try:
+            upload_binary_snapshot(MANIFEST_PATH, "manifest.json")
+        except Exception:
+            pass
+    else:
+        try:
+            df_ath_clean.to_parquet(part_path, index=False)
+        except Exception:
+            pass
+        new_sha = _compute_file_sha256(part_path)
+        manifest[slug] = {
+            "athlete_name": athlete_name,
+            "slug": slug,
+            "version_ts": datetime.datetime.utcnow().isoformat(),
+            "rows": int(len(df_ath_clean)),
+            "max_date": _extract_max_date_str(df_ath_clean),
+            "sha256": new_sha
+        }
+        _write_local_manifest(manifest)
+        try:
+            upload_binary_snapshot(part_path, f"athletes/{slug}.parquet")
+            upload_binary_snapshot(MANIFEST_PATH, "manifest.json")
+        except Exception:
+            pass
+
+    if update_consolidated:
+        try:
+            df_cur = pd.read_parquet(DB_PARQUET_PATH) if os.path.exists(DB_PARQUET_PATH) else pd.DataFrame(columns=COLONNE_DATABASE)
+            if not df_cur.empty and 'Players' in df_cur.columns:
+                df_others = df_cur[df_cur['Players'].apply(_athlete_slug) != slug]
+            else:
+                df_others = pd.DataFrame(columns=COLONNE_DATABASE)
+            df_new_all = pd.concat([df_others, df_ath_clean], ignore_index=True) if not df_ath_clean.empty else df_others
+            df_new_all = pulisci_dataframe_database(df_new_all)
+            df_new_all.to_parquet(DB_PARQUET_PATH, index=False)
+            df_new_all.to_csv(DB_PATH, index=False)
+            upload_binary_snapshot(DB_PARQUET_PATH, "database_storico.parquet")
+        except Exception:
+            pass
+
+    clear_database_cache()
+    return True
+
+
 def save_local_database(df):
     """
-    Salvataggio Istantaneo all'Upload/Modifica di File GPS:
-    1. Salva immediatamente il DataFrame aggiornato nel file locale database_storico.parquet (e CSV).
-    2. Invalida la cache RAM con st.cache_data.clear() così il dato è immediatamente visibile.
-    3. Esegue l'upload binario di database_storico.parquet nel bucket Supabase Storage
-       'm0v3-binary-snapshots' con upsert="true", blindando i nuovi dati contro qualsiasi futuro git push.
+    Salvataggio Istantaneo Partizionato all'Upload/Modifica di File GPS (Modulo 4 v3.0):
+    1. Pulisce e salva il DataFrame aggiornato nel file locale database_storico.parquet (e CSV).
+    2. Confronta gli SHA-256 per ciascun atleta rispetto a `data_cache/manifest.json` e carica sul Cloud
+       ESCLUSIVAMENTE le partizioni `athletes/{slug}.parquet` degli atleti effettivamente modificati + `manifest.json`.
+    3. Allinea lo snapshot consolidato e invalida la cache RAM per riflettere le modifiche all'istante.
     """
+    os.makedirs(ATHLETES_CACHE_DIR, exist_ok=True)
     df_clean = pulisci_dataframe_database(df)
-    
-    # 1. Salvataggio Parquet locale (ottimizzato e compresso)
+
+    # 1. Salvataggio Parquet e CSV consolidati locali
     try:
         df_clean.to_parquet(DB_PARQUET_PATH, index=False)
     except Exception:
         pass
-
-    # 2. Salvataggio CSV locale (compatibilità ed export)
     try:
         df_clean.to_csv(DB_PATH, index=False)
     except Exception:
         pass
 
+    # 2. Partizionamento atomico per atleta e upload differenziale su Cloud
+    old_manifest = _read_local_manifest()
+    new_manifest = {}
+    now_iso = datetime.datetime.utcnow().isoformat()
+    active_slugs = set()
+
+    if not df_clean.empty and 'Players' in df_clean.columns:
+        for player_name, df_ath in df_clean.groupby('Players', dropna=True):
+            p_str = str(player_name).strip()
+            if not p_str:
+                continue
+            slug = _athlete_slug(p_str)
+            active_slugs.add(slug)
+            part_path = os.path.join(ATHLETES_CACHE_DIR, f"{slug}.parquet")
+            df_ath_clean = pulisci_dataframe_database(df_ath)
+            try:
+                df_ath_clean.to_parquet(part_path, index=False)
+            except Exception:
+                continue
+
+            new_sha = _compute_file_sha256(part_path)
+            old_meta = old_manifest.get(slug, {}) if isinstance(old_manifest.get(slug), dict) else {}
+            old_sha = str(old_meta.get("sha256", ""))
+
+            new_manifest[slug] = {
+                "athlete_name": p_str,
+                "slug": slug,
+                "version_ts": now_iso if new_sha != old_sha else old_meta.get("version_ts", now_iso),
+                "rows": int(len(df_ath_clean)),
+                "max_date": _extract_max_date_str(df_ath_clean),
+                "sha256": new_sha
+            }
+
+            # Carica su Supabase Storage SOLO la partizione dell'atleta effettivamente modificato
+            if new_sha != old_sha:
+                try:
+                    upload_binary_snapshot(part_path, f"athletes/{slug}.parquet")
+                except Exception:
+                    pass
+
+    # Rimuove eventuali partizioni locali di atleti eliminati
+    for old_slug in list(old_manifest.keys()):
+        if old_slug not in active_slugs:
+            stale_path = os.path.join(ATHLETES_CACHE_DIR, f"{old_slug}.parquet")
+            if os.path.exists(stale_path):
+                try:
+                    os.remove(stale_path)
+                except Exception:
+                    pass
+
+    _write_local_manifest(new_manifest)
+
     # 3. Invalida la cache RAM per riflettere le modifiche all'istante in tutte le pagine
     clear_database_cache()
 
-    # 4. Upload binario immediato nello snapshot Cloud Supabase Storage ('m0v3-binary-snapshots')
+    # 4. Upload manifest.json e snapshot consolidato nel bucket Supabase Storage ('m0v3-binary-snapshots')
     try:
+        upload_binary_snapshot(MANIFEST_PATH, "manifest.json")
         upload_binary_snapshot(DB_PARQUET_PATH, "database_storico.parquet")
     except Exception:
         pass
@@ -2140,26 +2682,69 @@ def parse_audit_from_row(row, default_valid=True):
         except Exception:
             pass
 
+    # Biometria Passiva Oggettiva (Modulo 3 v3.0): lettura da colonne native o fallback in audit_meta
+    hrv_val = row.get('hrv_rmssd_ms')
+    if hrv_val is None and 'hrv_rmssd_ms' in audit_meta:
+        hrv_val = audit_meta.get('hrv_rmssd_ms')
+    try:
+        hrv_val = round(float(hrv_val), 1) if hrv_val is not None and not pd.isna(hrv_val) and float(hrv_val) > 0 else None
+    except Exception:
+        hrv_val = None
+
+    rhr_val = row.get('rhr_bpm')
+    if rhr_val is None and 'rhr_bpm' in audit_meta:
+        rhr_val = audit_meta.get('rhr_bpm')
+    try:
+        rhr_val = round(float(rhr_val), 1) if rhr_val is not None and not pd.isna(rhr_val) and float(rhr_val) > 0 else None
+    except Exception:
+        rhr_val = None
+
+    sonno_ore_val = row.get('sonno_ore_reali')
+    if sonno_ore_val is None and 'sonno_ore_reali' in audit_meta:
+        sonno_ore_val = audit_meta.get('sonno_ore_reali')
+    try:
+        sonno_ore_val = round(float(sonno_ore_val), 2) if sonno_ore_val is not None and not pd.isna(sonno_ore_val) and float(sonno_ore_val) > 0 else None
+    except Exception:
+        sonno_ore_val = None
+
+    bio_fonte_val = row.get('biometria_fonte') or audit_meta.get('biometria_fonte') or ('Manuale' if (hrv_val or rhr_val or sonno_ore_val) else None)
+
     return {
         "is_valid": is_val,
         "modificato_da_staff": is_mod,
         "rpe_originale": rpe_orig,
         "durata_originale_min": dur_orig,
         "wellness_originale_json": wel_orig,
+        "hrv_rmssd_ms": hrv_val,
+        "rhr_bpm": rhr_val,
+        "sonno_ore_reali": sonno_ore_val,
+        "biometria_fonte": bio_fonte_val,
         "clean_note": clean_note
     }
 
 
-def encode_audit_into_note(clean_note, is_valid=True, modificato_da_staff=False, rpe_orig=None, dur_orig=None, wel_orig=None):
+def encode_audit_into_note(
+    clean_note,
+    is_valid=True,
+    modificato_da_staff=False,
+    rpe_orig=None,
+    dur_orig=None,
+    wel_orig=None,
+    hrv_rmssd_ms=None,
+    rhr_bpm=None,
+    sonno_ore_reali=None,
+    biometria_fonte=None
+):
     """
     Rimuove eventuali vecchi tag audit da clean_note e vi prepende il tag [AUDIT:{...}]
-    se lo stato si discosta dai valori di default (is_valid=True, non modificato).
+    se lo stato si discosta dai valori di default (is_valid=True, non modificato) o contiene biometria fallback.
     """
     note_str = str(clean_note or '').strip()
     if note_str.startswith('[AUDIT:') and ']' in note_str:
         note_str = note_str[note_str.find(']')+1:].strip()
 
-    if is_valid is True and not modificato_da_staff and rpe_orig is None and dur_orig is None and wel_orig is None:
+    has_bio = any(v is not None for v in (hrv_rmssd_ms, rhr_bpm, sonno_ore_reali))
+    if is_valid is True and not modificato_da_staff and rpe_orig is None and dur_orig is None and wel_orig is None and not has_bio:
         return note_str
 
     audit_dict = {
@@ -2172,11 +2757,32 @@ def encode_audit_into_note(clean_note, is_valid=True, modificato_da_staff=False,
         audit_dict["dur_orig"] = dur_orig
     if wel_orig is not None:
         audit_dict["wel_orig"] = wel_orig
+    if hrv_rmssd_ms is not None:
+        audit_dict["hrv_rmssd_ms"] = hrv_rmssd_ms
+    if rhr_bpm is not None:
+        audit_dict["rhr_bpm"] = rhr_bpm
+    if sonno_ore_reali is not None:
+        audit_dict["sonno_ore_reali"] = sonno_ore_reali
+    if biometria_fonte is not None and has_bio:
+        audit_dict["biometria_fonte"] = biometria_fonte
 
     tag = f"[AUDIT:{json.dumps(audit_dict)}]"
     if note_str:
         return f"{tag} {note_str}"
     return tag
+
+
+def enrich_wellness_row_biometrics(row):
+    """Arricchisce un dizionario wellness_mattutino popolando hrv_rmssd_ms, rhr_bpm, sonno_ore_reali, biometria_fonte."""
+    if not isinstance(row, dict):
+        return row
+    audit = parse_audit_from_row(row)
+    out = dict(row)
+    out['hrv_rmssd_ms'] = audit.get('hrv_rmssd_ms')
+    out['rhr_bpm'] = audit.get('rhr_bpm')
+    out['sonno_ore_reali'] = audit.get('sonno_ore_reali')
+    out['biometria_fonte'] = audit.get('biometria_fonte')
+    return out
 
 
 _NATIVE_GOVERNANCE_AVAILABLE = None
@@ -2197,7 +2803,7 @@ def check_native_governance_columns():
 
 @st.cache_data(ttl=60, show_spinner=False)
 def get_wellness_mattutino(atleta_id, data_str, solo_valido=True):
-    """Carica la rilevazione di wellness mattutino per un atleta in una determinata data (Data Governance)."""
+    """Carica la rilevazione di wellness mattutino per un atleta in una determinata data (Data Governance + Biometria)."""
     try:
         res = supabase.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id).eq('data', data_str).execute()
         if res.data and len(res.data) > 0:
@@ -2205,22 +2811,64 @@ def get_wellness_mattutino(atleta_id, data_str, solo_valido=True):
             audit = parse_audit_from_row(row)
             if solo_valido and not audit['is_valid']:
                 return None
-            return row
+            return enrich_wellness_row_biometrics(row)
         return None
     except Exception:
         return None
 
 
 def upsert_wellness_mattutino(payload):
-    """Inserisce o aggiorna il wellness mattutino con Data Governance & Audit Trail."""
-    try:
-        # Default di integrità GDPR
-        if "is_valid" not in payload:
-            payload["is_valid"] = True
-        if "modificato_da_staff" not in payload:
-            payload["modificato_da_staff"] = False
+    """Inserisce o aggiorna il wellness mattutino con Data Governance, Audit Trail e Biometria Passiva Oggettiva (Modulo 3 v3.0)."""
+    clean_payload = dict(payload)
+    # Normalizzazione campi biometrici opzionali
+    hrv_v = clean_payload.get("hrv_rmssd_ms")
+    rhr_v = clean_payload.get("rhr_bpm")
+    sonno_h_v = clean_payload.get("sonno_ore_reali")
+    fonte_v = clean_payload.get("biometria_fonte")
 
-        res = supabase.table('wellness_mattutino').upsert(payload, on_conflict='atleta_id, data').execute()
+    try:
+        hrv_v = round(float(hrv_v), 1) if hrv_v is not None and str(hrv_v).strip() != "" and float(hrv_v) >= 10 else None
+    except Exception:
+        hrv_v = None
+    try:
+        rhr_v = round(float(rhr_v), 1) if rhr_v is not None and str(rhr_v).strip() != "" and float(rhr_v) >= 30 else None
+    except Exception:
+        rhr_v = None
+    try:
+        sonno_h_v = round(float(sonno_h_v), 2) if sonno_h_v is not None and str(sonno_h_v).strip() != "" and float(sonno_h_v) > 0 else None
+    except Exception:
+        sonno_h_v = None
+
+    clean_payload["hrv_rmssd_ms"] = hrv_v
+    clean_payload["rhr_bpm"] = rhr_v
+    clean_payload["sonno_ore_reali"] = sonno_h_v
+    if any(v is not None for v in (hrv_v, rhr_v, sonno_h_v)):
+        clean_payload["biometria_fonte"] = fonte_v or "Manuale"
+    elif "biometria_fonte" in clean_payload and not clean_payload["biometria_fonte"]:
+        clean_payload["biometria_fonte"] = None
+
+    # Incorpora anche nel tag AUDIT della nota per resilienza 100% qualora le colonne DDL non siano ancora state eseguite
+    raw_note_in = clean_payload.get("note") or ""
+    curr_audit = parse_audit_from_row(clean_payload)
+    encoded_note = encode_audit_into_note(
+        curr_audit['clean_note'] if raw_note_in.startswith('[AUDIT:') else raw_note_in,
+        is_valid=clean_payload.get("is_valid", True),
+        modificato_da_staff=clean_payload.get("modificato_da_staff", False),
+        wel_orig=clean_payload.get("wellness_originale_json"),
+        hrv_rmssd_ms=hrv_v,
+        rhr_bpm=rhr_v,
+        sonno_ore_reali=sonno_h_v,
+        biometria_fonte=clean_payload.get("biometria_fonte")
+    )
+    clean_payload["note"] = encoded_note
+
+    try:
+        if "is_valid" not in clean_payload:
+            clean_payload["is_valid"] = True
+        if "modificato_da_staff" not in clean_payload:
+            clean_payload["modificato_da_staff"] = False
+
+        res = supabase.table('wellness_mattutino').upsert(clean_payload, on_conflict='atleta_id, data').execute()
         try:
             get_wellness_mattutino.clear()
             get_athlete_master_calendar.clear()
@@ -2230,20 +2878,309 @@ def upsert_wellness_mattutino(payload):
         return True, res.data
     except Exception as e:
         err_msg = str(e)
-        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found")):
-            basic_payload = {k: v for k, v in payload.items() if k not in ('is_valid', 'modificato_da_staff', 'wellness_originale_json')}
+        if any(w in err_msg.lower() for w in ("column", "schema", "does not exist", "not found", "pgrst204")):
+            # Fallback 1: rimuovi solo le colonne biometriche se non ancora migrate via SQL
+            no_bio_payload = {
+                k: v for k, v in clean_payload.items()
+                if k not in ('hrv_rmssd_ms', 'rhr_bpm', 'sonno_ore_reali', 'biometria_fonte')
+            }
             try:
-                res_fb = supabase.table('wellness_mattutino').upsert(basic_payload, on_conflict='atleta_id, data').execute()
+                res_fb1 = supabase.table('wellness_mattutino').upsert(no_bio_payload, on_conflict='atleta_id, data').execute()
                 try:
                     get_wellness_mattutino.clear()
                     get_athlete_master_calendar.clear()
                     st.cache_data.clear()
                 except Exception:
                     pass
-                return True, res_fb.data
-            except Exception as e2:
-                return False, str(e2)
+                return True, res_fb1.data
+            except Exception:
+                # Fallback 2: rimuovi anche le colonne governance native
+                basic_payload = {
+                    k: v for k, v in no_bio_payload.items()
+                    if k not in ('is_valid', 'modificato_da_staff', 'wellness_originale_json')
+                }
+                try:
+                    res_fb2 = supabase.table('wellness_mattutino').upsert(basic_payload, on_conflict='atleta_id, data').execute()
+                    try:
+                        get_wellness_mattutino.clear()
+                        get_athlete_master_calendar.clear()
+                        st.cache_data.clear()
+                    except Exception:
+                        pass
+                    return True, res_fb2.data
+                except Exception as e2:
+                    return False, str(e2)
         return False, err_msg
+
+
+def upsert_biometria_wearable_batch(atleta_id, profilo_id, records_list):
+    """
+    Upsert Non-Distruttivo Batch da CSV Wearable (Modulo 3.2 v3.0):
+    Aggiorna o inserisce i soli campi biometrici oggettivi (`hrv_rmssd_ms`, `rhr_bpm`, `sonno_ore_reali`, `biometria_fonte`)
+    su `wellness_mattutino` senza MAI sovrascrivere i 5 voti soggettivi (`sonno_qualita`, `fatica`, `stress`, `umore`, `doms`)
+    se l'atleta aveva già compilato il questionario per quella data.
+    Restituisce: (ok_bool, n_updated, n_inserted, err_msg)
+    """
+    if not atleta_id or not records_list:
+        return False, 0, 0, "Nessun record valido da importare."
+    db = supabase_admin if supabase_admin is not None else supabase
+    dates = [str(r.get("data", ""))[:10] for r in records_list if r.get("data")]
+    existing_by_date = {}
+    if dates:
+        try:
+            res_ex = db.table("wellness_mattutino").select("*").eq("atleta_id", atleta_id).in_("data", dates).execute()
+            for row in (res_ex.data or []):
+                d_k = str(row.get("data", ""))[:10]
+                existing_by_date[d_k] = enrich_wellness_row_biometrics(row)
+        except Exception:
+            pass
+
+    n_updated = 0
+    n_inserted = 0
+    last_err = ""
+
+    for rec in records_list:
+        d_str = str(rec.get("data", ""))[:10]
+        if not d_str:
+            continue
+        ex = existing_by_date.get(d_str)
+        hrv_in = rec.get("hrv_rmssd_ms")
+        rhr_in = rec.get("rhr_bpm")
+        sonno_in = rec.get("sonno_ore_reali")
+        fonte_in = rec.get("biometria_fonte") or "Apple Watch / Sleep++"
+
+        if ex:
+            row_audit = parse_audit_from_row(ex)
+            payload = {
+                "atleta_id": atleta_id,
+                "data": d_str,
+                "sonno_qualita": int(ex.get("sonno_qualita", 7)),
+                "fatica": int(ex.get("fatica", 3)),
+                "stress": int(ex.get("stress", 3)),
+                "umore": int(ex.get("umore", 7)),
+                "doms": int(ex.get("doms", 3)),
+                "hrv_rmssd_ms": hrv_in if hrv_in is not None else ex.get("hrv_rmssd_ms"),
+                "rhr_bpm": rhr_in if rhr_in is not None else ex.get("rhr_bpm"),
+                "sonno_ore_reali": sonno_in if sonno_in is not None else ex.get("sonno_ore_reali"),
+                "biometria_fonte": fonte_in,
+                "is_valid": row_audit.get("is_valid", True),
+                "modificato_da_staff": row_audit.get("modificato_da_staff", False),
+                "wellness_originale_json": row_audit.get("wellness_originale_json"),
+                "note": row_audit.get("clean_note", "")
+            }
+            if ex.get("profilo_id") or profilo_id:
+                payload["profilo_id"] = ex.get("profilo_id") or profilo_id
+            ok, msg = upsert_wellness_mattutino(payload)
+            if ok:
+                n_updated += 1
+            else:
+                last_err = str(msg)
+        else:
+            payload = {
+                "atleta_id": atleta_id,
+                "data": d_str,
+                "sonno_qualita": 7,
+                "fatica": 3,
+                "stress": 3,
+                "umore": 7,
+                "doms": 3,
+                "hrv_rmssd_ms": hrv_in,
+                "rhr_bpm": rhr_in,
+                "sonno_ore_reali": sonno_in,
+                "biometria_fonte": fonte_in,
+                "is_valid": True,
+                "modificato_da_staff": False,
+                "note": f"Biometria Wearable ({fonte_in})"
+            }
+            if profilo_id:
+                payload["profilo_id"] = profilo_id
+            ok, msg = upsert_wellness_mattutino(payload)
+            if ok:
+                n_inserted += 1
+            else:
+                last_err = str(msg)
+
+    return (n_updated + n_inserted) > 0, n_updated, n_inserted, last_err
+
+
+def calcola_analisi_hrv_autonomica(df_wellness):
+    """
+    Algoritmo Scientifico di Valutazione Autonomica basato su Baseline Individuale HRV (Plews et al., 2013; Buchheit, 2014):
+    1. Trasformazione logaritmica naturale Ln(rMSSD) = ln(hrv_rmssd_ms) e media mobile a 7 giorni (Ln_rMSSD_7d, rMSSD_7d).
+    2. Baseline individuale mobile a 60 giorni: mu_60d +/- 0.5 * SD_60d (Smallest Worthwhile Change, SWC).
+    3. Semaforo di Stato Autonomico (Zero Emoji):
+       - OTTIMALE / ADATTAMENTO POSITIVO (#10b981 Verde): Media 7d dentro o sopra la banda SWC con RHR stabile.
+       - AFFATICAMENTO FUNZIONALE (#f59e0b Ambra): Media 7d sotto il limite inferiore della SWC per 1-2 giorni o RHR > Baseline + 4 bpm.
+       - ALLERTA PARASIMPATICA / OVERREACHING (#ef4444 Rosso): Media 7d sotto la SWC per 3+ giorni consecutivi,
+         oppure combinazione di HRV in calo (>1.0 SD) + Sonno Reale < 6.5h + Wellness < 6.0.
+    """
+    import numpy as np
+    if df_wellness is None or df_wellness.empty:
+        return {
+            "has_biometrics": False,
+            "has_hrv": False,
+            "has_rhr": False,
+            "has_sleep_hours": False,
+            "df": pd.DataFrame(),
+            "status_label": tr("DATI BIOMETRICI ASSENTI", "NO BIOMETRIC DATA"),
+            "status_color": "#64748b",
+            "status_code": "ND"
+        }
+
+    df = df_wellness.copy()
+    for col_b in ("hrv_rmssd_ms", "rhr_bpm", "sonno_ore_reali"):
+        if col_b not in df.columns:
+            df[col_b] = np.nan
+        df[col_b] = pd.to_numeric(df[col_b], errors="coerce")
+        df.loc[df[col_b] <= 0, col_b] = np.nan
+
+    if "data_dt" in df.columns:
+        df = df.sort_values("data_dt").reset_index(drop=True)
+    elif "data" in df.columns:
+        df["data_dt"] = pd.to_datetime(df["data"], errors="coerce")
+        df = df.sort_values("data_dt").reset_index(drop=True)
+
+    has_hrv = bool(df["hrv_rmssd_ms"].notna().any())
+    has_rhr = bool(df["rhr_bpm"].notna().any())
+    has_sleep_h = bool(df["sonno_ore_reali"].notna().any())
+    has_bio = has_hrv or has_rhr or has_sleep_h
+
+    if not has_bio:
+        return {
+            "has_biometrics": False,
+            "has_hrv": False,
+            "has_rhr": False,
+            "has_sleep_hours": False,
+            "df": df,
+            "status_label": tr("DATI BIOMETRICI ASSENTI", "NO BIOMETRIC DATA"),
+            "status_color": "#64748b",
+            "status_code": "ND"
+        }
+
+    # Calcoli HRV (ms e Ln rMSSD)
+    df["ln_rmssd"] = np.where(df["hrv_rmssd_ms"] > 0, np.log(df["hrv_rmssd_ms"]), np.nan)
+    df["hrv_7d"] = df["hrv_rmssd_ms"].rolling(window=7, min_periods=1).mean()
+    df["ln_rmssd_7d"] = df["ln_rmssd"].rolling(window=7, min_periods=1).mean()
+
+    df["hrv_base_60d"] = df["hrv_rmssd_ms"].rolling(window=60, min_periods=3).mean()
+    df["hrv_sd_60d"] = df["hrv_rmssd_ms"].rolling(window=60, min_periods=3).std(ddof=1).fillna(0.0)
+    # Fallback se meno di 3 punti
+    global_hrv_mean = float(df["hrv_rmssd_ms"].dropna().mean()) if has_hrv else 0.0
+    global_hrv_sd = float(df["hrv_rmssd_ms"].dropna().std(ddof=1)) if df["hrv_rmssd_ms"].dropna().count() > 1 else max(4.0, global_hrv_mean * 0.08)
+    if pd.isna(global_hrv_sd) or global_hrv_sd <= 0:
+        global_hrv_sd = max(4.0, global_hrv_mean * 0.08)
+
+    df["hrv_base_60d"] = df["hrv_base_60d"].fillna(global_hrv_mean)
+    df["hrv_sd_60d"] = df["hrv_sd_60d"].replace(0.0, global_hrv_sd).fillna(global_hrv_sd)
+    df["hrv_swc_half"] = 0.5 * df["hrv_sd_60d"]
+    df["hrv_swc_low"] = df["hrv_base_60d"] - df["hrv_swc_half"]
+    df["hrv_swc_high"] = df["hrv_base_60d"] + df["hrv_swc_half"]
+
+    # Ln(rMSSD) 60d baseline & SWC
+    global_ln_mean = float(df["ln_rmssd"].dropna().mean()) if has_hrv else 0.0
+    global_ln_sd = float(df["ln_rmssd"].dropna().std(ddof=1)) if df["ln_rmssd"].dropna().count() > 1 else 0.08
+    if pd.isna(global_ln_sd) or global_ln_sd <= 0:
+        global_ln_sd = 0.08
+    df["ln_base_60d"] = df["ln_rmssd"].rolling(window=60, min_periods=3).mean().fillna(global_ln_mean)
+    df["ln_sd_60d"] = df["ln_rmssd"].rolling(window=60, min_periods=3).std(ddof=1).replace(0.0, global_ln_sd).fillna(global_ln_sd)
+    df["ln_swc_low"] = df["ln_base_60d"] - 0.5 * df["ln_sd_60d"]
+    df["ln_swc_high"] = df["ln_base_60d"] + 0.5 * df["ln_sd_60d"]
+
+    # RHR 7d & 60d baseline
+    global_rhr_mean = float(df["rhr_bpm"].dropna().mean()) if has_rhr else 0.0
+    df["rhr_7d"] = df["rhr_bpm"].rolling(window=7, min_periods=1).mean()
+    df["rhr_base_60d"] = df["rhr_bpm"].rolling(window=60, min_periods=3).mean().fillna(global_rhr_mean)
+
+    # Valutazione Semaforo Autonomico sull'ultimo punto valido
+    df_valid_hrv = df[df["hrv_rmssd_ms"].notna()].copy()
+    consec_below_swc = 0
+    if not df_valid_hrv.empty:
+        for _, r_h in df_valid_hrv.iloc[::-1].iterrows():
+            if float(r_h["hrv_7d"]) < float(r_h["hrv_swc_low"]):
+                consec_below_swc += 1
+            else:
+                break
+
+    last_row = df.iloc[-1]
+    latest_hrv = float(df_valid_hrv.iloc[-1]["hrv_rmssd_ms"]) if not df_valid_hrv.empty else None
+    latest_hrv_7d = float(df_valid_hrv.iloc[-1]["hrv_7d"]) if not df_valid_hrv.empty else None
+    latest_hrv_base = float(df_valid_hrv.iloc[-1]["hrv_base_60d"]) if not df_valid_hrv.empty else None
+    latest_hrv_sd = float(df_valid_hrv.iloc[-1]["hrv_sd_60d"]) if not df_valid_hrv.empty else None
+    latest_swc_low = float(df_valid_hrv.iloc[-1]["hrv_swc_low"]) if not df_valid_hrv.empty else None
+    latest_swc_high = float(df_valid_hrv.iloc[-1]["hrv_swc_high"]) if not df_valid_hrv.empty else None
+    latest_ln_7d = float(df_valid_hrv.iloc[-1]["ln_rmssd_7d"]) if not df_valid_hrv.empty else None
+    latest_ln_base = float(df_valid_hrv.iloc[-1]["ln_base_60d"]) if not df_valid_hrv.empty else None
+
+    df_valid_rhr = df[df["rhr_bpm"].notna()]
+    latest_rhr = float(df_valid_rhr.iloc[-1]["rhr_bpm"]) if not df_valid_rhr.empty else None
+    latest_rhr_base = float(df_valid_rhr.iloc[-1]["rhr_base_60d"]) if not df_valid_rhr.empty else None
+
+    df_valid_sleep = df[df["sonno_ore_reali"].notna()]
+    latest_sleep_h = float(df_valid_sleep.iloc[-1]["sonno_ore_reali"]) if not df_valid_sleep.empty else None
+    avg_sleep_h = float(df_valid_sleep["sonno_ore_reali"].mean()) if not df_valid_sleep.empty else None
+
+    latest_w_score = float(last_row.get("wellness_score", 7.0)) if pd.notna(last_row.get("wellness_score")) else 7.0
+
+    # Regole Semaforo Autonomico
+    rhr_spike = (latest_rhr is not None and latest_rhr_base is not None and (latest_rhr - latest_rhr_base) > 4.0)
+    acute_hrv_drop_1sd = (
+        latest_hrv is not None and latest_hrv_base is not None and latest_hrv_sd is not None
+        and latest_hrv < (latest_hrv_base - 1.0 * latest_hrv_sd)
+    )
+    combo_parasympathetic_alert = (
+        acute_hrv_drop_1sd
+        and (latest_sleep_h is not None and latest_sleep_h < 6.5)
+        and (latest_w_score < 6.0)
+    )
+
+    if consec_below_swc >= 3 or combo_parasympathetic_alert or (acute_hrv_drop_1sd and latest_w_score < 6.0):
+        status_code = "ROSSO"
+        status_color = "#ef4444"
+        status_label = tr("ALLERTA PARASIMPATICA / OVERREACHING", "PARASYMPATHETIC ALERT / OVERREACHING")
+        status_desc = tr(
+            f"Media 7d HRV sotto la banda SWC ({consec_below_swc} gg) o calo acuto >1 SD associato a deficit di recupero.",
+            f"7d HRV mean below SWC band ({consec_below_swc} days) or acute drop >1 SD combined with recovery deficit."
+        )
+    elif consec_below_swc in (1, 2) or rhr_spike or acute_hrv_drop_1sd:
+        status_code = "AMBRA"
+        status_color = "#f59e0b"
+        status_label = tr("AFFATICAMENTO FUNZIONALE", "FUNCTIONAL FATIGUE")
+        status_desc = tr(
+            "Lieve flessione vagale sotto il limite inferiore SWC o incremento RHR > +4 bpm rispetto alla baseline 60d.",
+            "Slight vagal suppression below lower SWC limit or RHR elevation > +4 bpm above 60d baseline."
+        )
+    else:
+        status_code = "VERDE"
+        status_color = "#10b981"
+        status_label = tr("OTTIMALE / ADATTAMENTO POSITIVO", "OPTIMAL / POSITIVE ADAPTATION")
+        status_desc = tr(
+            "Media 7d HRV stabile all'interno o sopra la banda individuale SWC 60d con frequenza cardiaca a riposo regolare.",
+            "7d HRV mean stable within or above the 60d individual SWC band with steady resting heart rate."
+        )
+
+    return {
+        "has_biometrics": True,
+        "has_hrv": has_hrv,
+        "has_rhr": has_rhr,
+        "has_sleep_hours": has_sleep_h,
+        "df": df,
+        "status_code": status_code,
+        "status_color": status_color,
+        "status_label": status_label,
+        "status_desc": status_desc,
+        "consec_below_swc": consec_below_swc,
+        "latest_hrv": latest_hrv,
+        "latest_hrv_7d": latest_hrv_7d,
+        "latest_hrv_base": latest_hrv_base,
+        "latest_swc_low": latest_swc_low,
+        "latest_swc_high": latest_swc_high,
+        "latest_ln_7d": latest_ln_7d,
+        "latest_ln_base": latest_ln_base,
+        "latest_rhr": latest_rhr,
+        "latest_rhr_base": latest_rhr_base,
+        "latest_sleep_h": latest_sleep_h,
+        "avg_sleep_h": avg_sleep_h,
+    }
 
 
 @st.cache_data(ttl=60, show_spinner=False)
@@ -2613,8 +3550,8 @@ def modifica_tracciata_rpe(session_id, nuovo_rpe, nuova_durata_min=None, nuova_t
 
 def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
     """
-    Motore di Modifica Tracciata per Wellness Mattutino (GDPR Art. 9):
-    Archivia il dizionario completo originale dei 5 parametri (wellness_originale_json)
+    Motore di Modifica Tracciata per Wellness Mattutino & Biometria Passiva (GDPR Art. 9):
+    Archivia il dizionario completo originale dei 5 parametri soggettivi + 3 biometrici (wellness_originale_json)
     e imposta modificato_da_staff = True.
     """
     try:
@@ -2633,16 +3570,11 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
                 "fatica": curr_row.get('fatica', 5),
                 "doms": curr_row.get('doms', curr_row.get('dolore_muscolare', 5)),
                 "stress": curr_row.get('stress', 5),
-                "umore": curr_row.get('umore', 5)
+                "umore": curr_row.get('umore', 5),
+                "hrv_rmssd_ms": curr_audit.get('hrv_rmssd_ms'),
+                "rhr_bpm": curr_audit.get('rhr_bpm'),
+                "sonno_ore_reali": curr_audit.get('sonno_ore_reali')
             }
-
-        clean_note_body = nuove_note if nuove_note is not None else curr_audit['clean_note']
-        encoded_note = encode_audit_into_note(
-            clean_note_body,
-            is_valid=curr_audit['is_valid'],
-            modificato_da_staff=True,
-            wel_orig=wel_orig
-        )
 
         sonno_v = int(nuovi_valori_dict.get('sonno_qualita', nuovi_valori_dict.get('sonno', 5)))
         fatica_v = int(nuovi_valori_dict.get('fatica', 5))
@@ -2650,12 +3582,46 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
         stress_v = int(nuovi_valori_dict.get('stress', 5))
         umore_v = int(nuovi_valori_dict.get('umore', 5))
 
+        hrv_v = nuovi_valori_dict.get('hrv_rmssd_ms', curr_audit.get('hrv_rmssd_ms'))
+        rhr_v = nuovi_valori_dict.get('rhr_bpm', curr_audit.get('rhr_bpm'))
+        sonno_h_v = nuovi_valori_dict.get('sonno_ore_reali', curr_audit.get('sonno_ore_reali'))
+        fonte_v = nuovi_valori_dict.get('biometria_fonte', curr_audit.get('biometria_fonte'))
+
+        try:
+            hrv_v = round(float(hrv_v), 1) if hrv_v is not None and float(hrv_v) >= 10 else None
+        except Exception:
+            hrv_v = None
+        try:
+            rhr_v = round(float(rhr_v), 1) if rhr_v is not None and float(rhr_v) >= 30 else None
+        except Exception:
+            rhr_v = None
+        try:
+            sonno_h_v = round(float(sonno_h_v), 2) if sonno_h_v is not None and float(sonno_h_v) > 0 else None
+        except Exception:
+            sonno_h_v = None
+
+        clean_note_body = nuove_note if nuove_note is not None else curr_audit['clean_note']
+        encoded_note = encode_audit_into_note(
+            clean_note_body,
+            is_valid=curr_audit['is_valid'],
+            modificato_da_staff=True,
+            wel_orig=wel_orig,
+            hrv_rmssd_ms=hrv_v,
+            rhr_bpm=rhr_v,
+            sonno_ore_reali=sonno_h_v,
+            biometria_fonte=fonte_v
+        )
+
         update_payload = {
             "sonno_qualita": sonno_v,
             "fatica": fatica_v,
             "doms": doms_v,
             "stress": stress_v,
             "umore": umore_v,
+            "hrv_rmssd_ms": hrv_v,
+            "rhr_bpm": rhr_v,
+            "sonno_ore_reali": sonno_h_v,
+            "biometria_fonte": fonte_v if any(v is not None for v in (hrv_v, rhr_v, sonno_h_v)) else None,
             "modificato_da_staff": True,
             "wellness_originale_json": wel_orig if isinstance(wel_orig, dict) else json.loads(wel_orig) if isinstance(wel_orig, str) else wel_orig,
             "note": encoded_note
@@ -2687,7 +3653,7 @@ def modifica_tracciata_wellness(record_id, nuovi_valori_dict, nuove_note=None):
 
 def get_governance_records(atleta_id=None, limit_days=90):
     """
-    Carica l'intero registro di Governance (RPE & Wellness), inclusi i record invalidati,
+    Carica l'intero registro di Governance (RPE & Wellness + Biometria), inclusi i record invalidati,
     con mapping anagrafico e audit trail.
     """
     import datetime as dt
@@ -2736,7 +3702,7 @@ def get_governance_records(atleta_id=None, limit_days=90):
     except Exception:
         pass
 
-    # 2. Wellness Mattutino
+    # 2. Wellness Mattutino + Biometria Passiva
     try:
         q_w = db.table('wellness_mattutino').select('*').gte('data', d_start).order('data', desc=True)
         if atleta_id and not str(atleta_id).startswith("mock-"):
@@ -2777,6 +3743,10 @@ def get_governance_records(atleta_id=None, limit_days=90):
                 "stress": stress,
                 "umore": umore,
                 "doms": doms,
+                "hrv_rmssd_ms": audit.get('hrv_rmssd_ms'),
+                "rhr_bpm": audit.get('rhr_bpm'),
+                "sonno_ore_reali": audit.get('sonno_ore_reali'),
+                "biometria_fonte": audit.get('biometria_fonte'),
                 "wellness_score": w_score,
                 "raw_record": w,
                 "note": audit['clean_note']
@@ -4609,7 +5579,10 @@ def render_m0v3_footer(is_sidebar=False):
             "</svg>"
         )
 
-    legal_text = "© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati"
+    legal_text = tr(
+        "© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati",
+        "© 2026 — Powered by proprietary technology of Riccardo Di Maio & M0V3 S.r.l. - All rights reserved"
+    )
 
     if is_sidebar:
         html = f"""
@@ -4625,7 +5598,7 @@ def render_m0v3_footer(is_sidebar=False):
         """
     else:
         html = f"""
-        <div class='no-print' style='text-align:center; padding:26px 12px 18px 12px; font-size:0.74rem; color:#64748b; border-top:1px solid #e2e8f0; margin-top:40px; font-family:"Inter", sans-serif;'>
+        <div class='no-print' style='text-align:center; padding:26px 12px 18px 12px; font-size:0.74rem; color:#94a3b8; border-top:1px solid rgba(56, 189, 248, 0.20); margin-top:40px; font-family:"Inter", sans-serif;'>
             <div style='display:inline-flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;'>
                 {logo_html}
                 <span>{legal_text}</span>
@@ -4661,7 +5634,7 @@ def _m0v3_dialog_decorator(title, width="small"):
         return _wrap
     return _fallback
 
-@_m0v3_dialog_decorator("M0V3 ANALYTICS — CONFERMA OPERAZIONE", width="small")
+@_m0v3_dialog_decorator("M0V3 ANALYTICS — CONFERMA OPERAZIONE / OPERATION CONFIRMED", width="small")
 def _render_m0v3_modal_dialog(title, message, details=None):
     """
     Finestra Pop-up Modale ufficiale M0V3 Analytics per conferme di operazioni strutturali
@@ -4670,13 +5643,13 @@ def _render_m0v3_modal_dialog(title, message, details=None):
     st.markdown(
         f"""
         <div style="text-align:center; padding:8px 4px 16px 4px; font-family:'Inter', sans-serif;">
-            <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(16, 185, 129, 0.12); border:2px solid #10b981; margin-bottom:14px; box-shadow:0 0 25px rgba(16, 185, 129, 0.35);">
+            <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(16, 185, 129, 0.14); border:2px solid #10b981; margin-bottom:14px; box-shadow:0 0 25px rgba(16, 185, 129, 0.35);">
                 <i class="bi bi-check-circle-fill" style="font-size:32px; color:#10b981;"></i>
             </div>
-            <div style="color:#0f172a; font-weight:800; font-size:1.22rem; margin-bottom:8px; letter-spacing:-0.2px;">
+            <div style="color:#ffffff; font-weight:800; font-size:1.22rem; margin-bottom:8px; letter-spacing:-0.2px;">
                 {title}
             </div>
-            <div style="color:#475569; font-size:0.92rem; line-height:1.5; margin-bottom:14px;">
+            <div style="color:#cbd5e1; font-size:0.92rem; line-height:1.5; margin-bottom:14px;">
                 {message}
             </div>
         </div>
@@ -4693,8 +5666,8 @@ def _render_m0v3_modal_dialog(title, message, details=None):
             
         st.markdown(
             f"""
-            <div style="background:#081120; border:1px solid #1e293b; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Inter', sans-serif;">
-                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#38bdf8; margin-bottom:6px;">Dettagli Operazione</div>
+            <div style="background:#081120; border:1px solid rgba(56, 189, 248, 0.25); border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Inter', sans-serif;">
+                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#38bdf8; margin-bottom:6px;">{tr('Dettagli Operazione', 'Operation Details')}</div>
                 <ul style="margin:0; padding-left:20px;">
                     {items_html}
                 </ul>
@@ -4703,7 +5676,7 @@ def _render_m0v3_modal_dialog(title, message, details=None):
             unsafe_allow_html=True
         )
         
-    if st.button("OK, Continua", type="primary", use_container_width=True, key="btn_m0v3_modal_ok"):
+    if st.button(tr("OK, Continua", "OK, Continue"), type="primary", use_container_width=True, key="btn_m0v3_modal_ok"):
         st.rerun()
 
 
@@ -4845,9 +5818,10 @@ def get_coda_tagli_gps(only_pending=False):
 
 
 def _save_coda_tagli_local_parquet(df):
-    """Salva il DataFrame nel file locale coda_tagli_gps.parquet."""
+    """Salva il DataFrame nel file locale coda_tagli_gps.parquet e lo sincronizza nello snapshot Cloud."""
     try:
         df.to_parquet(CODA_TAGLI_PARQUET_PATH, index=False)
+        upload_binary_snapshot(CODA_TAGLI_PARQUET_PATH, "coda_tagli_gps.parquet")
         return True
     except Exception:
         return False
@@ -4935,7 +5909,7 @@ def update_stato_taglio_gps(record_id, completato=True):
     return True
 
 
-@_m0v3_dialog_decorator("Segnalazione Taglio GPS", width="medium")
+@_m0v3_dialog_decorator("Segnalazione Taglio GPS / GPS Trimming Request", width="medium")
 def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
     """
     Modale pop-up (@st.dialog) per la segnalazione rapida del Digital Handshake.
@@ -4943,13 +5917,13 @@ def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
     e la richiesta di taglio della sessione.
     """
     st.markdown(
-        """
+        f"""
         <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-family:'Inter', sans-serif;">
             <div style="font-size: 13.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
-                <i class="bi bi-broadcast"></i> DIGITAL HANDSHAKE · NOTIFICA SCARICO K-SPORT
+                <i class="bi bi-broadcast"></i> {tr("DIGITAL HANDSHAKE · NOTIFICA SCARICO K-SPORT", "DIGITAL HANDSHAKE · K-SPORT DOWNLOAD NOTIFICATION")}
             </div>
             <div style="font-size: 11.5px; color: #94a3b8; margin-top: 3px; line-height: 1.45;">
-                Segnala all'Amministratore (Riccardo) l'avvenuto scarico dei dati GPS per eseguire il taglio della sessione.
+                {tr("Segnala all'Amministratore (Riccardo) l'avvenuto scarico dei dati GPS per eseguire il taglio della sessione.", "Notify the Administrator (Riccardo) that GPS data has been downloaded so the session can be trimmed.")}
             </div>
         </div>
         """,
@@ -5059,7 +6033,7 @@ def dialog_segnalazione_taglio_gps(default_atleta=None, lista_atleti=None):
                 tipologia_superficie=superficie_sel,
                 orari_note_taglio=note_sel
             )
-            st.success("Segnalazione inviata a Riccardo per il taglio.")
+            st.success(tr("Segnalazione inviata a Riccardo per il taglio.", "Signal sent to Riccardo for GPS trimming."))
             time.sleep(1.2)
             st.rerun()
 
@@ -5122,13 +6096,108 @@ def render_pulsante_segnalazione_gps(key="btn_segnala_gps", default_atleta=None,
         return
 
     if st.button(
-        "Segnala GPS da Tagliare su K-Sport",
+        tr("Segnala GPS da Tagliare su K-Sport", "Signal GPS for K-Sport Trimming"),
         icon=":material/cell_tower:",
         key=key,
         type="secondary",
         use_container_width=use_container_width
     ):
         dialog_segnalazione_taglio_gps(default_atleta=default_atleta, lista_atleti=lista_atleti)
+
+
+# =========================================================================
+# MODULO 1 V3.0: PERSISTENZA PIANI MICROCICLO (WHAT-IF SIMULATOR)
+# =========================================================================
+PIANI_MICROCICLO_LOCAL_PATH = os.path.join(BASE_DIR_APP, "data_supporto", "piani_microciclo.json")
+
+
+def _load_piani_microciclo_local():
+    if os.path.exists(PIANI_MICROCICLO_LOCAL_PATH):
+        try:
+            with open(PIANI_MICROCICLO_LOCAL_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
+        except Exception:
+            pass
+    return []
+
+
+def _save_piani_microciclo_local(piani_list):
+    try:
+        os.makedirs(os.path.dirname(PIANI_MICROCICLO_LOCAL_PATH), exist_ok=True)
+        with open(PIANI_MICROCICLO_LOCAL_PATH, "w", encoding="utf-8") as f:
+            json.dump(piani_list, f, ensure_ascii=False, indent=2)
+        upload_binary_snapshot(PIANI_MICROCICLO_LOCAL_PATH, "piani_microciclo.json")
+        return True
+    except Exception:
+        return False
+
+
+def get_piani_microciclo(atleta_nome=None):
+    """Recupera i piani di carico previsionali salvati (da Supabase 'piani_microciclo' + fallback JSON/Cloud Snapshot)."""
+    piani_db = []
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        if db is not None:
+            q = db.table("piani_microciclo").select("*")
+            if atleta_nome:
+                q = q.eq("atleta_nome", atleta_nome)
+            res = q.order("created_at", desc=True).execute()
+            piani_db = res.data or []
+    except Exception:
+        piani_db = []
+
+    piani_loc = _load_piani_microciclo_local()
+    by_id = {}
+    for p in (piani_loc + piani_db):
+        if not isinstance(p, dict):
+            continue
+        if atleta_nome and str(p.get("atleta_nome", "")).strip().lower() != str(atleta_nome).strip().lower():
+            continue
+        pid = str(p.get("id") or f"{p.get('atleta_nome')}_{p.get('nome_piano')}_{p.get('data_inizio')}")
+        by_id[pid] = p
+
+    out = list(by_id.values())
+    out.sort(key=lambda x: str(x.get("created_at", "") or x.get("data_inizio", "")), reverse=True)
+    return out
+
+
+def save_piano_microciclo(payload):
+    """Salva un piano previsionale di microciclo senza mai inquinare il database storico GPS."""
+    rec = dict(payload)
+    if not rec.get("id"):
+        rec["id"] = str(uuid.uuid4())
+    if not rec.get("created_at"):
+        rec["created_at"] = datetime.datetime.utcnow().isoformat()
+
+    piani_loc = _load_piani_microciclo_local()
+    piani_loc = [p for p in piani_loc if str(p.get("id")) != str(rec["id"])]
+    piani_loc.insert(0, rec)
+    _save_piani_microciclo_local(piani_loc)
+
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        if db is not None:
+            db.table("piani_microciclo").upsert(rec).execute()
+    except Exception:
+        pass
+    return True, rec["id"]
+
+
+def delete_piano_microciclo(piano_id):
+    """Elimina un piano previsionale salvato."""
+    piani_loc = _load_piani_microciclo_local()
+    piani_loc = [p for p in piani_loc if str(p.get("id")) != str(piano_id)]
+    _save_piani_microciclo_local(piani_loc)
+    try:
+        db = supabase_admin if supabase_admin is not None else supabase
+        if db is not None:
+            db.table("piani_microciclo").delete().eq("id", str(piano_id)).execute()
+    except Exception:
+        pass
+    return True
+
 
 
 

@@ -320,8 +320,8 @@ def render_home(t):
                         <div style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
                             <i class="bi bi-broadcast" style="color: #38bdf8; font-size: 18px;"></i>
                             <div>
-                                <span style="font-size: 12.5px; font-weight: 800; color: #f8fafc;">DIGITAL HANDSHAKE: <b style="color: #38bdf8;">{n_pen} sessioni GPS</b> in attesa di ritaglio su K-Sport</span>
-                                <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Sessioni scaricate dallo Staff o Atleti da tagliare ed elaborare nel database storico.</div>
+                                <span style="font-size: 12.5px; font-weight: 800; color: #f8fafc;">{tr(f"DIGITAL HANDSHAKE: <b style='color: #38bdf8;'>{n_pen} sessioni GPS</b> in attesa di ritaglio su K-Sport", f"DIGITAL HANDSHAKE: <b style='color: #38bdf8;'>{n_pen} GPS sessions</b> awaiting K-Sport trimming")}</span>
+                                <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">{tr("Sessioni scaricate dallo Staff o Atleti da tagliare ed elaborare nel database storico.", "Sessions downloaded by Staff or Athletes awaiting trimming and processing into the historical database.")}</div>
                             </div>
                         </div>
                         """,
@@ -329,7 +329,7 @@ def render_home(t):
                     )
                 with c_alert2:
                     st.markdown("<div style='padding-top:4px;'></div>", unsafe_allow_html=True)
-                    if st.button("Gestisci Coda Tagli", icon=":material/arrow_forward:", key="btn_home_vai_coda", use_container_width=True):
+                    if st.button(tr("Gestisci Coda Tagli", "Manage Trimming Queue"), icon=":material/arrow_forward:", key="btn_home_vai_coda", use_container_width=True):
                         st.session_state.current_page = "Coda Tagli GPS"
                         st.rerun()
                 st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)

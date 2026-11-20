@@ -429,14 +429,35 @@ def render_statistiche_match(t):
     st.markdown("<div style='margin-top: 30px; margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
     # =========================================================================
-    # STRUTTURA A SUB-PAGINE / TAB (CON PERSISTENZA)
+    # STRUTTURA A SUB-PAGINE / TAB (CON PERSISTENZA & CONTROLLO PERMESSI RBAC)
     # =========================================================================
+    user_role = st.session_state.get('role', 'Staff')
+    is_admin = (user_role == 'Super-Admin')
+    user_perms = st.session_state.get('user_permessi_moduli')
+    sm_perms = None
+    if not is_admin and user_perms is not None:
+        sm_perms = {rep for (ar, rep) in user_perms if ar == "Statistiche Match"}
+
+    def _is_sm_mod_enabled(mod_key_substr):
+        if is_admin or not sm_perms:
+            return True
+        sub_low = mod_key_substr.lower()
+        return any(sub_low in str(r).lower() for r in sm_perms)
+
     lbl_tab_analisi = tr("Analisi Prestazione Tennis - GPS", "Tennis - GPS Performance Analysis")
     lbl_tab_archivio = tr("Archivio Partite & Abbinamento Telemetria", "Match Archive & Telemetry Pairing")
+    sm_tabs_avail = []
+    if any(_is_sm_mod_enabled(k) for k in ("Evoluzione", "Densità Scambi", "Scorporo", "Benchmark", "Correlazione", "Efficienza", "Costo", "Superficie", "Ranking")):
+        sm_tabs_avail.append(lbl_tab_analisi)
+    if _is_sm_mod_enabled("Archivio"):
+        sm_tabs_avail.append(lbl_tab_archivio)
+    if not sm_tabs_avail:
+        sm_tabs_avail = [lbl_tab_analisi, lbl_tab_archivio]
+
     active_sm_tab = render_tab_navigation(
-        [lbl_tab_analisi, lbl_tab_archivio],
+        sm_tabs_avail,
         key="nav_sub_statistiche_match",
-        default=lbl_tab_analisi
+        default=sm_tabs_avail[0]
     )
 
     # -------------------------------------------------------------------------
@@ -1506,7 +1527,7 @@ def render_statistiche_match(t):
                             unsafe_allow_html=True
                         )
 
-                        if is_linked and st.button(tr("Scollega Sessione GPS", "Unlink GPS Session"), key=f"unlink_{m_id}", icon=":material/link_off:"):
+                        if is_linked and user_role != 'Atleta' and st.button(tr("Scollega Sessione GPS", "Unlink GPS Session"), key=f"unlink_{m_id}", icon=":material/link_off:"):
                             remove_match_gps_link(m_id)
                             set_notification(
                                 title=tr("Sessione GPS Scollegata", "GPS Session Unlinked"),

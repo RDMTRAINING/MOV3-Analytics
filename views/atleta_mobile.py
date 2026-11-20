@@ -793,6 +793,67 @@ def render_atleta_mobile(t=None):
                 placeholder=tr("Es. Lieve fastidio spalla destra...", "E.g. Slight right shoulder tightness...")
             )
 
+            # Sotto-blocco Collassabile Opzionale: Biometria Wearable (Modulo 3.2 v3.0)
+            k_bio_hrv = f"bio_hrv_{data_str}"
+            k_bio_rhr = f"bio_rhr_{data_str}"
+            k_bio_sonno_h = f"bio_sonno_h_{data_str}"
+            k_bio_fonte = f"bio_fonte_{data_str}"
+
+            fonti_opzioni = ["Manuale", "Apple Watch / Sleep++", "Whoop", "Oura", "Garmin"]
+            if k_bio_hrv not in st.session_state:
+                st.session_state[k_bio_hrv] = float(w_data.get('hrv_rmssd_ms') or 0.0) if (w_fatto and w_data) else 0.0
+            if k_bio_rhr not in st.session_state:
+                st.session_state[k_bio_rhr] = float(w_data.get('rhr_bpm') or 0.0) if (w_fatto and w_data) else 0.0
+            if k_bio_sonno_h not in st.session_state:
+                st.session_state[k_bio_sonno_h] = float(w_data.get('sonno_ore_reali') or 0.0) if (w_fatto and w_data) else 0.0
+            if k_bio_fonte not in st.session_state:
+                curr_f = w_data.get('biometria_fonte') if (w_fatto and w_data) else "Manuale"
+                st.session_state[k_bio_fonte] = curr_f if curr_f in fonti_opzioni else "Manuale"
+
+            has_saved_bio = bool(w_fatto and w_data and any(w_data.get(c) for c in ('hrv_rmssd_ms', 'rhr_bpm', 'sonno_ore_reali')))
+            show_bio_key = f"toggle_bio_wearable_{data_str}"
+            if show_bio_key not in st.session_state:
+                st.session_state[show_bio_key] = has_saved_bio
+
+            st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+            show_bio = st.checkbox(
+                tr("Biometria Wearable (Opzionale: HRV / RHR / Sonno)", "Wearable Biometrics (Optional: HRV / RHR / Sleep)"),
+                key=show_bio_key
+            )
+            if show_bio:
+                st.markdown(
+                    f"<div style='background:rgba(14,165,233,0.08); border:1px solid rgba(56,189,248,0.28); border-radius:10px; padding:10px 12px; margin-bottom:8px; font-size:11.5px; color:#cbd5e1;'>"
+                    f"<i class='bi bi-smartwatch' style='color:#38bdf8; margin-right:5px;'></i>"
+                    f"{tr('Inserisci i valori mattutini del tuo wearable (lascia 0 se non rilevato).', 'Enter morning metrics from your wearable (leave 0 if not recorded).')}"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                cb1, cb2 = st.columns(2)
+                with cb1:
+                    v_hrv_ms = st.number_input(
+                        tr("HRV rMSSD [ms] (10-250)", "HRV rMSSD [ms] (10-250)"),
+                        min_value=0.0, max_value=250.0, step=1.0, key=k_bio_hrv
+                    )
+                    v_sonno_reale = st.number_input(
+                        tr("Ore Sonno Reali [h] (es. 7.5)", "Actual Sleep Hours [h] (e.g. 7.5)"),
+                        min_value=0.0, max_value=16.0, step=0.25, key=k_bio_sonno_h
+                    )
+                with cb2:
+                    v_rhr_bpm = st.number_input(
+                        tr("FC Riposo / RHR [bpm] (30-110)", "Resting HR / RHR [bpm] (30-110)"),
+                        min_value=0.0, max_value=110.0, step=1.0, key=k_bio_rhr
+                    )
+                    v_bio_fonte = st.selectbox(
+                        tr("Fonte / Wearable", "Source / Wearable"),
+                        fonti_opzioni,
+                        key=k_bio_fonte
+                    )
+            else:
+                v_hrv_ms = float(st.session_state.get(k_bio_hrv, 0.0) or 0.0)
+                v_rhr_bpm = float(st.session_state.get(k_bio_rhr, 0.0) or 0.0)
+                v_sonno_reale = float(st.session_state.get(k_bio_sonno_h, 0.0) or 0.0)
+                v_bio_fonte = st.session_state.get(k_bio_fonte, "Manuale")
+
             # Calcolo Live Indice Wellness Globale (1-10)
             score_pos_live = v_sonno + v_umore
             score_neg_live = (11 - v_fatica) + (11 - v_stress) + (11 - v_doms)
@@ -813,6 +874,8 @@ def render_atleta_mobile(t=None):
 
             btn_label_w = tr("Aggiorna Wellness", "Update Wellness") if w_fatto else tr("Salva Wellness Mattutino", "Save Morning Wellness")
             if st.button(btn_label_w, key="btn_save_w_direct", type="primary", use_container_width=True):
+                from utils import parse_audit_from_row
+                clean_n = parse_audit_from_row({"note": v_note}).get("clean_note", "") if v_note else ""
                 payload = {
                     "atleta_id": atleta_id,
                     "profilo_id": user.id,
@@ -822,7 +885,11 @@ def render_atleta_mobile(t=None):
                     "stress": v_stress,
                     "umore": v_umore,
                     "doms": v_doms,
-                    "note": v_note.strip() if v_note else None
+                    "hrv_rmssd_ms": v_hrv_ms if v_hrv_ms >= 10.0 else None,
+                    "rhr_bpm": v_rhr_bpm if v_rhr_bpm >= 30.0 else None,
+                    "sonno_ore_reali": v_sonno_reale if v_sonno_reale > 0.0 else None,
+                    "biometria_fonte": v_bio_fonte if any(x > 0 for x in (v_hrv_ms, v_rhr_bpm, v_sonno_reale)) else None,
+                    "note": clean_n if clean_n else None
                 }
                 ok, res = upsert_wellness_mattutino(payload)
                 if ok:

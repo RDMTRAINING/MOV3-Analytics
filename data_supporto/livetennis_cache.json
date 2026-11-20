@@ -1,7 +1,7 @@
 {
   "flavio_cobolli": {
     "fetch_date": "2026-11-17",
-    "fetch_timestamp": "17/11/2026 17:26",
+    "fetch_timestamp": "17/11/2026 18:10",
     "raw": {
       "archive_player_id": 207925,
       "backhand": 2,
@@ -22,7 +22,7 @@
       "profile_restated_at": null,
       "profile_version": 1,
       "ranking": 6,
-      "ranking_checked_at": "2026-11-17T15:58:39.899454Z",
+      "ranking_checked_at": "2026-11-17T16:58:40.040212Z",
       "ranking_movement": "same",
       "ranking_points": 3680,
       "ranking_status": "ranked",
@@ -566,19 +566,22 @@
       "tour": "atp"
     },
     "stats": {
+      "id": 652,
       "name": "Flavio Cobolli",
       "ranking": 6,
       "ranking_points": 3680,
       "ranking_movement": "same",
-      "tiebreak_pct": 80.0,
-      "tiebreak_record": "120W - 30L",
-      "deciding_set_pct": 61.9,
-      "deciding_set_record": "91W - 56L",
-      "vs_lefty_pct": 60.3,
+      "ranking_status": "ranked",
+      "tiebreak_pct": 0.0,
+      "tiebreak_record": "0W - 0L",
+      "deciding_set_pct": 0.0,
+      "deciding_set_record": "0W - 0L",
+      "vs_lefty_pct": 0.0,
       "country": "ITA",
-      "hand": "R",
-      "backhand": 2,
-      "last_sync": "17:26",
+      "hand": "Destrorso (Right-handed)",
+      "backhand": "A due mani (Two-handed)",
+      "birthday": "2002-05-06",
+      "last_sync": "18:10",
       "sync_date": "17/11/2026",
       "is_live": true
     }

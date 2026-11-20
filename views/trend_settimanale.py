@@ -1808,12 +1808,12 @@ def render_trend_settimanale(t):
                     with st.expander(tr("Note Metodologiche & Parametri di Riferimento", "Methodological Notes & Reference Parameters"), expanded=False, icon=":material/info:"):
                         st.markdown(
                             f"""
-                            <div style="font-size: 13px; color: #334155; line-height: 1.6;">
-                                <b>Parametri Fisici Analizzati nel Referto:</b><br>
-                                • <b>ACWR Uncoupled EWMA (Williams / Impellizzeri)</b>: Modello matematico ponderato esponenzialmente (7d acuto / 28d cronico disaccoppiato). Sweet spot: <b>0.80 - 1.25 (80-125%)</b>.<br>
-                                • <b>TL High & Spaziatura Neuromuscolare</b>: Monitoraggio della quota di alta intensità e intervallo minimo di <b>48-72 ore</b> tra i picchi per la rigenerazione del SNC e la prevenzione microtraumi.<br>
-                                • <b>Monotonia di Foster (&mu; / &sigma;)</b>: Calcolata sui dati reali giornalieri del microciclo (inclusi giorni di riposo = 0). Soglia allerta: <b>> 2.0</b>.<br>
-                                • <b>Training Strain (Carico &times; Monotonia)</b>: Indice moltiplicativo dello stress biologico complessivo.
+                            <div style="font-size: 13px; color: #e2e8f0; line-height: 1.6;">
+                                <b style="color: #38bdf8;">{tr("Parametri Fisici Analizzati nel Referto:", "Physical Parameters Analyzed in the Report:")}</b><br>
+                                • <b>ACWR Uncoupled EWMA (Williams / Impellizzeri)</b>: {tr("Modello matematico ponderato esponenzialmente (7d acuto / 28d cronico disaccoppiato). Sweet spot:", "Exponentially weighted moving average model (7d acute / 28d uncoupled chronic). Sweet spot:")} <b>0.80 - 1.25 (80-125%)</b>.<br>
+                                • <b>TL High & {tr("Spaziatura Neuromuscolare", "Neuromuscular Spacing")}</b>: {tr("Monitoraggio della quota di alta intensità e intervallo minimo di", "Monitoring high-intensity share and minimum interval of")} <b>48-72 {tr("ore", "hours")}</b> {tr("tra i picchi per la rigenerazione del SNC e la prevenzione microtraumi.", "between peaks for CNS recovery and micro-trauma prevention.")}<br>
+                                • <b>{tr("Monotonia di Foster", "Foster's Monotony")} (&mu; / &sigma;)</b>: {tr("Calcolata sui dati reali giornalieri del microciclo (inclusi giorni di riposo = 0). Soglia allerta:", "Computed on true daily microcycle loads (including rest days = 0). Alert threshold:")} <b>&gt; 2.0</b>.<br>
+                                • <b>Training Strain ({tr("Carico", "Load")} &times; {tr("Monotonia", "Monotony")})</b>: {tr("Indice moltiplicativo dello stress biologico complessivo.", "Multiplicative index of overall biological strain.")}
                             </div>
                             """,
                             unsafe_allow_html=True

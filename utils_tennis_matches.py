@@ -267,6 +267,8 @@ def save_match_gps_link(match_id, session_dict):
     try:
         with open(LINKS_JSON, "w", encoding="utf-8") as f:
             json.dump(links, f, ensure_ascii=False, indent=2)
+        from utils import upload_binary_snapshot
+        upload_binary_snapshot(LINKS_JSON, "match_gps_links.json")
     except Exception:
         pass
 
@@ -278,6 +280,8 @@ def remove_match_gps_link(match_id):
         try:
             with open(LINKS_JSON, "w", encoding="utf-8") as f:
                 json.dump(links, f, ensure_ascii=False, indent=2)
+            from utils import upload_binary_snapshot
+            upload_binary_snapshot(LINKS_JSON, "match_gps_links.json")
         except Exception:
             pass
 

@@ -652,16 +652,20 @@ def render_coda_tagli_kanban(t):
     Dashboard Regia / Kanban To-Do Board per la gestione delle richieste di taglio GPS K-Sport.
     Accessibile sia come vista autonoma sia come tab nel Pannello Admin.
     """
+    if st.session_state.get('role') not in ['Super-Admin', 'Coach', 'Staff']:
+        st.error(tr("Accesso negato: questa sezione è riservata allo Staff e ai Super-Admin.", "Access denied: this section is restricted to Staff and Super-Admins."))
+        st.stop()
+
     st.markdown(
-        """
+        f"""
         <div style="background:#081120; border:1px solid #1e293b; border-radius:12px; padding:16px 20px; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <div>
                     <div style="font-size:16px; font-weight:900; color:#f8fafc; display:flex; align-items:center; gap:8px;">
-                        <i class="bi bi-broadcast" style="color:#38bdf8;"></i> DIGITAL HANDSHAKE · CODA TAGLI GPS K-SPORT
+                        <i class="bi bi-broadcast" style="color:#38bdf8;"></i> {tr("DIGITAL HANDSHAKE · CODA TAGLI GPS K-SPORT", "DIGITAL HANDSHAKE · K-SPORT GPS TRIMMING QUEUE")}
                     </div>
                     <div style="font-size:12px; color:#94a3b8; margin-top:3px;">
-                        To-Do List operativa delle sessioni scaricate da Staff e Atleti in attesa di ritaglio su K-Sport. Spunta il checkbox per archiviare la lavorazione.
+                        {tr("To-Do List operativa delle sessioni scaricate da Staff e Atleti in attesa di ritaglio su K-Sport. Spunta il checkbox per archiviare la lavorazione.", "Operational To-Do List of sessions downloaded by Staff and Athletes awaiting K-Sport trimming. Check the box to archive completed items.")}
                     </div>
                 </div>
             </div>
@@ -684,7 +688,7 @@ def render_coda_tagli_kanban(t):
         st.markdown(
             f"""
             <div style="background:#0b1528; border:1px solid rgba(56, 189, 248, 0.35); border-radius:10px; padding:12px 16px;">
-                <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase;">Tagli in Attesa</div>
+                <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase;">{tr("Tagli in Attesa", "Pending Trims")}</div>
                 <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:2px;">{n_pending}</div>
             </div>
             """,
@@ -694,7 +698,7 @@ def render_coda_tagli_kanban(t):
         st.markdown(
             f"""
             <div style="background:#0b1528; border:1px solid #1e293b; border-radius:10px; padding:12px 16px;">
-                <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase;">Tagli Completati</div>
+                <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase;">{tr("Tagli Completati", "Completed Trims")}</div>
                 <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:2px;">{n_completed}</div>
             </div>
             """,
@@ -709,7 +713,7 @@ def render_coda_tagli_kanban(t):
         st.markdown(
             f"""
             <div style="background:#0b1528; border:1px solid #1e293b; border-radius:10px; padding:12px 16px;">
-                <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase;">Ultima Segnalazione</div>
+                <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase;">{tr("Ultima Segnalazione", "Latest Signal")}</div>
                 <div style="font-size:14px; font-weight:700; color:#f8fafc; margin-top:8px;">{ultima_seg}</div>
             </div>
             """,
@@ -720,16 +724,16 @@ def render_coda_tagli_kanban(t):
 
     c_act1, c_act2 = st.columns([3, 1])
     with c_act2:
-        if st.button("Nuova Segnalazione", icon=":material/add:", key="btn_admin_add_taglio", use_container_width=True):
+        if st.button(tr("Nuova Segnalazione", "New Signal"), icon=":material/add:", key="btn_admin_add_taglio", use_container_width=True):
             dialog_segnalazione_taglio_gps()
 
     if df_pending.empty:
         st.markdown(
-            """
+            f"""
             <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 24px; text-align: center; margin-top: 10px;">
                 <i class="bi bi-check2-all" style="font-size: 32px; color: #10b981;"></i>
-                <div style="font-size: 15px; font-weight: 800; color: #f8fafc; margin-top: 8px;">Coda Tagli Completata</div>
-                <div style="font-size: 12.5px; color: #94a3b8; margin-top: 4px;">Nessuna sessione GPS in attesa di ritaglio. Tutti i dati scaricati sono stati processati.</div>
+                <div style="font-size: 15px; font-weight: 800; color: #f8fafc; margin-top: 8px;">{tr("Coda Tagli Completata", "Trimming Queue Completed")}</div>
+                <div style="font-size: 12.5px; color: #94a3b8; margin-top: 4px;">{tr("Nessuna sessione GPS in attesa di ritaglio. Tutti i dati scaricati sono stati processati.", "No GPS sessions awaiting trimming. All downloaded data has been processed.")}</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -745,34 +749,34 @@ def render_coda_tagli_kanban(t):
             key=editor_key,
             column_config={
                 "completato": st.column_config.CheckboxColumn(
-                    "Taglio Eseguito",
-                    help="Spunta per confermare l'avvenuto ritaglio ed eliminare la riga dalla coda delle priorità",
+                    tr("Taglio Eseguito", "Trimmed"),
+                    help=tr("Spunta per confermare l'avvenuto ritaglio ed eliminare la riga dalla coda delle priorità", "Check to confirm trimming and archive this item from the priority queue"),
                     default=False,
                     disabled=False
                 ),
                 "atleta": st.column_config.TextColumn(
-                    "Atleta / Squadra",
+                    tr("Atleta / Squadra", "Athlete / Team"),
                     disabled=True
                 ),
                 "data_sessione": st.column_config.DateColumn(
-                    "Data Sessione",
+                    tr("Data Sessione", "Session Date"),
                     disabled=True,
                     format="YYYY-MM-DD"
                 ),
                 "tipologia_sessione": st.column_config.TextColumn(
-                    "Tipologia Sessione",
+                    tr("Tipologia Sessione", "Session Type"),
                     disabled=True
                 ),
                 "tipologia_superficie": st.column_config.TextColumn(
-                    "Superficie / Ambiente",
+                    tr("Superficie / Ambiente", "Surface / Environment"),
                     disabled=True
                 ),
                 "orari_note_taglio": st.column_config.TextColumn(
-                    "Orari Effettivi & Note Taglio",
+                    tr("Orari Effettivi & Note Taglio", "Effective Times & Trim Notes"),
                     disabled=True
                 ),
                 "created_at": st.column_config.TextColumn(
-                    "Ricevuta il",
+                    tr("Ricevuta il", "Received At"),
                     disabled=True
                 ),
                 "id": None,
@@ -795,7 +799,7 @@ def render_coda_tagli_kanban(t):
                     update_stato_taglio_gps(r_id, completato=True)
                 if editor_key in st.session_state:
                     del st.session_state[editor_key]
-                st.toast("Taglio registrato come completato!")
+                st.toast(tr("Taglio registrato come completato!", "Trim recorded as completed!"))
                 time.sleep(0.3)
                 st.rerun()
 
@@ -806,7 +810,7 @@ def render_coda_tagli_kanban(t):
 
     if not df_completed.empty:
         st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
-        with st.expander(f"Archivio Storico Tagli Completati ({len(df_completed)})", expanded=False):
+        with st.expander(f"{tr('Archivio Storico Tagli Completati', 'Completed Trims Historical Archive')} ({len(df_completed)})", expanded=False):
             cols_c = ['atleta', 'data_sessione', 'tipologia_sessione', 'tipologia_superficie', 'orari_note_taglio', 'created_at']
             cols_c_present = [c for c in cols_c if c in df_completed.columns]
             st.dataframe(df_completed[cols_c_present], use_container_width=True, hide_index=True)
@@ -819,17 +823,17 @@ def render_coda_tagli_kanban(t):
                 c_res1, c_res2 = st.columns([3, 1])
                 with c_res1:
                     sel_restore = st.selectbox(
-                        "Seleziona sessione da ripristinare nella To-Do List:",
+                        tr("Seleziona sessione da ripristinare nella To-Do List:", "Select session to restore to To-Do List:"),
                         list(dict_restore.keys()),
                         key="sel_restore_taglio"
                     )
                 with c_res2:
                     st.markdown("<div style='padding-top:28px;'></div>", unsafe_allow_html=True)
-                    if st.button("Ripristina in Coda", key="btn_restore_taglio"):
+                    if st.button(tr("Ripristina in Coda", "Restore to Queue"), key="btn_restore_taglio"):
                         update_stato_taglio_gps(dict_restore[sel_restore], completato=False)
                         if "todo_coda_tagli_editor" in st.session_state:
                             del st.session_state["todo_coda_tagli_editor"]
-                        st.toast("Sessione ripristinata in coda!")
+                        st.toast(tr("Sessione ripristinata in coda!", "Session restored to queue!"))
                         st.rerun()
 
 
@@ -838,7 +842,8 @@ def render_admin(t):
         st.error("Accesso negato: questa sezione è riservata ai Super-Admin.")
         st.stop()
     render_page_header(t['admin_title'], t['home_admin_desc'], "SYSTEM ADMINISTRATION")
-    tab_livetennis_label = t.get('tab_livetennis', '🎾 LiveTennis API')
+    tab_livetennis_label = t.get('tab_livetennis', 'LiveTennis API')
+    tab_alert_digest_label = tr("Alert & Morning Digest", "Alerts & Morning Digest")
     tab_list = [
         t.get('tab_todo_gps', 'To-Do List: Tagli K-Sport in Attesa'),
         t['tab_atl'],
@@ -846,7 +851,8 @@ def render_admin(t):
         t['tab_usr'],
         t['tab_map'],
         t['tab_rep'],
-        t.get('tab_sup', 'Supporto & Ticket')
+        t.get('tab_sup', 'Supporto & Ticket'),
+        tab_alert_digest_label,
     ]
     active_admin_tab = render_tab_navigation(
         tab_list,
@@ -1969,4 +1975,155 @@ def render_admin(t):
                             add_reply(sel_tk_adm['id'], "Super-Admin", curr_admin_email, adm_reply_text)
                             st.success("Risposta inviata all'utente con successo!")
                             st.rerun()
+
+    # =========================================================================
+    # TAB 8: MOTORE DI ALERT PROATTIVI & MORNING DIGEST AUTOMATICO (MODULO 2 V3.0)
+    # =========================================================================
+    elif active_admin_tab == tab_alert_digest_label:
+        from alert_engine import (
+            load_alert_subscriptions,
+            save_alert_subscriptions,
+            load_morning_digest_logs,
+            run_proactive_red_flag_scan,
+            build_morning_digest_html,
+            dispatch_morning_digest,
+        )
+        st.markdown(
+            f"<div style='background:linear-gradient(135deg, #081120 0%, #0d1e38 100%); padding:16px 20px; border-radius:12px; margin-bottom:18px; border:1px solid rgba(56,189,248,0.28); border-left:5px solid #0ea5e9; color:#f8fafc; font-family:\"Inter\",sans-serif;'>"
+            f"<div style='font-size:14.5px; font-weight:900; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8;'><i class='bi bi-envelope-check-fill' style='margin-right:8px;'></i>{tr('MOTORE DI ALERT PROATTIVI & MORNING DIGEST AUTOMATICO (09:30 CET)', 'PROACTIVE ALERT ENGINE & AUTOMATED MORNING DIGEST (09:30 CET)')}</div>"
+            f"<div style='font-size:12.5px; color:#cbd5e1; margin-top:4px; line-height:1.5;'>"
+            f"{tr('Scansione giornaliera multi-sorgente delle 6 regole di Red-Flag (Wellness Mancante, Overload Carico Adattato >70%, Disaccoppiamento I:E >+20%, Spike ACWR EWMA >150% / Monotonia >2.0, Calo HRV sotto Banda SWC 60d e Coda K-Sport >12h). Esecuzione automatica a costo zero tramite GitHub Actions.', 'Daily multi-source scanning across the 6 Red-Flag rules (Missing Wellness, Adapted Load Overload >70%, I:E Decoupling >+20%, EWMA ACWR Spike >150% / Monotony >2.0, HRV Drop below 60d SWC Band, and Pending K-Sport Queue >12h). Zero-cost automated scheduling via GitHub Actions.')}"
+            f"</div></div>",
+            unsafe_allow_html=True
+        )
+
+        # Scansione Live Istantanea per KPI
+        live_scan = run_proactive_red_flag_scan()
+        ca1, ca2, ca3, ca4 = st.columns(4)
+        with ca1:
+            st.markdown(card_kpi(tr("Atleti Scansionati", "Scanned Athletes"), f"{live_scan['n_athletes']}", tr("Roster attivo monitorato", "Active monitored roster"), "#0ea5e9"), unsafe_allow_html=True)
+        with ca2:
+            col_cr = "#ef4444" if live_scan["n_critico"] > 0 else "#10b981"
+            st.markdown(card_kpi(tr("Alert Critici [CRITICO]", "Critical Alerts [CRITICAL]"), f"<span style='color:{col_cr};'>{live_scan['n_critico']}</span>", tr("ACWR >150% o Violazione 70%", "ACWR >150% or 70% Cap Violation"), col_cr), unsafe_allow_html=True)
+        with ca3:
+            col_at = "#f59e0b" if live_scan["n_attenzione"] > 0 else "#10b981"
+            st.markdown(card_kpi(tr("Alert Fisiologici [ATTENZIONE]", "Physiological [CAUTION]"), f"<span style='color:{col_at};'>{live_scan['n_attenzione']}</span>", tr("Decoupling I:E >20% o Calo HRV", "I:E Decoupling >20% or HRV Drop"), col_at), unsafe_allow_html=True)
+        with ca4:
+            st.markdown(card_kpi(tr("Operativi & Wellness", "Operational & Wellness"), f"{live_scan['n_operativo'] + live_scan['n_info']}", tr(f"K-Sport >12h: {live_scan['n_operativo']} | Wellness: {live_scan['n_info']}", f"K-Sport >12h: {live_scan['n_operativo']} | Wellness: {live_scan['n_info']}"), "#8b5cf6"), unsafe_allow_html=True)
+
+        st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+        # Azioni Rapide: Anteprima Live Digest & Invio Manuale Test
+        c_act1, c_act2 = st.columns(2)
+        with c_act1:
+            show_preview = st.button(
+                tr("Anteprima Live Digest Odierno", "Live Today's Digest Preview"),
+                type="secondary",
+                use_container_width=True,
+                key="btn_adm_preview_digest"
+            )
+        with c_act2:
+            send_now = st.button(
+                tr("Invia Morning Digest Ora (Test Manuale)", "Send Morning Digest Now (Manual Test)"),
+                type="primary",
+                use_container_width=True,
+                key="btn_adm_send_digest_now"
+            )
+
+        if send_now:
+            with st.spinner(tr("Scansione Red-Flags e invio email SMTP in corso...", "Scanning Red-Flags and dispatching SMTP emails...")):
+                res_dispatch = dispatch_morning_digest(force_send_all=True)
+            n_ok = sum(1 for r in res_dispatch if r.get("stato") == "INVIATO")
+            if n_ok > 0:
+                set_notification(
+                    title=tr("Morning Digest Inviato", "Morning Digest Sent"),
+                    message=tr(f"Inviati {n_ok} report Morning Digest con successo.", f"Successfully dispatched {n_ok} Morning Digest reports."),
+                    tipo="modal",
+                    details=[f"{r['email']}: {r['stato']} ({r['dettaglio']})" for r in res_dispatch]
+                )
+                st.rerun()
+            else:
+                st.warning(tr("Invio registrato nel log (verifica la configurazione SMTP se lo stato riporta ERRORE).", "Dispatch logged (check SMTP settings if status reports ERROR)."))
+                for r in res_dispatch:
+                    st.caption(f"• **{r['email']}** — `{r['stato']}`: {r['dettaglio']}")
+
+        if show_preview or st.session_state.get("adm_show_digest_preview", False):
+            st.session_state["adm_show_digest_preview"] = True
+            with st.expander(tr("Anteprima HTML Email 'M0V3 Morning Digest' & Quadro Semaforico Live", "HTML Email Preview 'M0V3 Morning Digest' & Live Traffic-Light Table"), expanded=True):
+                html_prev = build_morning_digest_html(live_scan, lang=st.session_state.get("lang", "IT"))
+                st.components.v1.html(html_prev, height=620, scrolling=True)
+
+        st.divider()
+
+        # Configurazione Destinatari Morning Digest (alert_subscriptions)
+        st.markdown(f"### <i class='bi bi-people-fill' style='color:#38bdf8;'></i> {tr('Configurazione Destinatari & Soglie Personalizzate (alert_subscriptions)', 'Recipients & Custom Thresholds Configuration (alert_subscriptions)')}", unsafe_allow_html=True)
+        st.caption(tr("Configura gli indirizzi email di Coach, Preparatori, Fisioterapisti e Super-Admin che ricevono il Morning Digest alle 09:30 CET. Usa 'TUTTI' oppure i nomi degli atleti separati da virgola.",
+                      "Configure the email addresses of Coaches, S&C Trainers, Physios, and Super-Admins receiving the 09:30 CET Morning Digest. Use 'TUTTI' or comma-separated athlete names."))
+
+        subs_curr = load_alert_subscriptions()
+        rows_subs_ed = []
+        for s in subs_curr:
+            sog = s.get("soglie_custom_json") if isinstance(s.get("soglie_custom_json"), dict) else {}
+            rows_subs_ed.append({
+                "email": s.get("email", ""),
+                "atleti_monitorati": s.get("atleti_monitorati", "TUTTI"),
+                "attivo": bool(s.get("attivo", True)),
+                "invia_se_tutto_ok": bool(s.get("invia_se_tutto_ok", True)),
+                "acwr_max_pct": float(sog.get("acwr_max", 150.0)),
+                "ie_decoupling_pct": float(sog.get("ie_decoupling_pct", 20.0)),
+                "adapted_cap_pct": float(sog.get("adapted_cap_pct", 70.0)),
+            })
+
+        df_subs_ed = st.data_editor(
+            pd.DataFrame(rows_subs_ed),
+            use_container_width=True,
+            num_rows="dynamic",
+            hide_index=True,
+            key="adm_alert_subs_editor",
+            column_config={
+                "email": st.column_config.TextColumn(tr("Email Destinatario", "Recipient Email"), required=True),
+                "atleti_monitorati": st.column_config.TextColumn(tr("Atleti Monitorati (es. TUTTI o Flavio Cobolli)", "Monitored Athletes (e.g. TUTTI or Flavio Cobolli)"), default="TUTTI", required=True),
+                "attivo": st.column_config.CheckboxColumn(tr("Attivo", "Active"), default=True),
+                "invia_se_tutto_ok": st.column_config.CheckboxColumn(tr("Invia anche se 0 Alert (All Green)", "Send even on 0 Alerts (All Green)"), default=True),
+                "acwr_max_pct": st.column_config.NumberColumn(tr("Soglia Spike ACWR (%)", "ACWR Spike Threshold (%)"), min_value=110.0, max_value=200.0, default=150.0, step=5.0),
+                "ie_decoupling_pct": st.column_config.NumberColumn(tr("Soglia Decoupling I:E (+%)", "I:E Decoupling (+%)"), min_value=5.0, max_value=50.0, default=20.0, step=5.0),
+                "adapted_cap_pct": st.column_config.NumberColumn(tr("Tetto Carico Adattato (%)", "Adapted Load Cap (%)"), min_value=40.0, max_value=95.0, default=70.0, step=5.0),
+            }
+        )
+
+        if st.button(tr("Salva Configurazione Destinatari Morning Digest", "Save Morning Digest Recipients Configuration"), type="primary", use_container_width=True, key="btn_save_alert_subs"):
+            new_subs = []
+            for _, rs in df_subs_ed.iterrows():
+                em_v = str(rs.get("email", "")).strip()
+                if not em_v:
+                    continue
+                new_subs.append({
+                    "email": em_v,
+                    "atleti_monitorati": str(rs.get("atleti_monitorati", "TUTTI") or "TUTTI").strip(),
+                    "attivo": bool(rs.get("attivo", True)),
+                    "invia_se_tutto_ok": bool(rs.get("invia_se_tutto_ok", False)),
+                    "soglie_custom_json": {
+                        "acwr_max": float(rs.get("acwr_max_pct", 150.0) or 150.0),
+                        "ie_decoupling_pct": float(rs.get("ie_decoupling_pct", 20.0) or 20.0),
+                        "adapted_cap_pct": float(rs.get("adapted_cap_pct", 70.0) or 70.0),
+                    }
+                })
+            save_alert_subscriptions(new_subs)
+            set_notification(
+                title=tr("Destinatari Morning Digest Aggiornati", "Morning Digest Recipients Updated"),
+                message=tr(f"Configurazione salvata per {len(new_subs)} destinatari.", f"Configuration saved for {len(new_subs)} recipients."),
+                tipo="toast"
+            )
+            st.rerun()
+
+        st.divider()
+
+        # Log Storico degli Ultimi 30 Invii
+        st.markdown(f"### <i class='bi bi-clock-history' style='color:#38bdf8;'></i> {tr('Log Storico Ultimi 30 Invii Morning Digest', 'Historical Log of Last 30 Morning Digest Dispatches')}", unsafe_allow_html=True)
+        logs_30 = load_morning_digest_logs(limit=30)
+        if not logs_30:
+            st.info(tr("Nessun invio ancora registrato nel log storico. Clicca su 'Invia Morning Digest Ora' per eseguire un test.", "No dispatches recorded in the historical log yet. Click 'Send Morning Digest Now' to run a test."))
+        else:
+            st.dataframe(pd.DataFrame(logs_30), use_container_width=True, hide_index=True)
+
 

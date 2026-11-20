@@ -242,4 +242,39 @@ UPDATE wellness_mattutino SET modificato_da_staff = FALSE WHERE modificato_da_st
 CREATE INDEX IF NOT EXISTS idx_rpe_is_valid ON rpe_sessioni(atleta_id, is_valid, data DESC);
 CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id, is_valid, data DESC);
 
+-- =====================================================================
+-- 8. MIGRAZIONE V3.0 (MODULO 3): BIOMETRIA PASSIVA OGGETTIVA (HRV, RHR & SONNO)
+-- Estensione retrocompatibile nullable di wellness_mattutino
+-- =====================================================================
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS hrv_rmssd_ms NUMERIC;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS rhr_bpm NUMERIC;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS sonno_ore_reali NUMERIC;
+ALTER TABLE wellness_mattutino ADD COLUMN IF NOT EXISTS biometria_fonte TEXT DEFAULT 'Manuale';
+
+-- =====================================================================
+-- 9. MIGRAZIONE V3.0 (MODULO 1 & 2): PIANI MICROCICLO & ALERT SUBSCRIPTIONS
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS piani_microciclo (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    atleta_nome TEXT NOT NULL,
+    nome_piano TEXT NOT NULL,
+    data_inizio DATE NOT NULL,
+    giorni_orizzonte INT NOT NULL DEFAULT 7,
+    schedule_json JSONB NOT NULL,
+    kpi_json JSONB DEFAULT NULL,
+    creato_da TEXT DEFAULT NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS alert_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    atleti_monitorati TEXT DEFAULT 'TUTTI',
+    attivo BOOLEAN DEFAULT TRUE,
+    invia_se_tutto_ok BOOLEAN DEFAULT FALSE,
+    soglie_custom_json JSONB DEFAULT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, NOW()) NOT NULL
+);
+
+
 

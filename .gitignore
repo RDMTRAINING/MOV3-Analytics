@@ -1,5 +1,7 @@
 # Secrets and credentials
 .streamlit/secrets.toml
+rugby_fir_app/.streamlit/secrets.toml
+**/secrets.toml
 .env
 *.env
 
@@ -21,5 +23,8 @@ __pycache__/
 .Spotlight-V100
 .Trashes
 
-# Office temporary files
-~$*
+# Temporary / Scratch files
+scratch/
+tmp_data/
+rugby_fir_app/tmp_data/
+mov3_analytics_repo/

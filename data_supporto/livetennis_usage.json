@@ -1,0 +1,134 @@
+{
+  "date": "2026-11-17",
+  "calls_count": 17,
+  "calls_limit": 100,
+  "remaining": 83,
+  "history": [
+    {
+      "timestamp": "17/11/2026 18:02:05",
+      "endpoint": "/players/652",
+      "status": 200,
+      "player": "Flavio Cobolli",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:02:06",
+      "endpoint": "/players?search=prova%20uno",
+      "status": 200,
+      "player": "prova uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:02:07",
+      "endpoint": "/players?search=uno",
+      "status": 200,
+      "player": "uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:02:08",
+      "endpoint": "/players/503",
+      "status": 200,
+      "player": "prova uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:04:34",
+      "endpoint": "/players/652",
+      "status": 200,
+      "player": "Flavio Cobolli",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:04:37",
+      "endpoint": "/players?search=prova%20uno",
+      "status": 200,
+      "player": "prova uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:04:38",
+      "endpoint": "/players?search=uno",
+      "status": 200,
+      "player": "uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:10:05",
+      "endpoint": "/players/652",
+      "status": 200,
+      "player": "Flavio Cobolli",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:10:08",
+      "endpoint": "/players?search=prova%20uno",
+      "status": 200,
+      "player": "prova uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:10:09",
+      "endpoint": "/players?search=uno",
+      "status": 200,
+      "player": "uno",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:54:46",
+      "endpoint": "/players/652",
+      "status": 0,
+      "player": "Flavio Cobolli",
+      "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "timestamp": "17/11/2026 18:54:55",
+      "endpoint": "/matches?status=live&player=652",
+      "status": 0,
+      "player": "Flavio Cobolli",
+      "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "timestamp": "17/11/2026 18:54:57",
+      "endpoint": "/matches?status=upcoming&player=652",
+      "status": 0,
+      "player": "Flavio Cobolli",
+      "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "timestamp": "17/11/2026 18:59:40",
+      "endpoint": "/matches?status=live&player=652",
+      "status": 200,
+      "player": "Flavio Cobolli",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 18:59:42",
+      "endpoint": "/matches?status=upcoming&player=652",
+      "status": 200,
+      "player": "Flavio Cobolli",
+      "note": ""
+    },
+    {
+      "timestamp": "17/11/2026 19:01:53",
+      "endpoint": "/matches?status=live&player=652",
+      "status": 0,
+      "player": "Flavio Cobolli",
+      "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "timestamp": "17/11/2026 21:48:30",
+      "endpoint": "/matches?status=live&player=652",
+      "status": 0,
+      "player": "Flavio Cobolli",
+      "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    }
+  ],
+  "last_call": {
+    "timestamp": "17/11/2026 21:48:30",
+    "endpoint": "/matches?status=live&player=652",
+    "status": 0,
+    "player": "Flavio Cobolli",
+    "note": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+  }
+}

@@ -1,2 +1,5 @@
+chromium
+chromium-driver
 fonts-liberation
-fonts-dejavu-core
+fonts-noto-core
+libgl1

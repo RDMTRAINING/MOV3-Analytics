@@ -1484,6 +1484,173 @@ MANUALE_ANALISI = [
         "bibliografia": [
             "M0V3 Custom Assessment Framework."
         ]
+    },
+    # ---------------------------------------------------------------------
+    # 11. M0V3 TENNIS TEST (Profilazione Fatica Neuro-Meccanica Specifica)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "M0V3 Tennis Test",
+        "nome_it": "M0V3 Tennis Test — Profilazione Fatica Neuro-Meccanica in Campo (6 Round & 6 Indici)",
+        "area": "Test Fisici & Neuromuscolari",
+        "icona": "bi-lightning-charge-fill",
+        "colore": "#0ea5e9",
+        "cosa_analizza": (
+            "Protocollo incrementale proprietario in campo su 6 Round che incrocia il carico esterno GPS/IMU con la risposta neuromuscolare "
+            "interna (salto CMJ Pre-Test e Post-Round) e il test R.A.A. (8x15m), calcolando 6 indici composti: "
+            "EDI % (Explosive Decay Index), TPS % (Total Performance Score), CMJ Internal Score %, GRS % (Global Resilience Score), "
+            "PCI (Physiological Cost Index = TPS - CMJ Score) e Fatigue Index R.A.A. (Velocità & Accelerazione)."
+        ),
+        "a_cosa_serve": (
+            "Diagnostica la resilienza specifica del tennista sotto fatica progressiva, distinguendo un profilo bilanciato da uno stato di "
+            "Overreaching Meccanico / Inibizione Neurale (PCI > +10) o di Underperforming / Risparmio Energetico (PCI < -10), "
+            "e genera automaticamente un dossier PDF ufficiale di 5 pagine con 4 prescrizioni operative di allenamento."
+        ),
+        "azioni_consentite": [
+            "Dashboard clinica con 6 KPI e 5 sezioni grafiche speculari al PDF",
+            "Diagnosi clinica automatica e 4 prescrizioni operative per il preparatore",
+            "Form guidato a 6 Round + R.A.A. 8x15m e caricamento da Template Excel",
+            "Confronto storico longitudinale con Radar a 4 assi (EDI, TPS, CMJ, GRS)",
+            "Esportazione Dossier PDF Ufficiale M0V3 (5 Pagine)"
+        ],
+        "bibliografia": [
+            "Girard, O. & Millet, G. P. (2009). Neuromuscular fatigue in racquet sports. Physical Medicine and Rehabilitation Clinics, 20(1), 161-173.",
+            "Kovacs, M. S. (2007). Tennis physiology: training the competitive athlete. Sports Medicine, 37(3), 189-198.",
+            "Claudino, J. G. et al. (2017). The countermovement jump to monitor neuromuscular status: A meta-analysis. Sports Medicine, 47(7), 1353-1367."
+        ]
+    },
+    # ---------------------------------------------------------------------
+    # 12. PIANIFICAZIONE & SIMULATORE WHAT-IF (3 Moduli V3.0)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Simulatore Microciclo 7/14gg",
+        "nome_it": "Simulatore Interattivo del Microciclo Futuro (7 o 14 Giorni)",
+        "area": "Pianificazione & Simulatore What-If",
+        "icona": "bi-sliders",
+        "colore": "#06b6d4",
+        "cosa_analizza": (
+            "Estrae i ratei reali al minuto (TL/min, TL High/min, Acc+Dec/min, Azioni >2\"/min) dalle sessioni storiche reali "
+            "(escludendo i dati simulati) per ciascuna Tipologia di Sessione dell'atleta e calcola in memoria i volumi previsionali "
+            "per i prossimi 7 o 14 giorni modulati dal Moltiplicatore d'Intensità (50%–130%) e dalle sedute extra-campo (Gym/Prep)."
+        ),
+        "a_cosa_serve": (
+            "Consente a Coach e Preparatori di progettare il microciclo settimanale o bisettimanale prima di scendere in campo, "
+            "stimando il volume complessivo in Training Load e in Match Equivalenti senza inquinare il database storico GPS."
+        ),
+        "azioni_consentite": [
+            "Editor tabellare interattivo giorno-per-giorno a 7 o 14 giorni",
+            "Template rapidi preconfigurati (Bilanciato, Blocco Agonistico, Torneo, Return-to-Play ≤70%)",
+            "Tabella di ispezione dei coefficienti reali al minuto estratti per l'atleta",
+            "Salvataggio dello scenario su Supabase e Cloud Snapshot",
+            "Esportazione PDF Piano di Carico Previsionale"
+        ],
+        "bibliografia": [
+            "Foster, C. (1998). Monitoring training in athletes with reference to overtraining syndrome. MSSE, 30(7), 1164-1168.",
+            "Gabbett, T. J. (2016). The training—injury prevention paradox. BJSM, 50(5), 273-280."
+        ]
+    },
+    {
+        "nome": "Proiezione ACWR & Soglia 70%",
+        "nome_it": "Proiezione Algoritmica ACWR Uncoupled EWMA, Monotonia & Tetto Clinico 70%",
+        "area": "Pianificazione & Simulatore What-If",
+        "icona": "bi-graph-up-arrow",
+        "colore": "#06b6d4",
+        "cosa_analizza": (
+            "Concatena virtualmente in RAM gli ultimi 35 giorni storici dell'atleta con i 7–14 giorni pianificati futuri e proietta "
+            "la curva dell'ACWR Uncoupled EWMA (globale e meccanico Acc+Dec), la Monotonia e lo Strain di Foster, verificando "
+            "automaticamente il rispetto del Tetto Clinico del 70% qualora l'atleta sia in status di Carico Adattato."
+        ),
+        "a_cosa_serve": (
+            "Previene in anticipo gli spike acuti di carico (ACWR > 150%), l'appiattimento del microciclo (Monotonia > 2.0) "
+            "e i sovraccarichi accidentali durante la fase di Return-to-Play riabilitativo."
+        ),
+        "azioni_consentite": [
+            "Grafico Plotly a doppio pannello Real vs Forecast (linea continua storica -> tratteggiata forecast)",
+            "Bande semaforiche ACWR (80-130% Sweet Spot, >150% Danger Zone) e linea rossa Tetto 70%",
+            "4 KPI Card predittive con semaforo automatico",
+            "Esportazione ad alta risoluzione nel PDF Piano di Carico Previsionale"
+        ],
+        "bibliografia": [
+            "Williams, S. et al. (2017). Better Way to Determine the Acute:Chronic Workload Ratio? CJSM, 27(3), 301-304.",
+            "Impellizzeri, F. M. et al. (2020). The Acute-Chronic Workload Ratio. IJSPP, 15(9), 1337-1342."
+        ]
+    },
+    {
+        "nome": "Confronto Piano vs Eseguito",
+        "nome_it": "Verifica di Aderenza Giornaliera e Cumulativa: Piano Salvato vs GPS Eseguito",
+        "area": "Pianificazione & Simulatore What-If",
+        "icona": "bi-check2-all",
+        "colore": "#06b6d4",
+        "cosa_analizza": (
+            "Mette a confronto giorno per giorno e cumulativamente i volumi e le durate programmate in un Piano Microciclo salvato "
+            "con i carichi GPS reali effettivamente registrati dall'atleta in quelle stesse date."
+        ),
+        "a_cosa_serve": (
+            "Quantifica la percentuale di aderenza al programma tecnico-atletico (target ottimale 85%–115%), evidenziando "
+            "scostamenti tra il carico prescritto a tavolino e la risposta reale espressa sul campo."
+        ),
+        "azioni_consentite": [
+            "Selettore dei piani previsionali archiviati per l'atleta",
+            "4 KPI di aderenza (TL Pianificato, TL Eseguito, Aderenza %, Scostamento Cumulativo)",
+            "Grafico a barre affiancate Pianificato vs Eseguito Reale",
+            "Tabella analitica giornaliera con delta TL e % di aderenza"
+        ],
+        "bibliografia": [
+            "Coutts, A. J. et al. (2009). Monitoring training in athletes. JSMS, 12(1), 102-108."
+        ]
+    },
+    # ---------------------------------------------------------------------
+    # 13. BIOMETRIA PASSIVA OGGETTIVA (2 Moduli V3.0 in Analisi Wellness-RPE-GPS)
+    # ---------------------------------------------------------------------
+    {
+        "nome": "Biometria Autonomica (HRV & RHR)",
+        "nome_it": "Valutazione del Sistema Nervoso Autonomo: HRV Ln(rMSSD) 7d vs Banda SWC 60d & RHR",
+        "area": "Analisi Wellness-RPE-GPS",
+        "icona": "bi-smartwatch",
+        "colore": "#ec4899",
+        "cosa_analizza": (
+            "Elabora le misurazioni mattutine oggettive di Variabilità della Frequenza Cardiaca (HRV rMSSD in ms e trasformazione "
+            "logaritmica Ln rMSSD) e Frequenza Cardiaca a Riposo (RHR in bpm) da sensori wearable (Apple Watch, Whoop, Oura, Garmin), "
+            "confrontando la media mobile a 7 giorni con la Baseline Individuale Mobile a 60 giorni ± 0.5 SD (SWC)."
+        ),
+        "a_cosa_serve": (
+            "Fornisce un indicatore oggettivo non manipolabile dello stato di recupero vagale/parasimpatico, diagnosticando precocemente "
+            "stati di affaticamento funzionale o overreaching non-funzionale prima che si manifestino cali prestativi o infortuni."
+        ),
+        "azioni_consentite": [
+            "Semaforo automatico di Stato Autonomico (Ottimale, Affaticamento Funzionale, Allerta Parasimpatica)",
+            "Grafico longitudinale con banda verde SWC 60d, spline HRV 7d Rolling e curva RHR su doppio asse",
+            "Acquisizione opzionale da Diario Mobile/Desktop o Batch Import CSV Wearable Non-Distruttivo",
+            "Integrazione automatica nel PDF Carico Interno & Wellness"
+        ],
+        "bibliografia": [
+            "Plews, D. J. et al. (2013). Training adaptation and heart rate variability in elite endurance athletes. Sports Medicine, 43(9), 773-781.",
+            "Buchheit, M. (2014). Monitoring training status with HR measures: do all roads lead to Rome? Frontiers in Physiology, 5, 73.",
+            "Stanley, J., Peake, J. M., & Buchheit, M. (2013). Cardiac parasympathetic reactivation following exercise. Sports Medicine, 43(12), 1259-1277."
+        ]
+    },
+    {
+        "nome": "Analisi Sonno Reale vs Soggettivo",
+        "nome_it": "Confronto Durata Effettiva del Sonno (Wearable) vs Percezione Soggettiva (1-10)",
+        "area": "Analisi Wellness-RPE-GPS",
+        "icona": "bi-moon-stars-fill",
+        "colore": "#ec4899",
+        "cosa_analizza": (
+            "Incrocia le ore reali di sonno registrate dal dispositivo indossabile (`sonno_ore_reali`, rispetto al target fisiologico "
+            "di 7.5–8.5 ore per atleti d'élite) con il voto soggettivo di qualità del sonno (scala 1–10) espresso al risveglio."
+        ),
+        "a_cosa_serve": (
+            "Individua dissociazioni tra quantità oggettiva di riposo notturno e qualità percepita (es. sonno lungo ma frammentato/non "
+            "ristoratore post-match serale o jet-lag da trasferta intercontinentale)."
+        ),
+        "azioni_consentite": [
+            "Grafico combinato a doppio asse: barre ore di sonno reali vs linea qualità soggettiva 1-10",
+            "Linea target minimo di recupero (7.5 ore)",
+            "Audit Trail completo e modifica tracciata in Gestione File -> Data Governance",
+            "Esportazione tabellare e PDF"
+        ],
+        "bibliografia": [
+            "Fullagar, H. H. et al. (2015). Sleep and athletic performance: the effects of sleep loss on exercise performance. Sports Medicine, 45(2), 161-186."
+        ]
     }
 ]
 
@@ -1492,6 +1659,7 @@ AREE_ORDER = [
     "Analisi Match",
     "Analisi Sessione",
     "Trend Settimanale",
+    "Pianificazione & Simulatore What-If",
     "Trend Stagionale",
     "Storico Match",
     "Statistiche Match",
@@ -1505,6 +1673,7 @@ AREA_ICONS = {
     "Analisi Match": ("bi-trophy-fill", "#0284c7"),
     "Analisi Sessione": ("bi-activity", "#10b981"),
     "Trend Settimanale": ("bi-calendar-week-fill", "#0ea5e9"),
+    "Pianificazione & Simulatore What-If": ("bi-sliders", "#06b6d4"),
     "Trend Stagionale": ("bi-calendar-range-fill", "#8b5cf6"),
     "Storico Match": ("bi-graph-up-arrow", "#f59e0b"),
     "Statistiche Match": ("bi-card-checklist", "#6366f1"),

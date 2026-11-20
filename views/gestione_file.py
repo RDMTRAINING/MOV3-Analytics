@@ -76,28 +76,42 @@ from pdf_generator import (
 def render_gestione_file(t):
     render_page_header(tr("Gestione File e Sessioni Caricate", "Uploaded Files & Sessions Management"), t['home_file_desc'], "DATABASE MANAGEMENT")
 
-    # --- RIGA DIAGNOSTICA CLOUD SNAPSHOT & DOWNLOAD MASTER PARQUET ---
+    # --- RIGA DIAGNOSTICA CLOUD SNAPSHOT PARTIZIONATO & DOWNLOAD MASTER PARQUET / ZIP ---
     snap_stat = get_cloud_snapshot_status()
-    c_diag1, c_diag2 = st.columns([3.2, 1.8])
+    n_ath_stat = snap_stat.get('n_athletes', 0)
+    c_diag1, c_diag2, c_diag3 = st.columns([2.8, 1.3, 1.3])
     with c_diag1:
         st.markdown(
             f"<div style='background:rgba(16,185,129,0.14); border:1px solid #10b981; border-left:4px solid #10b981; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-family:\"Inter\",sans-serif; font-size:12.5px; color:#34d399; display:flex; align-items:center; gap:8px;'>"
             f"<i class='bi bi-cloud-check-fill' style='color:#10b981; font-size:16px;'></i>"
-            f"<span><b>Cloud Snapshot Attivo</b> | Ultima Data GPS Salvata: <b>{snap_stat.get('max_date', 'N/D')}</b> | Totale Righe: <b>{snap_stat.get('total_rows', 0)}</b></span>"
+            f"<span><b>{tr('Snapshot Partizionati Attivi', 'Partitioned Snapshots Active')}</b> | <b>{n_ath_stat} {tr('Atleti', 'Athletes')}</b> | {tr('Ultima Data:', 'Latest Date:')} <b>{snap_stat.get('max_date', 'N/D')}</b> | {tr('Righe:', 'Rows:')} <b>{snap_stat.get('total_rows', 0)}</b></span>"
             f"</div>",
             unsafe_allow_html=True
         )
     with c_diag2:
         if st.session_state.get('role') == 'Super-Admin' and os.path.exists(DB_PARQUET_PATH):
             try:
-                with open(DB_PARQUET_PATH, "rb") as f_p:
-                    p_bytes = f_p.read()
+                p_bytes = getattr(_utils_mod, "get_cached_parquet_bytes", lambda p: open(p, "rb").read())(DB_PARQUET_PATH)
                 st.download_button(
-                    label="Scarica database_storico.parquet Consolidato",
+                    label=tr("Scarica database_storico.parquet", "Download database_storico.parquet"),
                     data=p_bytes,
                     file_name="database_storico.parquet",
                     mime="application/octet-stream",
                     key="btn_dl_master_parquet_gestione_file",
+                    use_container_width=True
+                )
+            except Exception:
+                pass
+    with c_diag3:
+        if st.session_state.get('role') == 'Super-Admin' and hasattr(_utils_mod, "get_partitioned_snapshots_zip_bytes"):
+            try:
+                z_bytes = _utils_mod.get_partitioned_snapshots_zip_bytes()
+                st.download_button(
+                    label=tr("Scarica Snapshot Partizionati (.zip)", "Download Partitioned Snapshots (.zip)"),
+                    data=z_bytes,
+                    file_name="m0v3_snapshot_partizionati.zip",
+                    mime="application/zip",
+                    key="btn_dl_partitioned_zip_gestione_file",
                     use_container_width=True
                 )
             except Exception:
@@ -389,7 +403,7 @@ def _render_data_governance_tab(t):
                 "<b>Data Governance Attiva in Modalità Ibrida Resiliente:</b><br>Le modifiche tracciate, l'Audit Trail dei valori originali dell'atleta e il Soft-Delete sono già attivi e persistiti in tempo reale. Per abilitare le colonne PostgreSQL native (is_valid, modificato_da_staff, rpe_originale) ed ottimizzare gli indici del database, copia ed esegui questa query nel <b>SQL Editor di Supabase</b>:",
                 "<b>Data Governance Active in Resilient Hybrid Mode:</b><br>Tracked edits, original athlete Audit Trail, and Soft-Deletes are already active and persisted in real-time. To enable native PostgreSQL columns (is_valid, modificato_da_staff, rpe_originale) and optimize database indexes, copy and run this query in the <b>Supabase SQL Editor</b>:"
             )
-            st.markdown(f"<div style='font-size:12.5px; color:#334155; line-height:1.55; margin-bottom:10px;'>{info_sql}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:12.5px; color:#e2e8f0; line-height:1.55; margin-bottom:10px;'>{info_sql}</div>", unsafe_allow_html=True)
             sql_ddl = """-- M0V3 Analytics: Data Governance & Audit Trail Schema (GDPR Art. 9)
 ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;
 ALTER TABLE rpe_sessioni ADD COLUMN IF NOT EXISTS modificato_da_staff BOOLEAN DEFAULT FALSE;
@@ -535,12 +549,24 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                 audit_txt = "Originale Atleta"
         else:
             w_sc = r.get('wellness_score', 0)
-            val_html = f"<b>Score {w_sc:.1f}</b> (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')})"
-            val_raw = f"Score {w_sc:.1f} (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')})"
+            bio_parts = []
+            if r.get('hrv_rmssd_ms'):
+                bio_parts.append(f"HRV {r.get('hrv_rmssd_ms')}ms")
+            if r.get('rhr_bpm'):
+                bio_parts.append(f"RHR {r.get('rhr_bpm')}bpm")
+            if r.get('sonno_ore_reali'):
+                bio_parts.append(f"Sonno {r.get('sonno_ore_reali')}h")
+            bio_suffix_html = f" &bull; <span style='color:#38bdf8; font-weight:700;'>[{' | '.join(bio_parts)}]</span>" if bio_parts else ""
+            bio_suffix_raw = f" [{' | '.join(bio_parts)}]" if bio_parts else ""
+
+            val_html = f"<b>Score {w_sc:.1f}</b> (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')}){bio_suffix_html}"
+            val_raw = f"Score {w_sc:.1f} (Sonno {r.get('sonno')}, Fatica {r.get('fatica')}, DOMS {r.get('doms')}, Stress {r.get('stress')}, Umore {r.get('umore')}){bio_suffix_raw}"
             if is_m:
                 wel_o = r.get('wellness_originale_json') or {}
                 if isinstance(wel_o, dict):
                     orig_desc = f"Sonno:{wel_o.get('sonno')}, Fatica:{wel_o.get('fatica')}, DOMS:{wel_o.get('doms')}, Stress:{wel_o.get('stress')}, Umore:{wel_o.get('umore')}"
+                    if wel_o.get('hrv_rmssd_ms') or wel_o.get('rhr_bpm') or wel_o.get('sonno_ore_reali'):
+                        orig_desc += f" | HRV:{wel_o.get('hrv_rmssd_ms')}, RHR:{wel_o.get('rhr_bpm')}, Ore:{wel_o.get('sonno_ore_reali')}"
                 else:
                     orig_desc = str(wel_o)
                 audit_hover = f"Valore originale Atleta: {orig_desc}"
@@ -779,6 +805,15 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                         calc_new_score = round(((w_sonno + w_umore) + (11 - w_fatica) + (11 - w_stress) + (11 - w_doms)) / 5.0, 1)
                         st.metric(tr("Readiness Score", "Readiness Score"), f"{calc_new_score} / 10")
 
+                    st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:#38bdf8; margin-top:8px; margin-bottom:4px;'><i class='bi bi-smartwatch'></i> {tr('Biometria Passiva Wearable (Opzionale - 0 = Non Rilevato)', 'Wearable Passive Biometrics (Optional - 0 = Not Recorded)')}</div>", unsafe_allow_html=True)
+                    cb_w1, cb_w2, cb_w3 = st.columns(3)
+                    with cb_w1:
+                        w_hrv = st.number_input(tr("HRV rMSSD (ms)", "HRV rMSSD (ms)"), min_value=0.0, max_value=250.0, value=float(rec.get('hrv_rmssd_ms') or 0.0), step=1.0)
+                    with cb_w2:
+                        w_rhr = st.number_input(tr("FC Riposo / RHR (bpm)", "Resting HR / RHR (bpm)"), min_value=0.0, max_value=120.0, value=float(rec.get('rhr_bpm') or 0.0), step=1.0)
+                    with cb_w3:
+                        w_sonno_h = st.number_input(tr("Ore Sonno Reali (h)", "Actual Sleep Hours (h)"), min_value=0.0, max_value=16.0, value=float(rec.get('sonno_ore_reali') or 0.0), step=0.25)
+
                     w_note_in = st.text_input(tr("Motivazione Rettifica Staff / Note", "Staff Adjustment Reason / Notes"), value=rec.get('note', '') or "")
 
                     btn_salva_wel = st.form_submit_button(tr("Salva Modifica Tracciata", "Save Tracked Edit"), type="primary", use_container_width=True)
@@ -791,7 +826,10 @@ CREATE INDEX IF NOT EXISTS idx_wellness_is_valid ON wellness_mattutino(atleta_id
                                 "fatica": w_fatica,
                                 "doms": w_doms,
                                 "stress": w_stress,
-                                "umore": w_umore
+                                "umore": w_umore,
+                                "hrv_rmssd_ms": w_hrv if w_hrv >= 10 else None,
+                                "rhr_bpm": w_rhr if w_rhr >= 30 else None,
+                                "sonno_ore_reali": w_sonno_h if w_sonno_h > 0 else None,
                             },
                             nuove_note=w_note_in
                         )

@@ -21,6 +21,8 @@ from utils import (
     calcola_e_salva_slot_rpe,
     delete_rpe_sessione,
     parse_audit_from_row,
+    enrich_wellness_row_biometrics,
+    calcola_analisi_hrv_autonomica,
     render_pulsante_segnalazione_gps,
     dialog_segnalazione_taglio_gps,
 )
@@ -159,7 +161,7 @@ def render_carico_interno(t):
     # 3. Query Dati da Supabase (Wellness & sRPE) con filtro Data Governance (solo is_valid != False)
     try:
         res_w = supabase.table('wellness_mattutino').select('*').eq('atleta_id', atleta_id_sel).gte('data', data_inizio_str).order('data').execute()
-        list_w = [w for w in (res_w.data or []) if parse_audit_from_row(w)['is_valid']]
+        list_w = [enrich_wellness_row_biometrics(w) for w in (res_w.data or []) if parse_audit_from_row(w)['is_valid']]
     except Exception as e:
         list_w = []
 
@@ -296,6 +298,8 @@ def render_carico_interno(t):
 
     user_perms = st.session_state.get('user_permessi_moduli')
     tabs_disponibili = []
+    can_view_hrv = True
+    can_view_sleep = True
     if st.session_state.get('role') == 'Super-Admin' or user_perms is None:
         tabs_disponibili = [lbl_ci_1, lbl_ci_2, lbl_ci_3]
     else:
@@ -303,9 +307,11 @@ def render_carico_interno(t):
         if not ci_perms:
             tabs_disponibili = [lbl_ci_1, lbl_ci_2, lbl_ci_3]
         else:
+            can_view_hrv = ("Biometria Autonomica (HRV & RHR)" in ci_perms) or ("Trend Risposta Biologica (Wellness)" in ci_perms)
+            can_view_sleep = ("Analisi Sonno Reale vs Soggettivo" in ci_perms) or ("Trend Risposta Biologica (Wellness)" in ci_perms)
             if "Incrocio GPS vs sRPE" in ci_perms:
                 tabs_disponibili.append(lbl_ci_1)
-            if "Trend Risposta Biologica (Wellness)" in ci_perms:
+            if any(m in ci_perms for m in ("Trend Risposta Biologica (Wellness)", "Biometria Autonomica (HRV & RHR)", "Analisi Sonno Reale vs Soggettivo")):
                 tabs_disponibili.append(lbl_ci_2)
             if "Analisi Incrociata" in ci_perms or "Analisi Correlazione Carichi vs Eventi Clinici" in ci_perms:
                 tabs_disponibili.append(lbl_ci_3)
@@ -710,21 +716,247 @@ def render_carico_interno(t):
             )
             st.plotly_chart(fig_w, use_container_width=True)
 
-            # Tabella con semafori colorati
-            st.markdown(f"#### {tr('Registro Giornaliero Dettagliato:', 'Detailed Daily Log:')}")
+            # Tabella con semafori colorati + colonne Biometria Passiva Wearable
+            st.markdown(f"#### {tr('Registro Giornaliero Dettagliato (Soggettivo + Biometria Wearable):', 'Detailed Daily Log (Subjective + Wearable Biometrics):')}")
             tabella_w = []
             for _, row in df_w.sort_values('data', ascending=False).iterrows():
+                clean_nt = parse_audit_from_row(row.to_dict()).get('clean_note', '') or '-'
+                hrv_cell = f"{float(row['hrv_rmssd_ms']):.1f} ms" if pd.notna(row.get('hrv_rmssd_ms')) and float(row.get('hrv_rmssd_ms') or 0) > 0 else "N/D"
+                rhr_cell = f"{float(row['rhr_bpm']):.0f} bpm" if pd.notna(row.get('rhr_bpm')) and float(row.get('rhr_bpm') or 0) > 0 else "N/D"
+                slp_cell = f"{float(row['sonno_ore_reali']):.2f} h" if pd.notna(row.get('sonno_ore_reali')) and float(row.get('sonno_ore_reali') or 0) > 0 else "N/D"
                 tabella_w.append({
                     tr("Data", "Date"): row['data'],
-                    tr("Sonno (1-10)", "Sleep (1-10)"): f"{row['sonno_qualita']} (●)" if row['sonno_qualita']>=7 else f"{row['sonno_qualita']} (▲)" if row['sonno_qualita']>=5 else f"{row['sonno_qualita']} (■)",
-                    tr("Fatica (1-10)", "Fatigue (1-10)"): f"{row['fatica']} (●)" if row['fatica']<=4 else f"{row['fatica']} (▲)" if row['fatica']<=6 else f"{row['fatica']} (■)",
-                    tr("Stress (1-10)", "Stress (1-10)"): f"{row['stress']} (●)" if row['stress']<=4 else f"{row['stress']} (▲)" if row['stress']<=6 else f"{row['stress']} (■)",
-                    tr("Umore (1-10)", "Mood (1-10)"): f"{row['umore']} (●)" if row['umore']>=7 else f"{row['umore']} (▲)" if row['umore']>=5 else f"{row['umore']} (■)",
-                    tr("DOMS (1-10)", "DOMS (1-10)"): f"{row['doms']} (●)" if row['doms']<=4 else f"{row['doms']} (▲)" if row['doms']<=6 else f"{row['doms']} (■)",
+                    tr("Sonno (1-10)", "Sleep (1-10)"): f"{int(row['sonno_qualita'])} (●)" if row['sonno_qualita']>=7 else f"{int(row['sonno_qualita'])} (▲)" if row['sonno_qualita']>=5 else f"{int(row['sonno_qualita'])} (■)",
+                    tr("Fatica (1-10)", "Fatigue (1-10)"): f"{int(row['fatica'])} (●)" if row['fatica']<=4 else f"{int(row['fatica'])} (▲)" if row['fatica']<=6 else f"{int(row['fatica'])} (■)",
+                    tr("Stress (1-10)", "Stress (1-10)"): f"{int(row['stress'])} (●)" if row['stress']<=4 else f"{int(row['stress'])} (▲)" if row['stress']<=6 else f"{int(row['stress'])} (■)",
+                    tr("Umore (1-10)", "Mood (1-10)"): f"{int(row['umore'])} (●)" if row['umore']>=7 else f"{int(row['umore'])} (▲)" if row['umore']>=5 else f"{int(row['umore'])} (■)",
+                    tr("DOMS (1-10)", "DOMS (1-10)"): f"{int(row['doms'])} (●)" if row['doms']<=4 else f"{int(row['doms'])} (▲)" if row['doms']<=6 else f"{int(row['doms'])} (■)",
                     tr("Score Globale", "Overall Score"): f"{row.get('score_tot', 0):.1f}/10",
-                    tr("Note", "Notes"): row.get('note') or '-'
+                    tr("HRV rMSSD", "HRV rMSSD"): hrv_cell,
+                    tr("RHR (FC Riposo)", "RHR (Resting HR)"): rhr_cell,
+                    tr("Ore Sonno Reali", "Actual Sleep Hours"): slp_cell,
+                    tr("Note", "Notes"): clean_nt
                 })
-            st.dataframe(pd.DataFrame(tabella_w), use_container_width=True)
+            st.dataframe(pd.DataFrame(tabella_w), use_container_width=True, hide_index=True)
+
+            # =========================================================================
+            # MODULO 3.3 V3.0: BIOMETRIA AUTONOMICA (HRV Ln rMSSD 7d vs SWC 60d & RHR)
+            # & ANALISI SONNO REALE VS SOGGETTIVO
+            # =========================================================================
+            df_w_bio_in = df_w.copy()
+            df_w_bio_in['wellness_score'] = df_w_bio_in['score_tot']
+            bio_res = calcola_analisi_hrv_autonomica(df_w_bio_in)
+
+            if can_view_hrv or can_view_sleep:
+                st.divider()
+                st.markdown(
+                    f"<div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;'>"
+                    f"<div style='font-size:17px; font-weight:900; color:#f8fafc;'><i class='bi bi-smartwatch' style='color:#38bdf8; margin-right:8px;'></i>"
+                    f"{tr('Biometria Autonomica & Sonno Wearable (Plews et al., 2013; Buchheit, 2014)', 'Autonomic Biometrics & Wearable Sleep (Plews et al., 2013; Buchheit, 2014)')}</div>"
+                    f"<span style='background:rgba(14,165,233,0.14); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px;'>"
+                    f"<i class='bi bi-activity'></i> {tr('Baseline Individuale 60d ± 0.5 SD (SWC)', '60d Individual Baseline ± 0.5 SD (SWC)')}</span>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+                if not bio_res.get("has_biometrics"):
+                    st.markdown(
+                        f"<div style='background:#081120; border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; border-radius:12px; padding:14px 18px; margin-bottom:14px; font-size:12.5px; color:#cbd5e1;'>"
+                        f"<i class='bi bi-info-circle-fill' style='color:#38bdf8; margin-right:6px;'></i>"
+                        f"<b>{tr('Nessuna misurazione biometrica passiva rilevata nel periodo selezionato.', 'No passive biometric measurements detected in the selected time window.')}</b><br>"
+                        f"{tr('L’atleta può inserire opzionalmente HRV rMSSD (ms), RHR (bpm) e Ore Sonno Reali dal Diario Mattutino, oppure lo staff può importare un file CSV wearable da <b>Caricamento Dati -> Import Biometria Wearable (CSV)</b>.', 'The athlete can optionally enter HRV rMSSD (ms), RHR (bpm), and Actual Sleep Hours in the Morning Diary, or staff can batch-import a wearable CSV from <b>Data Upload -> Wearable Biometrics Import (CSV)</b>.')}"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                else:
+                    df_bio = bio_res["df"]
+                    st_col = bio_res["status_color"]
+                    st_lbl = bio_res["status_label"]
+                    st_dsc = bio_res.get("status_desc", "")
+
+                    # Banner Semaforo Stato Autonomico
+                    st.markdown(
+                        f"<div style='background:linear-gradient(165deg, rgba(13,23,42,0.94) 0%, rgba(8,15,28,0.98) 100%); border:1px solid {st_col}; border-left:5px solid {st_col}; border-radius:12px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;'>"
+                        f"<div>"
+                        f"<div style='font-size:10.5px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.6px;'>{tr('Semaforo Stato Autonomico (Sistema Nervoso Parasimpatico)', 'Autonomic Nervous System Traffic Light')}</div>"
+                        f"<div style='font-size:15px; font-weight:900; color:{st_col}; margin-top:2px;'>[{bio_res['status_code']}] {st_lbl}</div>"
+                        f"<div style='font-size:12px; color:#cbd5e1; margin-top:2px;'>{st_dsc}</div>"
+                        f"</div>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+
+                    # 4 KPI Cards Biometriche
+                    cb_k1, cb_k2, cb_k3, cb_k4 = st.columns(4)
+                    with cb_k1:
+                        hrv_7d_v = bio_res.get("latest_hrv_7d")
+                        hrv_b_v = bio_res.get("latest_hrv_base")
+                        ln_7d_v = bio_res.get("latest_ln_7d")
+                        val_hrv_str = f"{hrv_7d_v:.1f} ms" if hrv_7d_v is not None else "N/D"
+                        sub_hrv_str = f"Ln(rMSSD) 7d: {ln_7d_v:.2f} | Base 60d: {hrv_b_v:.1f} ms" if (ln_7d_v is not None and hrv_b_v is not None) else tr("Media Mobile 7 giorni", "7-Day Rolling Mean")
+                        st.markdown(card_kpi(tr("HRV rMSSD 7d Rolling", "7d Rolling HRV rMSSD"), val_hrv_str, sub_hrv_str, st_col), unsafe_allow_html=True)
+                    with cb_k2:
+                        swc_l = bio_res.get("latest_swc_low")
+                        swc_h = bio_res.get("latest_swc_high")
+                        val_swc_str = f"{swc_l:.1f} – {swc_h:.1f} ms" if (swc_l is not None and swc_h is not None) else "N/D"
+                        st.markdown(card_kpi(tr("Banda SWC Individuale (60d)", "Individual SWC Band (60d)"), val_swc_str, tr("Fascia μ_60d ± 0.5 SD", "Band μ_60d ± 0.5 SD"), "#38bdf8"), unsafe_allow_html=True)
+                    with cb_k3:
+                        rhr_v = bio_res.get("latest_rhr")
+                        rhr_b = bio_res.get("latest_rhr_base")
+                        val_rhr_str = f"{rhr_v:.0f} bpm" if rhr_v is not None else "N/D"
+                        delta_rhr = (rhr_v - rhr_b) if (rhr_v is not None and rhr_b is not None) else 0.0
+                        sub_rhr_str = f"Baseline 60d: {rhr_b:.0f} bpm ({delta_rhr:+.1f} bpm)" if rhr_b is not None else tr("Frequenza Cardiaca al Risveglio", "Morning Resting Heart Rate")
+                        col_rhr_k = "#ef4444" if delta_rhr > 4.0 else "#10b981"
+                        st.markdown(card_kpi(tr("FC Riposo (RHR)", "Resting HR (RHR)"), val_rhr_str, sub_rhr_str, col_rhr_k), unsafe_allow_html=True)
+                    with cb_k4:
+                        slp_avg = bio_res.get("avg_sleep_h")
+                        slp_last = bio_res.get("latest_sleep_h")
+                        val_slp_str = f"{slp_avg:.2f} h" if slp_avg is not None else "N/D"
+                        sub_slp_str = f"{tr('Ultima notte:', 'Last night:')} {slp_last:.2f} h (Target 7.5-8.5h)" if slp_last is not None else tr("Target Recupero: 7.5 - 8.5 h", "Recovery Target: 7.5 - 8.5 h")
+                        col_slp_k = "#10b981" if (slp_avg is not None and slp_avg >= 7.2) else ("#f59e0b" if (slp_avg is not None and slp_avg >= 6.5) else "#ef4444")
+                        st.markdown(card_kpi(tr("Sonno Reale Medio (Wearable)", "Mean Actual Sleep (Wearable)"), val_slp_str, sub_slp_str, col_slp_k), unsafe_allow_html=True)
+
+                    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+                    # GRAFICO 1: RISPOSTA AUTONOMICA (HRV 7d Rolling + Banda SWC 60d + RHR)
+                    if can_view_hrv and (bio_res.get("has_hrv") or bio_res.get("has_rhr")):
+                        fig_hrv = go.Figure()
+                        if bio_res.get("has_hrv"):
+                            # Banda verde semitrasparente Baseline 60d +/- 0.5 SD (SWC)
+                            fig_hrv.add_trace(go.Scatter(
+                                x=df_bio["data"],
+                                y=df_bio["hrv_swc_high"],
+                                mode="lines",
+                                line=dict(width=0),
+                                showlegend=False,
+                                hoverinfo="skip"
+                            ))
+                            fig_hrv.add_trace(go.Scatter(
+                                x=df_bio["data"],
+                                y=df_bio["hrv_swc_low"],
+                                mode="lines",
+                                line=dict(width=0),
+                                fill="tonexty",
+                                fillcolor="rgba(16, 185, 129, 0.16)",
+                                name=tr("Banda SWC 60d (μ ± 0.5 SD)", "60d SWC Band (μ ± 0.5 SD)"),
+                                yaxis="y1"
+                            ))
+                            # Valore giornaliero HRV rMSSD (barre/marker sottili)
+                            fig_hrv.add_trace(go.Scatter(
+                                x=df_bio["data"],
+                                y=df_bio["hrv_rmssd_ms"],
+                                mode="markers+lines",
+                                name=tr("HRV Giornaliera rMSSD (ms)", "Daily HRV rMSSD (ms)"),
+                                line=dict(color="rgba(56, 189, 248, 0.35)", width=1.5, dash="dot"),
+                                marker=dict(size=7, color="#38bdf8"),
+                                yaxis="y1"
+                            ))
+                            # Media Mobile 7d HRV (linea spessa spline)
+                            fig_hrv.add_trace(go.Scatter(
+                                x=df_bio["data"],
+                                y=df_bio["hrv_7d"],
+                                mode="lines+markers",
+                                name=tr("HRV 7d Rolling Mean (ms)", "7d Rolling Mean HRV (ms)"),
+                                line=dict(color="#10b981", width=3.5, shape="spline"),
+                                marker=dict(size=8, color="#10b981", line=dict(width=1.5, color="#ffffff")),
+                                yaxis="y1"
+                            ))
+
+                        if bio_res.get("has_rhr"):
+                            fig_hrv.add_trace(go.Scatter(
+                                x=df_bio["data"],
+                                y=df_bio["rhr_bpm"],
+                                mode="lines+markers",
+                                name=tr("FC Riposo / RHR (bpm)", "Resting HR / RHR (bpm)"),
+                                line=dict(color="#f43f5e", width=2.5, dash="dash"),
+                                marker=dict(size=7, color="#f43f5e", symbol="diamond"),
+                                yaxis="y2"
+                            ))
+
+                        fig_hrv.update_layout(
+                            title=dict(
+                                text=tr(f"Risposta Autonomica vs Baseline Individuale SWC 60d — {atleta_sel}", f"Autonomic Response vs 60d Individual SWC Baseline — {atleta_sel}"),
+                                font=dict(size=14, color="#ffffff")
+                            ),
+                            height=390,
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            font=dict(color="#cbd5e1", family="Inter"),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#cbd5e1")),
+                            xaxis=dict(type="category", tickangle=-45, tickfont=dict(color="#94a3b8"), gridcolor="rgba(56,189,248,0.08)"),
+                            yaxis=dict(
+                                title=dict(text="HRV rMSSD [ms]", font=dict(color="#10b981")),
+                                tickfont=dict(color="#10b981"),
+                                gridcolor="rgba(56,189,248,0.12)"
+                            ),
+                            yaxis2=dict(
+                                title=dict(text="RHR [bpm]", font=dict(color="#f43f5e")),
+                                tickfont=dict(color="#f43f5e"),
+                                overlaying="y",
+                                side="right",
+                                showgrid=False
+                            )
+                        )
+                        st.plotly_chart(fig_hrv, use_container_width=True)
+
+                    # GRAFICO 2: ANALISI SONNO REALE (ORE WEARABLE) VS QUALITÀ SOGGETTIVA (1-10)
+                    if can_view_sleep and bio_res.get("has_sleep_hours"):
+                        fig_slp = go.Figure()
+                        fig_slp.add_trace(go.Bar(
+                            x=df_bio["data"],
+                            y=df_bio["sonno_ore_reali"],
+                            name=tr("Ore Sonno Reali (Wearable [h])", "Actual Sleep Hours (Wearable [h])"),
+                            marker_color="rgba(56, 189, 248, 0.50)",
+                            marker_line=dict(color="#38bdf8", width=1.5),
+                            yaxis="y1"
+                        ))
+                        fig_slp.add_hline(
+                            y=7.5,
+                            line_dash="dash",
+                            line_color="#10b981",
+                            annotation_text=tr("Target Minimo Recupero (7.5h)", "Min Recovery Target (7.5h)"),
+                            annotation_position="top left",
+                            annotation_font_color="#34d399"
+                        )
+                        fig_slp.add_trace(go.Scatter(
+                            x=df_bio["data"],
+                            y=df_bio["sonno_qualita"],
+                            mode="lines+markers",
+                            name=tr("Qualità Sonno Soggettiva (1-10)", "Subjective Sleep Quality (1-10)"),
+                            line=dict(color="#a855f7", width=3),
+                            marker=dict(size=8, color="#c084fc", line=dict(width=1.5, color="#ffffff")),
+                            yaxis="y2"
+                        ))
+                        fig_slp.update_layout(
+                            title=dict(
+                                text=tr(f"Analisi Sonno Reale (Wearable) vs Percezione Soggettiva — {atleta_sel}", f"Actual Wearable Sleep Duration vs Subjective Quality — {atleta_sel}"),
+                                font=dict(size=14, color="#ffffff")
+                            ),
+                            height=340,
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            font=dict(color="#cbd5e1", family="Inter"),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#cbd5e1")),
+                            xaxis=dict(type="category", tickangle=-45, tickfont=dict(color="#94a3b8"), gridcolor="rgba(56,189,248,0.08)"),
+                            yaxis=dict(
+                                title=dict(text=tr("Ore di Sonno Reali [h]", "Actual Sleep Hours [h]"), font=dict(color="#38bdf8")),
+                                tickfont=dict(color="#38bdf8"),
+                                range=[0, 12],
+                                gridcolor="rgba(56,189,248,0.12)"
+                            ),
+                            yaxis2=dict(
+                                title=dict(text=tr("Qualità Soggettiva (1-10)", "Subjective Quality (1-10)"), font=dict(color="#c084fc")),
+                                tickfont=dict(color="#c084fc"),
+                                overlaying="y",
+                                side="right",
+                                range=[0.5, 10.5],
+                                showgrid=False
+                            )
+                        )
+                        st.plotly_chart(fig_slp, use_container_width=True)
+
+                st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+                render_scientific_methodology_box("biometria_hrv")
 
     # -------------------------------------------------------------
     # -------------------------------------------------------------

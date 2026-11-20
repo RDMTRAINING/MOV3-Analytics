@@ -10,10 +10,6 @@ import streamlit.components.v1 as components
 from streamlit_option_menu import option_menu
 
 import config
-try:
-    importlib.reload(config)
-except Exception:
-    pass
 
 from config import (
     LOGO_PATH,
@@ -83,7 +79,7 @@ sync_binary_snapshots_on_cold_boot = getattr(
     lambda: {"synced": False},
 )
 
-DEV_MODE = os.environ.get("MOV3_DEV_MODE", "1") == "1"
+DEV_MODE = os.environ.get("MOV3_DEV_MODE", "0") == "1"
 
 def _load_view(mod):
     if DEV_MODE:
@@ -763,55 +759,68 @@ def main():
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(f"""
         <div style='text-align: center; margin-bottom: 24px;'>
-            <div style='font-size: 22px; font-weight: 900; color: #0f172a; font-family: "Inter", sans-serif; letter-spacing: -0.5px;'>
-                Termini d'Uso, Riservatezza Clinica e Proprietà Intellettuale — M0V3 Analytics Enterprise
+            <div style='font-size: 22px; font-weight: 900; color: #f8fafc; font-family: "Inter", sans-serif; letter-spacing: -0.5px;'>
+                {tr("Termini d'Uso, Riservatezza Clinica e Proprietà Intellettuale — M0V3 Analytics Enterprise", "Terms of Use, Clinical Confidentiality & Intellectual Property — M0V3 Analytics Enterprise")}
             </div>
-            <div style='font-size: 13px; color: #0284c7; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px;'>
-                Accordo Obbligatorio al Primo Accesso (Versione Normativa: M0V3_IP_GDPR_v2.0)
+            <div style='font-size: 13px; color: #38bdf8; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px;'>
+                {tr("Accordo Obbligatorio al Primo Accesso (Versione Normativa: M0V3_IP_GDPR_v2.0)", "Mandatory First-Access Agreement (Regulatory Version: M0V3_IP_GDPR_v2.0)")}
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         with st.container(border=True):
-            st.markdown("""
-            <div style='font-size: 13.5px; line-height: 1.6; color: #1e293b; font-family: "Inter", sans-serif; margin-bottom: 16px;'>
-                Benvenuto nella piattaforma scientifica <b>M0V3 Analytics Enterprise</b>. L'accesso a questo sistema è strettamente personale, tracciato e riservato agli utenti autorizzati. Prima di procedere, ti invitiamo a leggere e accettare le seguenti condizioni operative:
+            c_cw_sp, c_cw_lang = st.columns([3.2, 1.0])
+            with c_cw_lang:
+                curr_cw_l = st.session_state.get('lang', 'IT')
+                sel_cw_l = st.radio(
+                    "Clickwrap Lang",
+                    ["IT", "EN"],
+                    index=0 if curr_cw_l == 'IT' else 1,
+                    horizontal=True,
+                    key="clickwrap_lang_switch",
+                    label_visibility="collapsed"
+                )
+                if sel_cw_l != curr_cw_l:
+                    st.session_state['lang'] = sel_cw_l
+                    st.rerun()
+
+            st.markdown(f"""
+            <div style='font-size: 13.5px; line-height: 1.6; color: #f8fafc; font-family: "Inter", sans-serif; margin-bottom: 16px;'>
+                {tr("Benvenuto nella piattaforma scientifica <b>M0V3 Analytics Enterprise</b>. L'accesso a questo sistema è strettamente personale, tracciato e riservato agli utenti autorizzati. Prima di procedere, ti invitiamo a leggere e accettare le seguenti condizioni operative:", "Welcome to the <b>M0V3 Analytics Enterprise</b> scientific platform. Access to this system is strictly personal, tracked, and restricted to authorized users. Before proceeding, please read and accept the following operational terms:")}
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("""
-            <div style='background: rgba(2, 132, 199, 0.04); border-left: 4px solid #0284c7; padding: 14px 16px; border-radius: 6px; margin-bottom: 14px;'>
-                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
-                    1. Proprietà Intellettuale e Licenza d'Uso
+            st.markdown(f"""
+            <div style='background: rgba(14, 165, 233, 0.10); border: 1px solid rgba(56, 189, 248, 0.25); border-left: 4px solid #38bdf8; padding: 14px 16px; border-radius: 8px; margin-bottom: 14px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 6px;'>
+                    {tr("1. Proprietà Intellettuale e Licenza d'Uso", "1. Intellectual Property & License of Use")}
                 </div>
-                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
-                    Questa piattaforma web, incluse le architetture di database, le logiche di calcolo del microciclo e macrociclo, gli algoritmi proprietari (Readiness SWC, Pure I:E Ratio, Metriche Per-Point, ACWR Uncoupled EWMA, ripartizione carichi 70/30 e matrici di correlazione clinica) e le interfacce grafiche, costituisce tecnologia proprietaria esclusiva di <b>Riccardo Di Maio — M0V3 S.r.l.</b> Il sistema è concesso in mero utilizzo funzionale temporaneo. È severamente vietato riprodurre, copiare, catturare schermate a fini divulgativi, analizzare (reverse engineering) o cedere l'accesso a terze parti senza l'esplicita autorizzazione scritta dell'autore.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown("""
-            <div style='background: rgba(16, 185, 129, 0.04); border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 6px; margin-bottom: 14px;'>
-                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
-                    2. Trattamento dei Dati Sensibili, Biometrici e Sanitari (Art. 9 Reg. UE 2016/679 - GDPR)
-                </div>
-                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
-                    Il database contiene categorie particolari di dati personali (Art. 9 GDPR), tra cui parametri fisici, telemetria GPS/IMU, profili neuromuscolari, questionari di benessere psicofisico (Wellness/sRPE) e cartelle clinico-fisioterapiche (diagnosi, trattamenti e scale del dolore VAS).<br/>
-                    <div style='margin-top: 6px;'>• <b>Per lo Staff Tecnico, Atletico e Medico:</b> L'utente si impegna al rigoroso rispetto del segreto professionale, a trattare i dati esclusivamente per finalità tecniche, atletiche e mediche interne, e a non diffondere dati o report PDF al di fuori degli ambienti protetti autorizzati.</div>
-                    <div style='margin-top: 4px;'>• <b>Per l'Atleta:</b> L'utente prende atto e acconsente al conferimento dei propri parametri giornalieri di benessere e carico percepito affinché lo staff tecnico e sanitario autorizzato possa monitorare il recupero e prevenire gli infortuni.</div>
+                <div style='font-size: 12.5px; line-height: 1.55; color: #e2e8f0; text-align: justify;'>
+                    {tr("Questa piattaforma web, incluse le architetture di database, le logiche di calcolo del microciclo e macrociclo, gli algoritmi proprietari (Readiness SWC, Pure I:E Ratio, Metriche Per-Point, ACWR Uncoupled EWMA, ripartizione carichi 70/30 e matrici di correlazione clinica) e le interfacce grafiche, costituisce tecnologia proprietaria esclusiva di <b>Riccardo Di Maio — M0V3 S.r.l.</b> Il sistema è concesso in mero utilizzo funzionale temporaneo. È severamente vietato riprodurre, copiare, catturare schermate a fini divulgativi, analizzare (reverse engineering) o cedere l'accesso a terze parti senza l'esplicita autorizzazione scritta dell'autore.", "This web platform, including its database architectures, microcycle and macrocycle computational logic, proprietary algorithms (Readiness SWC, Pure I:E Ratio, Per-Point Metrics, Uncoupled EWMA ACWR, 70/30 load partitioning, and clinical correlation matrices), and user interfaces, constitutes exclusive proprietary technology of <b>Riccardo Di Maio — M0V3 S.r.l.</b> The system is granted solely for temporary functional use. Reproducing, copying, capturing screenshots for disclosure, reverse engineering, or sharing access with third parties without the explicit written authorization of the author is strictly prohibited.")}
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("""
-            <div style='background: rgba(239, 68, 68, 0.04); border-left: 4px solid #ef4444; padding: 14px 16px; border-radius: 6px; margin-bottom: 16px;'>
-                <div style='font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px;'>
-                    3. Sicurezza delle Credenziali e Tracciabilità
+            st.markdown(f"""
+            <div style='background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(52, 211, 153, 0.25); border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 8px; margin-bottom: 14px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 6px;'>
+                    {tr("2. Trattamento dei Dati Sensibili, Biometrici e Sanitari (Art. 9 Reg. UE 2016/679 - GDPR)", "2. Processing of Sensitive, Biometric & Health Data (Art. 9 EU Reg. 2016/679 - GDPR)")}
                 </div>
-                <div style='font-size: 12.5px; line-height: 1.55; color: #334155; text-align: justify;'>
-                    L'utente è l'unico responsabile della segretezza della propria password. Ogni esportazione PDF riporta a piè di pagina l'identificativo dell'account che l'ha generata. Eventuali Data Breach derivanti da gestione negligente o condivisione del proprio account ricadranno sotto la responsabilità esclusiva dell'utente stesso.
+                <div style='font-size: 12.5px; line-height: 1.55; color: #e2e8f0; text-align: justify;'>
+                    {tr("Il database contiene categorie particolari di dati personali (Art. 9 GDPR), tra cui parametri fisici, telemetria GPS/IMU, profili neuromuscolari, questionari di benessere psicofisico (Wellness/sRPE) e cartelle clinico-fisioterapiche (diagnosi, trattamenti e scale del dolore VAS).<br/><div style='margin-top: 6px;'>• <b>Per lo Staff Tecnico, Atletico e Medico:</b> L'utente si impegna al rigoroso rispetto del segreto professionale, a trattare i dati esclusivamente per finalità tecniche, atletiche e mediche interne, e a non diffondere dati o report PDF al di fuori degli ambienti protetti autorizzati.</div><div style='margin-top: 4px;'>• <b>Per l'Atleta:</b> L'utente prende atto e acconsente al conferimento dei propri parametri giornalieri di benessere e carico percepito affinché lo staff tecnico e sanitario autorizzato possa monitorare il recupero e prevenire gli infortuni.</div>", "The database contains special categories of personal data (Art. 9 GDPR), including physical parameters, GPS/IMU telemetry, neuromuscular profiles, psychophysical well-being questionnaires (Wellness/sRPE), and clinical-physiotherapy records (diagnoses, treatments, and VAS pain scales).<br/><div style='margin-top: 6px;'>• <b>For Coaching, Athletic & Medical Staff:</b> The user undertakes to strictly observe professional secrecy, process data exclusively for internal technical, athletic, and medical purposes, and never share data or PDF reports outside authorized protected environments.</div><div style='margin-top: 4px;'>• <b>For the Athlete:</b> The user acknowledges and consents to providing daily well-being and perceived load parameters so that authorized technical and medical staff can monitor recovery and prevent injuries.</div>")}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div style='background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(248, 113, 113, 0.25); border-left: 4px solid #ef4444; padding: 14px 16px; border-radius: 8px; margin-bottom: 16px;'>
+                <div style='font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 6px;'>
+                    {tr("3. Sicurezza delle Credenziali e Tracciabilità", "3. Credential Security & Audit Traceability")}
+                </div>
+                <div style='font-size: 12.5px; line-height: 1.55; color: #e2e8f0; text-align: justify;'>
+                    {tr("L'utente è l'unico responsabile della segretezza della propria password. Ogni esportazione PDF riporta a piè di pagina l'identificativo dell'account che l'ha generata. Eventuali Data Breach derivanti da gestione negligente o condivisione del proprio account ricadranno sotto la responsabilità esclusiva dell'utente stesso.", "The user is solely responsible for the confidentiality of their password. Every exported PDF embeds in its footer the identifier of the account that generated it. Any Data Breach resulting from negligent handling or account sharing falls under the exclusive responsibility of the user.")}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -836,7 +845,7 @@ def main():
 
             if pdf_bytes:
                 st.download_button(
-                    label="Scarica l'Informativa Completa Privacy & Proprietà Intellettuale M0V3 (PDF)",
+                    label=tr("Scarica l'Informativa Completa Privacy & Proprietà Intellettuale M0V3 (PDF)", "Download Complete M0V3 Privacy & Intellectual Property Policy (PDF)"),
                     data=pdf_bytes,
                     file_name="Atto_Privacy_IP_MOV3_v2.pdf",
                     mime="application/pdf",
@@ -846,7 +855,10 @@ def main():
 
             st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
-            chk_label = "Dichiaro di aver letto, compreso e accettato i Termini d'Uso, i vincoli di Proprietà Intellettuale (Tecnologia Riccardo Di Maio — M0V3 S.r.l.) e le direttive GDPR sulla Privacy dei dati biometrici e sanitari."
+            chk_label = tr(
+                "Dichiaro di aver letto, compreso e accettato i Termini d'Uso, i vincoli di Proprietà Intellettuale (Tecnologia Riccardo Di Maio — M0V3 S.r.l.) e le direttive GDPR sulla Privacy dei dati biometrici e sanitari.",
+                "I declare that I have read, understood, and accepted the Terms of Use, Intellectual Property terms (Riccardo Di Maio — M0V3 S.r.l. Technology), and GDPR Privacy directives on biometric and health data."
+            )
             accepted = st.checkbox(chk_label, key="chk_clickwrap_m0v3")
 
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
@@ -854,7 +866,7 @@ def main():
             col_act1, col_act2 = st.columns([3, 1.2])
             with col_act1:
                 btn_confirm = st.button(
-                    "Accedi alla Piattaforma",
+                    tr("Accedi alla Piattaforma", "Access Platform"),
                     type="primary",
                     use_container_width=True,
                     disabled=not accepted,
@@ -882,13 +894,13 @@ def main():
                         st.session_state['privacy_accettata'] = True
                         st.session_state['terms_accepted_at'] = now_iso
                         st.session_state['terms_version'] = "M0V3_IP_GDPR_v2.0"
-                        st.success("Accettazione registrata con successo! Accesso alla piattaforma in corso...")
+                        st.success(tr("Accettazione registrata con successo! Accesso alla piattaforma in corso...", "Acceptance recorded successfully! Entering platform..."))
                         st.rerun()
                     else:
-                        st.warning("È obbligatorio spuntare la casella di accettazione prima di accedere.")
+                        st.warning(tr("È obbligatorio spuntare la casella di accettazione prima di accedere.", "You must check the acceptance box before accessing the platform."))
 
             with col_act2:
-                if st.button("Esci / Logout", type="secondary", use_container_width=True, key="btn_logout_clickwrap"):
+                if st.button(tr("Esci / Logout", "Exit / Logout"), type="secondary", use_container_width=True, key="btn_logout_clickwrap"):
                     try: supabase.auth.sign_out()
                     except Exception: pass
                     st.session_state['user'] = None
@@ -949,17 +961,29 @@ def main():
             sel = st.session_state.get('global_athlete_selector')
             if sel:
                 st.session_state['selected_athlete'] = sel
-                # Propaga la selezione a tutte le pagine
+                # Propaga la selezione a tutte le pagine e sottopagine
                 st.session_state['home_focus_athlete'] = sel
                 st.session_state['as_sel_player'] = sel
                 st.session_state['am_sel_player'] = sel
+                st.session_state['ts_sel_player'] = sel
+                st.session_state['stag_sel_player'] = sel
                 st.session_state['test_fisici_atleta_sel'] = sel
+                st.session_state['word_import_atleta'] = sel
+                st.session_state['m0v3_sel_atleta'] = sel
+                st.session_state['in_ath_m0v3'] = sel
                 st.session_state['cal_atleta_sel'] = sel
+                st.session_state['et_atleta_sel_page'] = sel
                 st.session_state['sel_atleta_carico_interno'] = sel
                 st.session_state['avg_ath'] = sel
+                st.session_state['conf_ind_ath'] = sel
                 st.session_state['h2h_a'] = sel
                 st.session_state['h2h_w_a'] = sel
                 st.session_state['storico_match_sel_player'] = sel
+                st.session_state['sel_test_atl'] = sel
+                st.session_state['dg_taglio_atleta_sel'] = sel
+                # Svuota selezioni multi-sessione / multi-settimana legate al precedente atleta
+                for k_clear in ('conf_ind_sess_ms', 'conf_ind_week_ms', 'm0v3_sel_test_item'):
+                    st.session_state.pop(k_clear, None)
 
         with st.container(key="sidebar_fixed_header"):
             target_logo = LOGO_CIRCULAR_PATH if os.path.exists(LOGO_CIRCULAR_PATH) else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
@@ -1070,8 +1094,8 @@ def main():
             permessi_utente_set = st.session_state.get('user_permessi_moduli')
 
         def _is_menu_page_visible(page_key):
-            # Esclusione assoluta area medica per ruolo Atleta
-            if st.session_state.get('role') == 'Atleta' and page_key == "Calendario & Area Medica":
+            # Esclusione assoluta area medica e simulatore What-If per ruolo Atleta
+            if st.session_state.get('role') == 'Atleta' and page_key in ("Calendario & Area Medica", "Pianificazione & Simulatore What-If"):
                 return False
 
             if permessi_utente_set is None:
@@ -1101,6 +1125,7 @@ def main():
             (tr("Analisi Match", "Match Analysis"), "Analisi Match", "trophy"),
             (tr("Analisi Sessione", "Session Analysis"), "Analisi Sessione", "activity"),
             (tr("Trend Settimanale", "Weekly Trend"), "Trend Settimanale", "calendar-week"),
+            (tr("Pianificazione & Simulatore What-If", "Load Planning & What-If Simulator"), "Pianificazione & Simulatore What-If", "sliders"),
             (tr("Trend Stagionale", "Seasonal Trend"), "Trend Stagionale", "calendar-range"),
             (tr("Storico Match", "Match History"), "Storico Match", "graph-up-arrow"),
             (tr("Statistiche Match", "Match Statistics"), "Statistiche Match", "card-checklist"),
@@ -1186,33 +1211,46 @@ def main():
             st.session_state['force_scroll_top'] = True
             st.rerun()
 
-        # --- MODULO 1.4: INDICATORE DI STATO CLOUD & DOWNLOAD MASTER PARQUET PER MAC ---
+        # --- MODULO 1.4 & MODULO 4 V3.0: INDICATORE DI STATO CLOUD SNAPSHOT PARTIZIONATI & DOWNLOAD ---
         sync_binary_snapshots_on_cold_boot()
         if curr_role in ('Super-Admin', 'Admin', 'Coach', 'Preparatore'):
             snap_stat = get_cloud_snapshot_status()
             max_dt_lbl = snap_stat.get('max_date', 'N/D')
             tot_r_lbl = snap_stat.get('total_rows', 0)
+            n_ath_lbl = snap_stat.get('n_athletes', 0)
             st.markdown(
                 f"<div style='background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:8px 10px; margin-top:12px; margin-bottom:6px; font-family:\"Inter\",sans-serif;'>"
                 f"<div style='font-size:10.5px; font-weight:800; color:#34d399; display:flex; align-items:center; gap:5px;'>"
-                f"<i class='bi bi-cloud-check-fill'></i> Cloud Snapshot Attivo</div>"
+                f"<i class='bi bi-cloud-check-fill'></i> {tr('Snapshot Partizionati Attivi', 'Partitioned Snapshots Active')} | <b style='color:#ffffff;'>{n_ath_lbl} {tr('Atleti', 'Athletes')}</b></div>"
                 f"<div style='font-size:10px; color:#cbd5e1; margin-top:3px; line-height:1.35;'>"
-                f"Cloud Snapshot Attivo | Ultima Data GPS Salvata: <b style='color:#ffffff;'>{max_dt_lbl}</b> | Totale Righe: <b style='color:#38bdf8;'>{tot_r_lbl}</b>"
+                f"{tr('Ultima Data:', 'Latest Date:')} <b style='color:#ffffff;'>{max_dt_lbl}</b> | {tr('Totale Righe:', 'Total Rows:')} <b style='color:#38bdf8;'>{tot_r_lbl}</b>"
                 f"</div></div>",
                 unsafe_allow_html=True
             )
             if curr_role == 'Super-Admin' and os.path.exists(DB_PARQUET_PATH):
                 try:
-                    with open(DB_PARQUET_PATH, "rb") as f_parq:
-                        parq_bytes = f_parq.read()
+                    parq_bytes = getattr(utils, "get_cached_parquet_bytes", lambda p: open(p, "rb").read())(DB_PARQUET_PATH)
                     st.download_button(
-                        label="Scarica database_storico.parquet Consolidato",
+                        label=tr("Scarica database_storico.parquet Consolidato", "Download Consolidated database_storico.parquet"),
                         data=parq_bytes,
                         file_name="database_storico.parquet",
                         mime="application/octet-stream",
                         key="btn_dl_master_parquet_sidebar",
                         use_container_width=True
                     )
+                except Exception:
+                    pass
+                try:
+                    if hasattr(utils, "get_partitioned_snapshots_zip_bytes"):
+                        zip_bytes = utils.get_partitioned_snapshots_zip_bytes()
+                        st.download_button(
+                            label=tr("Scarica Archivio Snapshot Partizionati (.zip)", "Download Partitioned Snapshots Archive (.zip)"),
+                            data=zip_bytes,
+                            file_name="m0v3_snapshot_partizionati.zip",
+                            mime="application/zip",
+                            key="btn_dl_partitioned_zip_sidebar",
+                            use_container_width=True
+                        )
                 except Exception:
                     pass
 
@@ -1397,9 +1435,6 @@ def main():
 
     # ==================== ROUTING PAGINE & NOTIFICHE M0V3 ====================
     check_and_render_notifications()
-    import pdf_generator
-    if DEV_MODE:
-        importlib.reload(pdf_generator)
 
     if not _is_menu_page_visible(active_page) and active_page not in ["Home", "Profilo Personale", "Supporto", "Diario Atleta", "Pannello Admin (Gestione Utenti)", "Coda Tagli GPS"]:
         st.warning(tr("Non disponi dei permessi per accedere a questa sezione. Contatta l'amministratore.", "You do not have permissions to access this section. Contact the administrator."))
@@ -1437,10 +1472,16 @@ def main():
         _load_view(views.profilo)
         views.profilo.render_profilo(t)
     elif active_page == "Pannello Admin (Gestione Utenti)":
+        if st.session_state.get('role') != 'Super-Admin':
+            st.error(tr("Accesso negato: questa sezione è riservata ai Super-Admin.", "Access denied: this section is restricted to Super-Admins."))
+            st.stop()
         import views.admin
         _load_view(views.admin)
         views.admin.render_admin(t)
     elif active_page == "Coda Tagli GPS":
+        if st.session_state.get('role') not in ['Super-Admin', 'Coach', 'Staff']:
+            st.error(tr("Accesso negato: questa sezione è riservata allo Staff e ai Super-Admin.", "Access denied: this section is restricted to Staff and Super-Admins."))
+            st.stop()
         import views.admin
         _load_view(views.admin)
         views.admin.render_coda_tagli_kanban(t)
@@ -1472,6 +1513,10 @@ def main():
         import views.trend_settimanale
         _load_view(views.trend_settimanale)
         views.trend_settimanale.render_trend_settimanale(t)
+    elif active_page == "Pianificazione & Simulatore What-If":
+        import views.pianificazione_whatif
+        _load_view(views.pianificazione_whatif)
+        views.pianificazione_whatif.render_pianificazione_whatif(t)
     elif active_page == "Trend Stagionale":
         import views.trend_stagionale
         _load_view(views.trend_stagionale)

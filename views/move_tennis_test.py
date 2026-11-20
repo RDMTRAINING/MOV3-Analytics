@@ -338,10 +338,28 @@ def render_move_tennis_test(t):
 
     glob_ath = st.session_state.get('selected_athlete')
     idx_ath = atleti_disp.index(glob_ath) if glob_ath in atleti_disp else 0
+    if st.session_state.get("m0v3_sel_atleta") != glob_ath and glob_ath in atleti_disp:
+        st.session_state["m0v3_sel_atleta"] = glob_ath
+    if st.session_state.get("in_ath_m0v3") != glob_ath and glob_ath in atleti_disp:
+        st.session_state["in_ath_m0v3"] = glob_ath
+
+    def _on_m0v3_ath_change():
+        sel_a = st.session_state.get("m0v3_sel_atleta")
+        if sel_a:
+            st.session_state["selected_athlete"] = sel_a
+            st.session_state["global_athlete_selector"] = sel_a
+            st.session_state["in_ath_m0v3"] = sel_a
+            st.session_state.pop("m0v3_sel_test_item", None)
 
     col_top1, col_top2, col_top3 = st.columns([1.5, 1.8, 1.5])
     with col_top1:
-        atleta_sel = st.selectbox(tr("Atleta Analizzato:", "Analyzed Athlete:"), atleti_disp, index=idx_ath, key="m0v3_sel_atleta")
+        atleta_sel = st.selectbox(
+            tr("Atleta Analizzato:", "Analyzed Athlete:"),
+            atleti_disp,
+            index=idx_ath,
+            key="m0v3_sel_atleta",
+            on_change=_on_m0v3_ath_change
+        )
 
     # Filtra i test dell'atleta selezionato
     test_atleta = [t for t in tutti_test if t.get("atleta", "").lower() == atleta_sel.lower()]
@@ -377,16 +395,18 @@ def render_move_tennis_test(t):
 
     # Hero strip atleta
     render_athlete_hero_strip(atleta_sel, extra_badges=[
-        f"M0V3 Test: {test_attivo.get('data') if test_attivo else 'Nuovo'}",
-        f"Superficie: {test_attivo.get('superficie', 'Hard') if test_attivo else 'Hard'}"
+        f"M0V3 Test: {test_attivo.get('data') if test_attivo else tr('Nuovo', 'New')}",
+        f"{tr('Superficie', 'Surface')}: {test_attivo.get('superficie', 'Hard') if test_attivo else 'Hard'}"
     ])
 
-    # TABS DI NAVIGAZIONE INTERNA CON PERSISTENZA
+    # TABS DI NAVIGAZIONE INTERNA CON PERSISTENZA (Inserimento riservato a Staff / Coach / Super-Admin)
     lbl_tab_dash = tr("Dashboard & Profilazione Clinica", "Dashboard & Clinical Profiling")
     lbl_tab_input = tr("Inserimento & Modifica Dati (Manuale / Excel)", "Data Entry & Edit (Manual / Excel)")
     lbl_tab_compare = tr("Confronto Storico Longitudinale", "Longitudinal Historical Comparison")
+    is_athlete_role = (st.session_state.get('role') == 'Atleta')
+    m0v3_tabs = [lbl_tab_dash, lbl_tab_compare] if is_athlete_role else [lbl_tab_dash, lbl_tab_input, lbl_tab_compare]
     active_m0v3_tab = render_tab_navigation(
-        [lbl_tab_dash, lbl_tab_input, lbl_tab_compare],
+        m0v3_tabs,
         key="nav_sub_m0v3_test",
         default=lbl_tab_dash
     )

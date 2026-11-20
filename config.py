@@ -86,7 +86,7 @@ LANG = {
         "home_match_desc": "Visualizza i grafici e i report delle prestazioni in partita rispetto alle medie storiche.",
         "home_storico_desc": "Analizza l'andamento e la timeline storica delle prestazioni in partita.",
         "home_medie_desc": "Confronta il carico medio tra le diverse sessioni o metti a confronto due atleti.",
-        "home_manuale_desc": "Guida enciclopedica e scientifica a tutti i 46 moduli di analisi abilitabili nel sistema M0V3.",
+        "home_manuale_desc": "Guida enciclopedica e scientifica a tutti i 69 moduli di analisi abilitabili nel sistema M0V3.",
         "home_upload_desc": "Carica nuovi file CSV dai sistemi GPS per alimentare il database storico della piattaforma.",
         "home_gen_desc": "Simula il carico di sessioni senza GPS partendo dallo storico matematico dell'atleta.",
         "home_file_desc": "Controlla lo storico dei caricamenti ed elimina le sessioni inserite per errore o clonate.",
@@ -157,7 +157,7 @@ LANG = {
         "home_match_desc": "View charts and performance reports of matches compared to historical averages.",
         "home_storico_desc": "Analyze the trend and historical timeline of match performances.",
         "home_medie_desc": "Compare average load across sessions or set up a head-to-head.",
-        "home_manuale_desc": "Encyclopedic and scientific guide to all 46 analytical modules assignable in the M0V3 system.",
+        "home_manuale_desc": "Encyclopedic and scientific guide to all 69 analytical modules assignable in the M0V3 system.",
         "home_upload_desc": "Upload new CSV files from GPS systems to feed the platform's historical database.",
         "home_gen_desc": "Simulate session loads without GPS starting from the athlete's mathematical history.",
         "home_file_desc": "Check upload history and delete erroneously inserted or cloned sessions.",
@@ -627,8 +627,12 @@ def add_custom_css(image_file=None):
     [data-testid="stMain"] div[style*="background: white"],
     [data-testid="stMain"] div[style*="background:#ffffff"],
     [data-testid="stMain"] div[style*="background: #ffffff"],
+    [data-testid="stMain"] div[style*="background:#FFFFFF"],
+    [data-testid="stMain"] div[style*="background: #FFFFFF"],
     [data-testid="stMain"] div[style*="background:#f8fafc"],
     [data-testid="stMain"] div[style*="background: #f8fafc"],
+    [data-testid="stMain"] div[style*="background:#F8FAFC"],
+    [data-testid="stMain"] div[style*="background: #F8FAFC"],
     [data-testid="stMain"] div[style*="background:#fefbf6"],
     [data-testid="stMain"] div[style*="background: #fefbf6"],
     [data-testid="stMain"] div[style*="background:#fef3c7"],
@@ -641,8 +645,12 @@ def add_custom_css(image_file=None):
     [data-testid="stMain"] div[style*="background-color: white"],
     [data-testid="stMain"] div[style*="background-color:#ffffff"],
     [data-testid="stMain"] div[style*="background-color: #ffffff"],
+    [data-testid="stMain"] div[style*="background-color:#FFFFFF"],
+    [data-testid="stMain"] div[style*="background-color: #FFFFFF"],
     [data-testid="stMain"] div[style*="background-color: #f8fafc"],
-    [data-testid="stMain"] div[style*="background-color:#f8fafc"] {{
+    [data-testid="stMain"] div[style*="background-color:#f8fafc"],
+    [data-testid="stMain"] div[style*="background-color: #F8FAFC"],
+    [data-testid="stMain"] div[style*="background-color:#F8FAFC"] {{
         background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
@@ -658,8 +666,16 @@ def add_custom_css(image_file=None):
     [data-testid="stMain"] span[style*="background:white"],
     [data-testid="stMain"] span[style*="background:#ffffff"],
     [data-testid="stMain"] span[style*="background: #ffffff"],
+    [data-testid="stMain"] span[style*="background:#FFFFFF"],
+    [data-testid="stMain"] span[style*="background: #FFFFFF"],
     [data-testid="stMain"] span[style*="background:#f8fafc"],
     [data-testid="stMain"] span[style*="background: #f8fafc"],
+    [data-testid="stMain"] span[style*="background:#F8FAFC"],
+    [data-testid="stMain"] span[style*="background: #F8FAFC"],
+    [data-testid="stMain"] span[style*="background:#f1f5f9"],
+    [data-testid="stMain"] span[style*="background: #f1f5f9"],
+    [data-testid="stMain"] span[style*="background:#F1F5F9"],
+    [data-testid="stMain"] span[style*="background: #F1F5F9"],
     [data-testid="stMain"] span[style*="background: rgb(255, 255, 255)"],
     [data-testid="stMain"] span[style*="background: rgb(248, 250, 252)"],
     [data-testid="stMain"] span[style*="background-color: white"],
@@ -672,26 +688,49 @@ def add_custom_css(image_file=None):
     /* Subcard interne (griglie e riquadri secondari) */
     [data-testid="stMain"] div[style*="background:#f1f5f9"],
     [data-testid="stMain"] div[style*="background: #f1f5f9"],
+    [data-testid="stMain"] div[style*="background:#F1F5F9"],
+    [data-testid="stMain"] div[style*="background: #F1F5F9"],
     [data-testid="stMain"] div[style*="background: rgb(241, 245, 249)"] {{
         background: rgba(8, 17, 32, 0.75) !important;
         border-color: rgba(56, 189, 248, 0.18) !important;
         color: #f8fafc !important;
     }}
 
-    /* Normalizzazione colori testi inline originariamente pensati per sfondo bianco */
+    /* Normalizzazione colori testi inline originariamente pensati per sfondo bianco (inclusi Modali st.dialog) */
     [data-testid="stMain"] [style*="color: #0f172a"],
     [data-testid="stMain"] [style*="color:#0f172a"],
+    [data-testid="stMain"] [style*="color: #0F172A"],
+    [data-testid="stMain"] [style*="color:#0F172A"],
     [data-testid="stMain"] [style*="color: rgb(15, 23, 42)"],
     [data-testid="stMain"] [style*="color: #1e293b"],
-    [data-testid="stMain"] [style*="color:#1e293b"] {{
+    [data-testid="stMain"] [style*="color:#1e293b"],
+    [data-testid="stMain"] [style*="color: #1E293B"],
+    [data-testid="stMain"] [style*="color:#1E293B"],
+    div[data-testid="stModal"] [style*="color: #0f172a"],
+    div[data-testid="stModal"] [style*="color:#0f172a"],
+    div[data-testid="stModal"] [style*="color: #1e293b"],
+    div[data-testid="stModal"] [style*="color:#1e293b"] {{
         color: #ffffff !important;
     }}
+    [data-testid="stMain"] [style*="color: #334155"],
+    [data-testid="stMain"] [style*="color:#334155"],
+    [data-testid="stMain"] [style*="color: #334155"],
+    [data-testid="stMain"] [style*="color: rgb(51, 65, 85)"],
     [data-testid="stMain"] [style*="color: #475569"],
-    [data-testid="stMain"] [style*="color:#475569"] {{
+    [data-testid="stMain"] [style*="color:#475569"],
+    [data-testid="stMain"] [style*="color: #475569"],
+    div[data-testid="stModal"] [style*="color: #334155"],
+    div[data-testid="stModal"] [style*="color:#334155"],
+    div[data-testid="stModal"] [style*="color: #475569"],
+    div[data-testid="stModal"] [style*="color:#475569"] {{
         color: #cbd5e1 !important;
     }}
     [data-testid="stMain"] [style*="color: #64748b"],
-    [data-testid="stMain"] [style*="color:#64748b"] {{
+    [data-testid="stMain"] [style*="color:#64748b"],
+    [data-testid="stMain"] [style*="color: #64748B"],
+    [data-testid="stMain"] [style*="color:#64748B"],
+    div[data-testid="stModal"] [style*="color: #64748b"],
+    div[data-testid="stModal"] [style*="color:#64748b"] {{
         color: #94a3b8 !important;
     }}
     [data-testid="stMain"] [style*="color: #0284c7"],
@@ -701,6 +740,8 @@ def add_custom_css(image_file=None):
     }}
     [data-testid="stMain"] [style*="border: 1px solid #e2e8f0"],
     [data-testid="stMain"] [style*="border:1px solid #e2e8f0"],
+    [data-testid="stMain"] [style*="border: 1px solid #E2E8F0"],
+    [data-testid="stMain"] [style*="border:1px solid #E2E8F0"],
     [data-testid="stMain"] [style*="border-bottom: 1px solid #f1f5f9"],
     [data-testid="stMain"] [style*="border-bottom:1px solid #f1f5f9"] {{
         border-color: rgba(56, 189, 248, 0.20) !important;
@@ -1321,7 +1362,14 @@ CATALOGO_REPORT = {
     "Analisi Wellness-RPE-GPS": [
         "Incrocio GPS vs sRPE",
         "Trend Risposta Biologica (Wellness)",
+        "Biometria Autonomica (HRV & RHR)",
+        "Analisi Sonno Reale vs Soggettivo",
         "Analisi Incrociata"
+    ],
+    "Pianificazione & Simulatore What-If": [
+        "Simulatore Microciclo 7/14gg",
+        "Proiezione ACWR & Soglia 70%",
+        "Confronto Piano vs Eseguito"
     ],
     "Medico & Extra Tennis": [
         "Inserimento & Gestione Registro",
@@ -1340,17 +1388,20 @@ CATALOGO_REPORT = {
 PAGINE_OPERATIVE = [
     {"chiave": "M0V3 Tennis Test", "nome": "M0V3 Tennis Test (Neuro-Mechanical Profiling)", "icona": "lightning-charge-fill"},
     {"chiave": "Caricamento Dati", "nome": "Caricamento Dati (Ingestion CSV/GPS)", "icona": "cloud-arrow-up"},
+    {"chiave": "Import Biometria Wearable (CSV)", "nome": "Import Biometria Wearable (CSV Apple/Oura/Whoop/Garmin)", "icona": "smartwatch"},
     {"chiave": "Generatore Dati (No GPS)", "nome": "Generatore Dati (Simulazione No GPS)", "icona": "sliders"},
     {"chiave": "Gestione File Caricati", "nome": "Gestione File (Archivio Sessioni)", "icona": "folder2-open"},
     {"chiave": "Manuale Report", "nome": "Manuale Report (Documentazione Moduli)", "icona": "journal-bookmark-fill"},
     {"chiave": "Manuale Test", "nome": "Manuale Test (Enciclopedia Protocolli)", "icona": "journal-text"},
     {"chiave": "Richiesta Taglio GPS K-Sport", "nome": "Servizio Taglio GPS K-Sport (Digital Handshake)", "icona": "broadcast-pin"},
+    {"chiave": "Ricezione Morning Digest Email", "nome": "Ricezione Morning Digest Email (Alert Proattivi)", "icona": "envelope-check"},
 ]
 
 AREA_TO_PAGINA = {
     "Analisi Match": "Analisi Match",
     "Analisi Sessione": "Analisi Sessione",
     "Trend Settimanale": "Trend Settimanale",
+    "Pianificazione & Simulatore What-If": "Pianificazione & Simulatore What-If",
     "Trend Stagionale": "Trend Stagionale",
     "Storico Match": "Storico Match",
     "Statistiche Match": "Statistiche Match",
@@ -1389,16 +1440,16 @@ METRICHE_INTENSITA = [
 
 
 def card_kpi(titolo, valore_html, sottotitolo="", accento="#0ea5e9", **kwargs):
-    """Renderizza una card KPI compatta con styling bianco ad alto contrasto (Opzione A: Navy Border)."""
+    """Renderizza una card KPI compatta con styling Dark Cockpit Executive ad alto contrasto."""
     sub = kwargs.get('subtext', sottotitolo)
     acc = kwargs.get('accent', kwargs.get('accento', accento))
     return (
-        f"<div class='no-print' style='background: white; "
-        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(10, 25, 47, 0.22); "
-        f"border-left: 5px solid {acc}; box-shadow: 0 4px 20px -2px rgba(10, 25, 47, 0.12), 0 1px 3px rgba(10, 25, 47, 0.05);'>"
-        f"<div style='font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
-        f"<div style='font-size: 24px; font-weight: 900; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
-        + (f"<div style='font-size: 12px; color: #64748b; font-weight: 600;'>{sub}</div>" if sub else "")
+        f"<div class='no-print' style='background: linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%); "
+        f"padding: 18px 16px; border-radius: 14px; border: 1.2px solid rgba(56, 189, 248, 0.22); "
+        f"border-left: 5px solid {acc}; box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.6), 0 0 14px rgba(14, 165, 233, 0.08);'>"
+        f"<div style='font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px;'>{titolo}</div>"
+        f"<div style='font-size: 24px; font-weight: 900; color: #ffffff; margin: 6px 0 3px 0; line-height: 1.15;'>{valore_html}</div>"
+        + (f"<div style='font-size: 12px; color: #94a3b8; font-weight: 600;'>{sub}</div>" if sub else "")
         + "</div>"
     )
 
@@ -1495,18 +1546,18 @@ def render_navigation_cards(page_key: str, cards: list) -> str:
                 is_active = (st.session_state[state_key] == cid)
 
                 with cols[c_idx]:
-                    card_border = "#D4AF37" if is_active else "#CBD5E1"
-                    card_bg = "linear-gradient(135deg, #002B49 0%, #004B87 100%)" if is_active else "#FFFFFF"
-                    card_shadow = "0 6px 18px rgba(0,43,73,0.22)" if is_active else "0 2px 6px rgba(15,23,42,0.04)"
-                    txt_color = "#FFFFFF" if is_active else "#0F172A"
-                    desc_color = "#93C5FD" if is_active else "#64748B"
-                    badge_bg = "rgba(212,175,55,0.25)" if is_active else "#F1F5F9"
-                    badge_border = "#D4AF37" if is_active else "#E2E8F0"
-                    badge_txt = "#D4AF37" if is_active else "#0066B2"
+                    card_border = "#D4AF37" if is_active else "rgba(56, 189, 248, 0.25)"
+                    card_bg = "linear-gradient(135deg, #002B49 0%, #004B87 100%)" if is_active else "linear-gradient(165deg, rgba(13, 23, 42, 0.90) 0%, rgba(8, 15, 28, 0.96) 100%)"
+                    card_shadow = "0 6px 18px rgba(0,43,73,0.45)" if is_active else "0 4px 14px rgba(0,0,0,0.4)"
+                    txt_color = "#ffffff" if is_active else "#f8fafc"
+                    desc_color = "#93C5FD" if is_active else "#94a3b8"
+                    badge_bg = "rgba(212,175,55,0.25)" if is_active else "rgba(14, 165, 233, 0.15)"
+                    badge_border = "#D4AF37" if is_active else "rgba(56, 189, 248, 0.3)"
+                    badge_txt = "#D4AF37" if is_active else "#38bdf8"
                     status_pill = (
-                        '<span style="background:#D4AF37; color:#031926; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.04em;">ATTIVA</span>'
+                        f'<span style="background:#D4AF37; color:#031926; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.04em;">{tr("ATTIVA", "ACTIVE")}</span>'
                         if is_active
-                        else '<span style="background:#F1F5F9; color:#64748B; font-size:0.62rem; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase;">SELEZIONA</span>'
+                        else f'<span style="background:rgba(14, 165, 233, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.3); font-size:0.62rem; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase;">{tr("SELEZIONA", "SELECT")}</span>'
                     )
 
                     card_html = f"""
@@ -1558,6 +1609,11 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "e la riserva consolidata di fitness (carico cronico, 28 giorni). Il motore adotta la Media Mobile Ponderata Esponenzialmente "
             "Disaccoppiata (Uncoupled EWMA), azzerando l'autocorrelazione spuria tipica delle medie mobili tradizionali (Coupled Rolling Averages)."
         ),
+        "cosa_sto_vedendo_en": (
+            "The Acute:Chronic Workload Ratio (ACWR) evaluates the dynamic balance between recent fatigue stress (acute load, 7 days) "
+            "and consolidated fitness reserve (chronic load, 28 days). The engine adopts the Uncoupled Exponentially Weighted Moving Average "
+            "(Uncoupled EWMA), eliminating the spurious mathematical coupling inherent in traditional coupled rolling averages."
+        ),
         "formule": [
             r"\lambda_a = \frac{2}{N_a + 1} = \frac{2}{7 + 1} = 0.250 \quad (\text{Fattore decadimento acuto } 7\text{d})",
             r"\lambda_c = \frac{2}{N_c + 1} = \frac{2}{28 + 1} \approx 0.069 \quad (\text{Fattore decadimento cronico } 28\text{d})",
@@ -1569,6 +1625,12 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "• 80% – 125%: Sweet Spot fisiologico (ottimale stimolo prestativo con minimo rischio lesivo)\n"
             "• 125% – 150%: Zona di Attenzione (picco di fatica acuta, monitorare recupero)\n"
             "• >150%: Danger Zone / Sovraccarico (rischio di infortunio acuto da 2 a 4 volte superiore alla norma)"
+        ),
+        "interpretazione_en": (
+            "• <80%: Under-load / Tapering (potential fitness loss if prolonged)\n"
+            "• 80% – 125%: Physiological Sweet Spot (optimal performance stimulus with minimal injury risk)\n"
+            "• 125% – 150%: Caution Zone (acute fatigue spike, monitor recovery closely)\n"
+            "• >150%: Danger Zone / Overload (acute injury risk 2 to 4 times higher than baseline)"
         ),
         "bibliografia": [
             "Williams, S. et al. (2017). Better Way to Determine the Acute:Chronic Workload Ratio? Clinical Journal of Sport Medicine, 27(3), 301-304.",
@@ -1586,6 +1648,11 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "A differenza dell'ACWR, la Monotonia e lo Strain NON utilizzano lo smussamento EWMA: calcolano rigorosamente la media e la deviazione standard reale "
             "per non appiattire la variabilità e preservare la rilevazione di microcicli privi di scarico."
         ),
+        "cosa_sto_vedendo_en": (
+            "Monotony measures the daily variance of training load across the 7-day weekly microcycle (including rest days = 0 TL). "
+            "Unlike ACWR, Monotony and Strain do NOT use EWMA smoothing: they compute the true arithmetic mean and standard deviation "
+            "to preserve load variability and accurately detect non-periodized microcycles lacking recovery days."
+        ),
         "formule": [
             r"\text{Monotonia} = \frac{\mu_{7\text{d}}}{\sigma_{7\text{d}}} \quad (\mu = \text{Media giornaliera, } \sigma = \text{Deviazione standard dei } 7\text{ giorni})",
             r"\text{Strain} = \left(\sum_{i=1}^{7} \text{Load}_i\right) \times \text{Monotonia} \quad (\text{Stress biologico complessivo})"
@@ -1595,6 +1662,12 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "• Monotonia 1.5 – 2.0: Soglia di allerta (variabilità ridotta, rischio di plateau prestativo)\n"
             "• Monotonia > 2.0: Elevato rischio di sovrallenamento e infezioni delle prime vie aeree (URTI)\n"
             "• Strain elevato congiunto a Monotonia > 2.0 moltiplica esponenzialmente il tasso di dropout neuromuscolare."
+        ),
+        "interpretazione_en": (
+            "• Monotony < 1.5: Optimal microcycle with healthy alternation between high load and recovery\n"
+            "• Monotony 1.5 – 2.0: Caution threshold (reduced variability, risk of performance plateau)\n"
+            "• Monotony > 2.0: High risk of overreaching and upper respiratory tract infections (URTI)\n"
+            "• High Strain combined with Monotony > 2.0 exponentially increases neuromuscular fatigue."
         ),
         "bibliografia": [
             "Foster, C. (1998). Monitoring training in athletes with reference to overtraining syndrome. Medicine & Science in Sports & Exercise, 30(7), 1164-1168.",
@@ -1613,6 +1686,13 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "e 4 metriche di Volume (Punti totali, Training Load match, Azioni intense >2\" e Training Load High). "
             "Ciò garantisce un confronto omogeneo tra superfici (Terra battuta, Cemento, Erba) e una quantificazione rigorosa del costo fisico reale."
         ),
+        "cosa_sto_vedendo_en": (
+            "Because satellite GPS signal is unavailable during indoor tournaments (where metric distance cannot be tracked), "
+            "elite tennis performance assessment relies on court-independent metabolic and inertial IMU indices: "
+            "3 core Work Rate metrics (Training Load High per minute, Training Load High per point, and High Acc+Dec IMU per point) "
+            "and 4 Volume metrics (Total Points, Match Training Load, Intense Actions >2\", and Training Load High). "
+            "This ensures 100% homogeneous benchmarking across surfaces (Clay, Hard, Grass) and indoor/outdoor arenas."
+        ),
         "formule": [
             r"\text{Work Rate Metabolico} = \frac{\text{TL}_{\text{High}}}{\text{Minuti Sessione}} \quad [\text{AU/min}]",
             r"\text{Costo Fisico Vivo del Punto} = \frac{\text{TL}_{\text{High}}}{\text{Punti Totali Giocati}} \quad [\text{AU/pt}]",
@@ -1625,6 +1705,12 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "• TL High / pt (>1.2 AU/pt): Match con scambi prolungati e dispendiosi dal punto di vista metabolico\n"
             "• Acc + Dec IMU / pt: Quantifica lo stress muscolare eccentrico ad ogni singolo punto (indipendente dalla superficie)\n"
             "• Analisi Superfici: L'impiego del Training Load al posto della distanza chilometrica include al 100% i match indoor nel benchmark."
+        ),
+        "interpretazione_en": (
+            "• High Work Rate TL High / min (>5.0 AU/min): Match characterized by high rally pace and short between-point recovery\n"
+            "• TL High / pt (>1.2 AU/pt): Match with prolonged, metabolically demanding rallies\n"
+            "• Acc + Dec IMU / pt: Quantifies eccentric muscular stress per point (surface-independent)\n"
+            "• Surface Analysis: Using Training Load instead of distance includes 100% of indoor matches in the benchmark."
         ),
         "bibliografia": [
             "Kovacs, M. S. (2007). Tennis physiology: training the competitive athlete. Sports Medicine, 37(3), 189-198.",
@@ -1642,6 +1728,11 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "e lo sforzo biologico soggettivo percepito dall'organismo (sRPE × Durata). Quando a parità di carico esterno lo sforzo percepito "
             "aumenta, il sistema rileva un decadimento dell'efficienza energetica o l'insorgenza di fatica residua non recuperata."
         ),
+        "cosa_sto_vedendo_en": (
+            "Analyzes the dissociation between mechanical/kinematic work performed on court (External GPS/IMU Load) "
+            "and the subjective biological effort perceived by the athlete (sRPE × Duration). When perceived effort increases "
+            "at the same external workload, the system detects declining physiological efficiency or accumulated residual fatigue."
+        ),
         "formule": [
             r"\text{Carico Interno (sRPE)} = \text{RPE (Borg CR-10)} \times \text{Minuti Sessione} \quad [\text{AU}]",
             r"\text{Ratio I:E (Efficienza)} = \frac{\text{Training Load (GPS)}}{\text{Carico Interno (sRPE)}}",
@@ -1651,6 +1742,11 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "• Ratio I:E Stabile: Adattamento fisiologico ottimale e buona freschezza atletica\n"
             "• Ratio I:E in Decadimento: Fatica accumulata, sonno deficitario o esaurimento delle scorte glicogeniche\n"
             "• Decoupling > 20%: Segnale preventivo per rimodulare intensità o inserire recupero attivo."
+        ),
+        "interpretazione_en": (
+            "• Stable I:E Ratio: Optimal physiological adaptation and good athletic freshness\n"
+            "• Declining I:E Ratio: Accumulated fatigue, poor sleep, or glycogen depletion\n"
+            "• Decoupling > 20%: Early warning signal to modulate training intensity or schedule active recovery."
         ),
         "bibliografia": [
             "Impellizzeri, F. M. et al. (2004). Use of RPE-based training load in soccer and racket sports. Medicine & Science in Sports & Exercise, 36(6), 1042-1047.",
@@ -1667,6 +1763,11 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "Utilizza lo Smallest Worthwhile Change (SWC) per distinguere le reali variazioni prestazionali dal normale rumore biologico di misurazione, "
             "e l'Asimmetria Vettoriale con Segno (+/-) per monitorare lo sbilanciamento cronico tra arto destro e sinistro."
         ),
+        "cosa_sto_vedendo_en": (
+            "Analyzes explosive strength, reactivity, and muscular symmetry across lower and upper limbs. "
+            "Uses the Smallest Worthwhile Change (SWC) to distinguish true performance adaptations from normal biological measurement noise, "
+            "and Signed Vectorial Asymmetry (+/-) to track directional imbalance between right and left limbs."
+        ),
         "formule": [
             r"\text{SWC} = 0.2 \times \text{SD}_{\text{baseline personale}} \quad (\text{Variazione minima fisiologicamente rilevante})",
             r"\text{Asimmetria con Segno (\%)} = \frac{\text{Arto Destro} - \text{Arto Sinistro}}{\max(\text{Destro, Sinistro})} \times 100\%"
@@ -1676,10 +1777,94 @@ SCIENTIFIC_METHODOLOGY_REGISTRY = {
             "• Variazione compresa tra -SWC e +SWC: Prestazione stabile entro il rumore statistico\n"
             "• Asimmetria con Segno > 10-15%: Sbilanciamento critico (richiede intervento mirato di riequilibrio preventivo)."
         ),
+        "interpretazione_en": (
+            "• Change > +SWC: Meaningful positive improvement in neuromuscular readiness\n"
+            "• Change between -SWC and +SWC: Stable performance within normal biological noise\n"
+            "• Signed Asymmetry > 10-15%: Critical bilateral imbalance (requires targeted corrective intervention)."
+        ),
         "bibliografia": [
             "Hopkins, W. G. (2004). How to interpret changes in an athletic performance test. Sportscience, 8, 1-7.",
             "Bishop, C. et al. (2018). Interlimb asymmetries: are they stable across multiple athletic performance tests? Sports, 6(3), 87.",
             "Suchomel, T. J. et al. (2016). The importance of muscular strength in athletic performance. Sports Medicine, 46(10), 1419-1449."
+        ]
+    },
+    "biometria_hrv": {
+        "titolo": "Biometria Autonomica (HRV Ln rMSSD 7d vs SWC 60d, RHR & Sonno Wearable)",
+        "titolo_en": "Autonomic Biometrics (HRV Ln rMSSD 7d vs 60d SWC, RHR & Wearable Sleep)",
+        "icona": "bi-smartwatch",
+        "cosa_sto_vedendo": (
+            "L'analisi della Variabilità della Frequenza Cardiaca (HRV, parametro vagale rMSSD mattutino) valuta la modulazione "
+            "parasimpatica del sistema nervoso autonomo. Poiché le singole misurazioni giornaliere presentano oscillazioni fisiologiche, "
+            "il motore M0V3 applica la trasformazione logaritmica naturale Ln(rMSSD), ne calcola la media mobile a 7 giorni e la confronta "
+            "con la Baseline Individuale Mobile a 60 giorni ± 0.5 SD (Smallest Worthwhile Change, SWC), incrociandola con la frequenza "
+            "cardiaca a riposo (RHR) e le ore effettive di sonno rilevate da sensore wearable."
+        ),
+        "cosa_sto_vedendo_en": (
+            "Heart Rate Variability (morning vagal rMSSD) analysis evaluates parasympathetic modulation of the autonomic nervous system. "
+            "Because isolated daily readings exhibit natural biological noise, the M0V3 engine applies natural log transformation Ln(rMSSD), "
+            "computes a 7-day rolling mean, and benchmarks it against the athlete's 60-day Individual Baseline ± 0.5 SD "
+            "(Smallest Worthwhile Change, SWC), cross-referencing resting heart rate (RHR) and objective wearable sleep duration."
+        ),
+        "formule": [
+            r"\text{Ln(rMSSD)} = \ln(\text{HRV}_{\text{rMSSD [ms]}}), \quad \text{HRV}_{7\text{d}} = \frac{1}{7}\sum_{i=0}^{6}\text{Ln(rMSSD)}_{t-i}",
+            r"\text{Banda Individuale SWC}_{60\text{d}} = \mu_{60\text{d}} \pm 0.5 \times \text{SD}_{60\text{d}}",
+            r"\Delta \text{RHR}_{\text{allerta}} = \text{RHR}_t - \mu_{\text{RHR}, 60\text{d}} > +4.0\text{ bpm}"
+        ],
+        "interpretazione": (
+            "• OTTIMALE / ADATTAMENTO POSITIVO (Verde): Media 7d dentro o sopra la banda SWC 60d con RHR stabile\n"
+            "• AFFATICAMENTO FUNZIONALE (Ambra): Media 7d sotto il limite inferiore SWC per 1–2 giorni o RHR > Baseline + 4 bpm\n"
+            "• ALLERTA PARASIMPATICA / OVERREACHING (Rosso): Media 7d sotto la SWC per 3+ giorni consecutivi o calo acuto >1 SD con Sonno < 6.5h e Wellness < 6.0"
+        ),
+        "interpretazione_en": (
+            "• OPTIMAL / POSITIVE ADAPTATION (Green): 7d rolling mean within or above 60d SWC band with steady RHR\n"
+            "• FUNCTIONAL FATIGUE (Amber): 7d rolling mean below lower SWC bound for 1–2 days or RHR > Baseline + 4 bpm\n"
+            "• PARASYMPATHETIC ALERT / OVERREACHING (Red): 7d rolling mean below SWC for 3+ consecutive days or acute >1 SD drop with Sleep < 6.5h and Wellness < 6.0"
+        ),
+        "bibliografia": [
+            "Plews, D. J. et al. (2013). Training adaptation and heart rate variability in elite endurance athletes: opening the door to effective monitoring. Sports Medicine, 43(9), 773-781.",
+            "Buchheit, M. (2014). Monitoring training status with HR measures: do all roads lead to Rome? Frontiers in Physiology, 5, 73.",
+            "Stanley, J., Peake, J. M., & Buchheit, M. (2013). Cardiac parasympathetic reactivation following exercise: implications for training prescription. Sports Medicine, 43(12), 1259-1277."
+        ]
+    },
+    "what_if_planning": {
+        "titolo": "Simulazione Previsionale del Microciclo (What-If ACWR, Monotonia & Tetto Clinico 70%)",
+        "titolo_en": "Predictive Microcycle Simulation (What-If ACWR, Monotony & 70% Clinical Cap)",
+        "icona": "bi-sliders",
+        "cosa_sto_vedendo": (
+            "Il motore predittivo What-If proietta in memoria l'impatto fisiologico e meccanico dei prossimi 7 o 14 giorni di allenamento "
+            "prima che l'atleta scenda in campo, senza alterare il database storico reale. Estrae i ratei reali al minuto (TL/min, TL High/min, "
+            "Acc+Dec/min) specifici per ciascuna Tipologia di Sessione dell'atleta, calcola i volumi simulati modulati dal moltiplicatore "
+            "d'intensità e concatena gli ultimi 35 giorni storici con il piano futuro per stimare ACWR Uncoupled EWMA, Monotonia di Foster "
+            "e il rispetto del tetto clinico del 70% per atleti in Carico Adattato."
+        ),
+        "cosa_sto_vedendo_en": (
+            "The What-If predictive engine projects in memory the physiological and mechanical impact of the upcoming 7 or 14 training days "
+            "before the athlete steps on court, without polluting historical sensor data. It extracts the athlete's real per-minute work rates "
+            "(TL/min, TL High/min, Acc+Dec/min) for each Session Type, computes simulated volumes scaled by the intensity multiplier, "
+            "and concatenates the last 35 historical days with the planned microcycle to forecast Uncoupled EWMA ACWR, Foster's Monotony, "
+            "and compliance with the 70% Adapted Load clinical cap."
+        ),
+        "formule": [
+            r"\text{TL}_{\text{sim}}(t) = \text{Rateo}_{\text{TL/min, tipo}} \times \text{Durata}_{\text{pianificata}} \times \frac{\text{Moltiplicatore Intensità (\%)}}{100}",
+            r"ACWR_{\text{Forecast}}(T+k) = \frac{EWMA_{\text{acute}, 7\text{d}}(T+k)}{EWMA_{\text{chronic}, 28\text{d}}(T+k-1)} \times 100\%",
+            r"\text{Tetto Clinico Carico Adattato} = 0.70 \times \mu_{\text{TL storico atleta}}, \quad \text{Match Equivalenti} = \frac{\sum \text{TL}_{\text{settimana}}}{\mu_{\text{TL Match}}}"
+        ],
+        "interpretazione": (
+            "• Picco ACWR Previsto 80% – 130%: Programmazione nel Sweet Spot fisiologico\n"
+            "• Picco ACWR Previsto > 150%: Allerta spike acuto previsto (rimodulare durata o tipologia seduta)\n"
+            "• Monotonia Prevista > 2.0: Microciclo troppo piatto, inserire una giornata di scarico o recupero attivo\n"
+            "• Violazione Tetto 70% (Carico Adattato): Giorno futuro sopra la soglia prudenziale prescritta dall'Area Medica."
+        ),
+        "interpretazione_en": (
+            "• Forecast Peak ACWR 80% – 130%: Planned microcycle within the physiological Sweet Spot\n"
+            "• Forecast Peak ACWR > 150%: Predicted acute workload spike (adjust session duration or type)\n"
+            "• Forecast Monotony > 2.0: Insufficient load variability, insert a tapering or active recovery day\n"
+            "• 70% Clinical Cap Violation (Adapted Load): Planned day exceeds the medical return-to-play threshold."
+        ),
+        "bibliografia": [
+            "Williams, S. et al. (2017). Better Way to Determine the Acute:Chronic Workload Ratio? Clinical Journal of Sport Medicine, 27(3), 301-304.",
+            "Gabbett, T. J. (2016). The training—injury prevention paradox: should athletes be training smarter and harder? British Journal of Sports Medicine, 50(5), 273-280.",
+            "Foster, C. (1998). Monitoring training in athletes with reference to overtraining syndrome. Medicine & Science in Sports & Exercise, 30(7), 1164-1168."
         ]
     }
 }
@@ -1696,30 +1881,32 @@ def render_scientific_methodology_box(topic_key, title=None, subtitle=None, defa
 
     is_en = st.session_state.get('lang', 'IT') == 'EN'
     t_title = title or (meta['titolo_en'] if is_en else meta['titolo'])
+    t_desc = meta.get('cosa_sto_vedendo_en', meta['cosa_sto_vedendo']) if is_en else meta['cosa_sto_vedendo']
+    t_interp = meta.get('interpretazione_en', meta.get('interpretazione', '')) if is_en else meta.get('interpretazione', '')
     icon_cls = meta.get('icona', 'bi-journal-check')
 
     with st.container(border=True):
         st.markdown(f"""
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 2px solid #0284c7; padding-bottom: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 2px solid rgba(56, 189, 248, 0.35); padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="bi {icon_cls}" style="font-size: 18px; color: #0284c7;"></i>
-                <span style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="bi {icon_cls}" style="font-size: 18px; color: #38bdf8;"></i>
+                <span style="font-size: 14px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px;">
                     <i class='bi bi-journal-medical'></i> {t_title} — {tr('Razionale Fisiologico & Formule Scientifiche', 'Physiological Rationale & Scientific Formulas')}
                 </span>
             </div>
-            <span style="background: #e0f2fe; color: #0369a1; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 6px;">
+            <span style="background: rgba(14, 165, 233, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 800; font-size: 11px; padding: 3px 10px; border-radius: 6px;">
                 <i class="bi bi-patch-check-fill"></i> {tr('Metodologia Validata M0V3', 'M0V3 Validated Methodology')}
             </span>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
-        <div style="background:#0F172A; color:#F8FAFC; padding:16px 20px; border-radius:10px; border-left:5px solid #0EA5E9; margin-bottom:14px;">
-            <div style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">
+        <div style="background:#081120; color:#f8fafc; padding:16px 20px; border-radius:10px; border:1px solid rgba(56, 189, 248, 0.22); border-left:5px solid #0ea5e9; margin-bottom:14px;">
+            <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">
                 <i class="bi {icon_cls}"></i> {tr('TRASPARENZA SCIENTIFICA & METODOLOGIA VALIDATA M0V3', 'M0V3 SCIENTIFIC TRANSPARENCY & VALIDATED METHODOLOGY')}
             </div>
-            <div style="font-size:13.5px; line-height:1.55; color:#E2E8F0; font-weight:400;">
-                {meta['cosa_sto_vedendo']}
+            <div style="font-size:13.5px; line-height:1.55; color:#e2e8f0; font-weight:400;">
+                {t_desc}
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1729,19 +1916,19 @@ def render_scientific_methodology_box(topic_key, title=None, subtitle=None, defa
             for f_eq in meta["formule"]:
                 st.latex(f_eq)
 
-        if meta.get("interpretazione"):
+        if t_interp:
             st.markdown(f"##### {tr('Soglie Operative & Linee Guida di Riferimento', 'Operational Thresholds & Reference Guidelines')}")
             st.markdown(
-                f"<div style='background:#F8FAFC; border:1px solid #E2E8F0; padding:12px 16px; border-radius:8px; font-size:12.5px; line-height:1.6; color:#1E293B;'>"
-                f"{meta['interpretazione'].replace(chr(10), '<br>')}"
+                f"<div style='background:rgba(8, 17, 32, 0.85); border:1px solid rgba(56, 189, 248, 0.25); padding:12px 16px; border-radius:8px; font-size:12.5px; line-height:1.6; color:#e2e8f0;'>"
+                f"{t_interp.replace(chr(10), '<br>')}"
                 f"</div>",
                 unsafe_allow_html=True
             )
 
         if meta.get("bibliografia"):
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-            st.markdown(f"##### <i class='bi bi-book-half'></i> {tr('Riferimenti Bibliografici Validati (Letteratura Internazionale)', 'Validated Bibliographic References (Peer-Reviewed Literature)')}")
-            biblio_html = "<ul style='margin-top:4px; padding-left:18px; font-size:11.5px; color:#475569; line-height:1.5;'>"
+            st.markdown(f"##### <i class='bi bi-book-half'></i> {tr('Riferimenti Bibliografici Validati (Letteratura Internazionale)', 'Validated Bibliographic References (Peer-Reviewed Literature)')}", unsafe_allow_html=True)
+            biblio_html = "<ul style='margin-top:4px; padding-left:18px; font-size:11.5px; color:#cbd5e1; line-height:1.5;'>"
             for b_ref in meta["bibliografia"]:
                 biblio_html += f"<li style='margin-bottom:4px;'>{b_ref}</li>"
             biblio_html += "</ul>"
@@ -1946,7 +2133,10 @@ def render_m0v3_footer(is_sidebar=False):
             "</svg>"
         )
 
-    legal_text = "© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati"
+    legal_text = tr(
+        "© 2026 — Generato tramite tecnologia proprietaria Riccardo Di Maio & M0V3 S.r.l. - Tutti i diritti riservati",
+        "© 2026 — Powered by proprietary technology of Riccardo Di Maio & M0V3 S.r.l. - All rights reserved"
+    )
 
     if is_sidebar:
         html = f"""
@@ -1962,7 +2152,7 @@ def render_m0v3_footer(is_sidebar=False):
         """
     else:
         html = f"""
-        <div class='no-print' style='text-align:center; padding:26px 12px 18px 12px; font-size:0.74rem; color:#64748b; border-top:1px solid #e2e8f0; margin-top:40px; font-family:"Inter", sans-serif;'>
+        <div class='no-print' style='text-align:center; padding:26px 12px 18px 12px; font-size:0.74rem; color:#94a3b8; border-top:1px solid rgba(56, 189, 248, 0.20); margin-top:40px; font-family:"Inter", sans-serif;'>
             <div style='display:inline-flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;'>
                 {logo_html}
                 <span>{legal_text}</span>

@@ -187,16 +187,19 @@ def render_test_fisici(t):
         ("deep_dive", "Deep-Dive per Test", tr("Deep-Dive per Test", "Deep-Dive Test Analysis"), False),
         ("executive", "Executive Summary & Readiness", tr("Executive Summary & Readiness", "Executive Summary & Readiness"), False),
         ("confronti", "Confronti", tr("Confronti", "Roster Comparisons"), False),
-        ("inserimento", "Gestione & Inserimento Test", tr("Gestione & Inserimento Test", "Test Management & Data Entry"), False),
+        ("inserimento", "Gestione & Inserimento Test", tr("Gestione & Inserimento Test", "Test Management & Data Entry"), True),
         ("builder", "Costruttore Test Custom", tr("Costruttore Test Custom", "Custom Test Builder"), True),
     ]
 
-    moduli_utente = st.session_state.get('moduli_report')
+    user_perms = st.session_state.get('user_permessi_moduli')
     def _is_tab_permitted(cat_name):
-        if is_admin or moduli_utente is None:
+        if is_admin or user_perms is None:
+            return True
+        tf_perms = [rep for (ar, rep) in user_perms if ar in ('Test Fisici & Neuromuscolari', 'Test & Valutazioni')]
+        if not tf_perms:
             return True
         clean_cat = cat_name.lower().strip()
-        for m in moduli_utente:
+        for m in tf_perms:
             clean_m = re.sub(r'[\U00010000-\U0010ffff\u2700-\u27bf]', '', str(m)).lower().strip()
             if clean_cat in clean_m or clean_m in clean_cat:
                 return True
