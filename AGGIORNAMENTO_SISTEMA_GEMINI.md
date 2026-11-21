@@ -1,6 +1,6 @@
 # Allineamento Tecnico di Sistema — M0V3 Analytics Enterprise
 
-Questo documento raccoglie in modo strutturato e puntuale l'intero avanzamento tecnico, architetturale, statistico e funzionale della piattaforma, aggiornato al **10 Novembre 2026** per la sincronizzazione completa con **Google Gemini**.
+Questo documento raccoglie in modo strutturato e puntuale l'intero avanzamento tecnico, architetturale, statistico e funzionale della piattaforma, aggiornato al **21 Novembre 2026 (Enterprise v3.0)** per la sincronizzazione completa con **Google Gemini**.
 
 ---
 
@@ -140,6 +140,30 @@ In [`pdf_generator.py`](file:///Users/riccardodimaio/webapp_tennis_gps/pdf_gener
 
 ---
 
+### C. Upgrade Enterprise v3.0 (20–21 Novembre 2026)
+
+1. **Hardening Architetturale, RBAC & Persistenza Cold-Boot (`app.py`, `config.py`, `utils.py`, `views/*`)**:
+   - **Sincronizzazione Selettore Atleta Globale:** cambio atleta in sidebar propaga in modo coerente su tutte le viste senza desincronizzazioni di stato.
+   - **RBAC Granulare & Sicurezza Viste:** controllo per-utente e per-ruolo sui moduli report e sulle viste operative da *Pannello Admin → Moduli Report*.
+   - **Persistenza Cloud Snapshot al Cold Boot:** ripristino automatico dello snapshot Parquet/DB su Supabase al riavvio del container, prevenzione perdita dati su deploy.
+   - **Contrasto Dark Cockpit, Bilinguismo IT/EN & Performance:** rifinitura CSS contrasti su card/tabelle e caching ottimizzato.
+
+2. **Biometria Passiva Oggettiva — HRV, RHR & Sonno Wearable (`views/atleta_mobile.py`, `views/caricamento_dati.py`, `views/carico_interno.py`, `views/gestione_file.py`, `pdf_generator.py`)**:
+   - **Diario Mobile & Desktop:** sezione opzionale *Biometria Wearable* (`HRV rMSSD [ms]`, `FC Riposo / RHR [bpm]`, `Ore Sonno Reali [h]`, `Fonte/Wearable`) sotto i 5 slider del Wellness Mattutino.
+   - **Import Massivo CSV Wearable:** seconda scheda in `Caricamento Dati` (*Import Biometria Wearable Apple/Oura/Whoop/Garmin*) con template scaricabile e upsert non-distruttivo su `wellness_mattutino` (senza toccare i 5 voti soggettivi).
+   - **Analisi & Semaforo Autonomico:** in *Analisi Wellness-RPE-GPS → Trend Risposta Biologica (Wellness)*, Semaforo Autonomico (media mobile 7gg vs banda SWC individuale 60gg $\mu_{60d} \pm 0.5 \times SD_{60d}$), grafico doppio asse HRV/RHR, grafico Sonno Reale vs Soggettivo e inclusione automatica nell'export PDF.
+   - **Data Governance & Audit Trail:** ispezione e rettifica tracciata anche per i campi biometrici in `Gestione File`.
+
+3. **Simulatore "What-If" & Pianificazione del Microciclo 7/14gg (`views/pianificazione_whatif.py`, `app.py`, `config.py`, `pdf_generator.py`)**:
+   - Nuova voce di menu dedicata (*Pianificazione & Simulatore What-If*, visibile a Super-Admin, Coach, Staff e Fisio/Medico).
+   - **Scheda 1 — Simulatore Microciclo 7/14gg & Proiezione ACWR:** editor interattivo giornaliero (Tipologia Campo / REST, Durata, Intensità %, Extra-Campo Gym/Prep/RPE), calcolo istantaneo dai coefficienti reali al minuto dell'atleta concatenati agli ultimi 35gg storici, KPI (`Picco ACWR`, `Monotonia Foster`, `Volume & Match Eq.`, `Giorni Fuori Soglia`), grafico *Real vs Forecast* con Sweet Spot (80–130%) / Danger Zone (>150%), tetto clinico automatico al **70%** se l'atleta è in *Carico Adattato*, template rapidi, salvataggio piani separato dal DB GPS ed export PDF.
+   - **Scheda 2 — Confronto Piano vs Eseguito:** incrocio giorno per giorno tra carico pianificato e carico GPS reale con calcolo Aderenza (%).
+
+4. **Motore Alert Proattivi & Morning Digest 09:30 CET (`alert_engine.py`, `scripts/run_morning_digest.py`) — *In Stand-by***:
+   - Motore backend pronto in stand-by; scheda UI *Alert & Morning Digest* nel Pannello Admin e voce RBAC temporaneamente nascoste (`9f10b62`) su richiesta, senza workflow attivi su GitHub Actions.
+
+---
+
 ## 3. Riepilogo File del Repository & Stato Operativo
 
 | File | Percorso | Stato | Descrizione Funzionale |
@@ -149,7 +173,10 @@ In [`pdf_generator.py`](file:///Users/riccardodimaio/webapp_tennis_gps/pdf_gener
 | `utils.py` | [`utils.py`](file:///Users/riccardodimaio/webapp_tennis_gps/utils.py) | **Operativo** | Gestione database, cache Parquet/RAM, Hero strip atleti, ACWR, calcoli matematici. |
 | `utils_tennis_matches.py` | [`utils_tennis_matches.py`](file:///Users/riccardodimaio/webapp_tennis_gps/utils_tennis_matches.py) | **Operativo** | Ingestione, normalizzazione e caching dell'archivio match ATP/ITF punto-a-punto. |
 | `utils_livetennis.py` | [`utils_livetennis.py`](file:///Users/riccardodimaio/webapp_tennis_gps/utils_livetennis.py) | **Operativo** | Client per integrazione e sync live dei match futuri. |
-| `pdf_generator.py` | [`pdf_generator.py`](file:///Users/riccardodimaio/webapp_tennis_gps/pdf_generator.py) | **Operativo** | Motore ReportLab landscape ad alte prestazioni (Report Sessioni, Medie, Stagionale). |
+| `pdf_generator.py` | [`pdf_generator.py`](file:///Users/riccardodimaio/webapp_tennis_gps/pdf_generator.py) | **Operativo** | Motore ReportLab landscape ad alte prestazioni (Report Sessioni, Medie, Stagionale, Biometria, What-If). |
+| `views/pianificazione_whatif.py` | [`views/pianificazione_whatif.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/pianificazione_whatif.py) | **Operativo** | Simulatore What-If 7/14gg, proiezione EWMA ACWR & Monotonia, confronto Piano vs Eseguito. |
+| `views/admin.py` | [`views/admin.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/admin.py) | **Operativo** | Pannello Admin: coda tagli K-Sport, gestione utenti/atleti, LiveTennis API, RBAC moduli, ticket. |
+| `alert_engine.py` | [`alert_engine.py`](file:///Users/riccardodimaio/webapp_tennis_gps/alert_engine.py) | **Stand-by** | Motore regole red-flag e Morning Digest SMTP (UI nascosta su richiesta). |
 | `views/statistiche_match.py` | [`views/statistiche_match.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/statistiche_match.py) | **Operativo** | Statistiche match ufficiali ATP, 5 moduli analitici correlati Tennis ↔ GPS, nuovo grafico a barre cronologiche metri/punto e archivio con abbinamento. |
 | `views/trend_stagionale.py` | [`views/trend_stagionale.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/trend_stagionale.py) | **Operativo** | Trend annuale con tornei, shading superfici (Terra/Cemento/Erba) e label a -90°. |
 | `views/trend_settimanale.py` | [`views/trend_settimanale.py`](file:///Users/riccardodimaio/webapp_tennis_gps/views/trend_settimanale.py) | **Operativo** | Monitoraggio settimanale rolling e di calendario, benchmark giornaliero. |
